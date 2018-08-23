@@ -7,6 +7,7 @@ import 'babel-polyfill';
 import routes from './routes';
 import configureStore from './configureStore';
 import './index.css';
+import './theme.css';
 
 render((
   <Provider store={configureStore()}>
