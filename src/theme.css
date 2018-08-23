@@ -1,0 +1,48 @@
+:root {
+  --main-body-bg: #F5F5F5;
+  --main-header-bg: #50b6a6;
+  --main-btn-bg: #50b6a6;
+  --link-color: #50b6a6;
+}
+
+.Header {
+  background-color: var(--main-header-bg);
+}
+
+.Header .btn {
+  background-color: transparent;
+}
+
+.Login-header img {
+  height: auto;
+  max-width: 300px;
+  min-width: 230px;
+}
+
+.Header-logo {
+  width: auto;
+}  
+
+.Header-logo  img {
+  width: auto;
+  height: 35px;
+}
+
+.Dashboard {
+  background-color: var(--main-body-bg);
+}
+
+a, a:visited, a:hover, a:active {
+  color: var(--link-color); 
+}
+
+.btn {
+  background-color: var(--main-btn-bg);
+}
+
+.btn.transparent {
+  color: var(--main-btn-bg);
+}  
+.DashboardEvents-controls .sort-events .btn.active {
+  background-color: var(--main-btn-bg);
+}
