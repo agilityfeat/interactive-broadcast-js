@@ -38,13 +38,14 @@ const ProducerHeader = ({ broadcast, showingSidePanel, toggleSidePanel, currentU
       <div className="ProducerHeader-info">
         <Link to="/admin">Back to Events</Link>
         <h3>{ event.name }</h3>
-        <div className="post-production-url">
+        {/*<div className="post-production-url">
           <span className="label">POST-PRODUCTION URL:</span>
           <Link to={fanAudioUrl}>{truncate(fanAudioUrl, { length: 85 })}</Link>
           <CopyToClipboard text={fanAudioUrl} onCopyText="Post-Production URL" >
             <button className="btn white">COPY</button>
           </CopyToClipboard>
         </div>
+        */}
       </div>
       <div className="ProducerHeader-controls">
         { status === 'live' && (archiving || archiveId) &&
