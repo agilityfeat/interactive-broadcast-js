@@ -1,8 +1,8 @@
 :root {
   --main-body-bg: #F5F5F5;
-  --main-header-bg: #50b6a6;
-  --main-btn-bg: #50b6a6;
-  --link-color: #50b6a6;
+  --main-header-bg: rgba(95, 0, 178, 0.75);
+  --main-btn-bg: rgba(95, 0, 178, 0.75);
+  --link-color: rgba(95, 0, 178, 0.75);
 }
 
 .Header {

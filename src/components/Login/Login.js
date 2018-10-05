@@ -6,7 +6,7 @@ import R from 'ramda';
 import classNames from 'classnames';
 import { userForgotPassword, resetPassword, signIn } from '../../actions/auth';
 import LoginForm from './components/LoginForm';
-import logo from '../../images/webrtc-logo-wide.png';
+import logo from '../../images/uni-brand-wide.png';
 import './Login.css';
 
 /* beautify preserve:start */

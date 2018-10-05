@@ -2,7 +2,7 @@
 import React from 'react';
 import { withRouter } from 'react-router';
 import Logout from '../Logout/Logout';
-import logo from '../../images/webrtc-logo-wide-white.png';
+import logo from '../../images/uni-brand-wide.png';
 import './Header.css';
 
 type Props = {
