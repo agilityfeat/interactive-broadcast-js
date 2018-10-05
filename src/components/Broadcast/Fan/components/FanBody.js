@@ -5,7 +5,7 @@ import R from 'ramda';
 import VideoHolder from '../../../Common/VideoHolder';
 import FanHLSPlayer from './FanHLSPlayer';
 import './FanBody.css';
-import defaultImg from '../../../../images/TAB_VIDEO_PREVIEW_LS.jpg';
+import defaultImg from '../../../../images/uni-brand-wide.png';
 
 const userTypes: ParticipantType[] = ['host', 'celebrity', 'fan'];
 
@@ -52,7 +52,7 @@ const FanBody = (props: Props): ReactComponent => {
     <div className={mainClassNames}>
       { showImage &&
         <div className="imageHolder">
-          <img src={image ? image.url : defaultImg} alt="event" />
+          <img src={image ? image.url : defaultImg} alt="event" className={image ? '' : 'default'}/>
         </div>
       }
       { !isClosed &&

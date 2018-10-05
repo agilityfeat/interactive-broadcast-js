@@ -3,7 +3,7 @@ import React from 'react';
 import classNames from 'classnames';
 import VideoHolder from '../../../Common/VideoHolder';
 import './CelebrityHostBody.css';
-import defaultImg from '../../../../images/TAB_VIDEO_PREVIEW_LS.jpg';
+import defaultImg from '../../../../images/uni-brand-wide.png';
 
 const userTypes: ParticipantType[] = ['host', 'celebrity', 'fan'];
 

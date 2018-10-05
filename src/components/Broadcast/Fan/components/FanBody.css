@@ -101,6 +101,11 @@
   width: 100%;
 }
 
+.FanBody .imageHolder img.default {
+  margin: 100px;
+  width: auto;
+}
+
 .FanBody .producerContainer {
   position: absolute;
   z-index: -100;
