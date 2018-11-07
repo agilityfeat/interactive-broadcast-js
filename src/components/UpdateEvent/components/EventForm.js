@@ -212,24 +212,24 @@ class EventForm extends Component {
         </div>
 
         <div className="input-container disabled">
-          <div className="label">Fan URL</div>
+          <div className="label">Viewer URL</div>
           <Icon className="icon" name="link" style={{ color: 'darkgrey' }} />
           <input type="url" name="fanUrl" value={fields.fanUrl} onChange={handleChange} disabled />
-          <CopyToClipboard text={fields.fanUrl} onCopyText="Fan URL" >
+          <CopyToClipboard text={fields.fanUrl} onCopyText="Viewer URL" >
             <button className="btn white copy" type="button">
               <Icon className="icon" name="copy" style={{ color: '#607d8b' }} />
-              Copy Fan URL
+              Copy Viewer URL
             </button>
           </CopyToClipboard>
         </div>
         <div className="input-container disabled">
-          <div className="label">Fan Audio-Only URL</div>
+          <div className="label">Viewer Audio-Only URL</div>
           <Icon className="icon" name="link" style={{ color: 'darkgrey' }} />
           <input type="url" name="fanAudioUrl" value={fields.fanAudioUrl} onChange={handleChange} disabled />
-          <CopyToClipboard text={fields.fanAudioUrl} onCopyText="Fan Audio URL" >
+          <CopyToClipboard text={fields.fanAudioUrl} onCopyText="Viewer Audio URL" >
             <button className="btn white copy" type="button">
               <Icon className="icon" name="copy" style={{ color: '#607d8b' }} />
-              Copy Fan Audio URL
+              Copy Viewer Audio URL
             </button>
           </CopyToClipboard>
         </div>
@@ -245,18 +245,17 @@ class EventForm extends Component {
           </CopyToClipboard>
         </div>
         <div className="input-container disabled">
-          <div className="label">Celebrity URL</div>
+          <div className="label">Guest URL</div>
           <Icon className="icon" name="link" style={{ color: 'darkgrey' }} />
           <input type="url" name="celebrityUrl" value={fields.celebrityUrl} disabled />
-          <CopyToClipboard text={fields.celebrityUrl} onCopyText="Celebrity URL" >
+          <CopyToClipboard text={fields.celebrityUrl} onCopyText="Guest URL" >
             <button className="btn white copy" type="button" >
               <Icon className="icon" name="copy" style={{ color: '#607d8b' }} />
-              Copy Celebrity URL
+              Copy Guest URL
             </button>
           </CopyToClipboard>
         </div>
         <div className="input-container">
-          <div className="label">Redirect URL (optional)</div>
           <Label
             hint={'Redirect URL is an optional field that will redirect '
                   + 'viewers to the entered URL once the event is over'}
@@ -277,11 +276,12 @@ class EventForm extends Component {
 
         <div className="input-container checkbox">
           <input type="checkbox" name="archiveEvent" checked={fields.archiveEvent} onChange={handleChange} />
-          <span className="label">Archive Event</span>
+          <span className="label">Record Event</span>
         </div>
+
         <div className="input-container checkbox">
           <input type="checkbox" name="uncomposed" checked={fields.uncomposed} onChange={handleChange} />
-          <span className="label">Archive Individual Streams (Uncheck for Composed Video)</span>
+          <span className="label">Record Individual Streams (Uncheck for Composed Video)</span>
         </div>
 
         { hasAPIKey &&
