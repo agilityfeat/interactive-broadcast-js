@@ -11,7 +11,8 @@ declare type User = {
   otSecret: string,
   superAdmin: boolean,
   hls: boolean,
-  httpSupport: boolean
+  httpSupport: boolean,
+  audioOnlyEnabled: boolean
  };
 
 declare type HostCelebCredentials = {
@@ -54,7 +55,8 @@ declare type UserFormData = {
   otApiKey: string,
   otSecret: string,
   hls: boolean,
-  httpSupport: boolean
+  httpSupport: boolean,
+  audioOnlyEnabled: boolean
 };
 
 declare type UserUpdateFormData = { id: UserId } & UserFormData;
