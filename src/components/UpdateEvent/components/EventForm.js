@@ -8,6 +8,7 @@ import classNames from 'classnames';
 import moment from 'moment';
 import Icon from 'react-fontawesome';
 import CopyToClipboard from '../../Common/CopyToClipboard';
+import Label from '../../Common/Label';
 import DatePicker from '../../Common/DatePicker';
 import firebase from '../../../services/firebase';
 import createUrls from '../../../services/eventUrls';
@@ -256,12 +257,20 @@ class EventForm extends Component {
         </div>
         <div className="input-container">
           <div className="label">Redirect URL (optional)</div>
+          <Label
+            hint={'Redirect URL is an optional field that will redirect '
+                  + 'viewers to the entered URL once the event is over'}
+          >
+            Redirect URL (optional)
+          </Label>
           <Icon className="icon" name="link" style={{ color: 'darkgrey' }} />
           <input type="url" className="enabled" name="redirectUrl" value={fields.redirectUrl} onChange={handleChange} />
         </div>
 
         <div className="input-container">
-          <div className="label">RTMP URL (optional)</div>
+          <Label hint="RTMP URL is an optional field that will allow you to stream to FB or Youtube">
+            RTMP URL (optional)
+          </Label>
           <Icon className="icon" name="link" style={{ color: 'darkgrey' }} />
           <input type="url" className="enabled" name="rtmpUrl" value={fields.rtmpUrl} onChange={handleChange} />
         </div>
