@@ -282,10 +282,12 @@ class EventForm extends Component {
           <span className="label">Record Event</span>
         </div>
 
+        {/*
         <div className="input-container checkbox">
           <input type="checkbox" name="uncomposed" checked={fields.uncomposed} onChange={handleChange} />
           <span className="label">Record Individual Streams (Uncheck for Composed Video)</span>
         </div>
+        */}
 
         { hasAPIKey &&
           <div className="input-container submit">
