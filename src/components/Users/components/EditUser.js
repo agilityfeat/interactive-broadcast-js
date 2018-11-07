@@ -17,9 +17,19 @@ const emptyUser: UserFormData = {
   hls: true,
   httpSupport: false,
   audioOnlyEnabled: false,
+  embedEnabled: false,
+  copyAdminEnable: false,
 };
 
-const formFields = ['email', 'displayName', 'hls', 'httpSupport', 'audioOnlyEnabled'];
+const formFields = [
+  'email',
+  'displayName',
+  'hls',
+  'httpSupport',
+  'audioOnlyEnabled',
+  'embedEnabled',
+  'copyAdminEnable',
+];
 
 type BaseProps = {
   user: null | User,
@@ -115,7 +125,17 @@ class EditUser extends Component {
 
   render(): ReactComponent {
     const { errors, fields, showCredentials } = this.state;
-    const { email, displayName, otApiKey, otSecret, hls, httpSupport, audioOnlyEnabled } = fields;
+    const {
+      email,
+      displayName,
+      otApiKey,
+      otSecret,
+      hls,
+      httpSupport,
+      audioOnlyEnabled,
+      embedEnabled,
+      copyAdminEnabled
+    } = fields;
     const { toggleEditPanel, newUser } = this.props;
     const { handleSubmit, handleChange } = this;
     const errorFields = R.propOr({}, 'fields', errors);
@@ -177,21 +197,33 @@ class EditUser extends Component {
               </div>
             }
           </div>
-          <div className="edit-user-bottom">
-            <div className="input-container">
-              <input type="checkbox" name="hls" checked={!!hls} onChange={handleChange} />
-              <span className="label">Broadcast Support Enabled</span>
+          <div className="edit-user-options">
+            <div className="edit-user-bottom">
+              <div className="input-container">
+                <input type="checkbox" name="hls" checked={!!hls} onChange={handleChange} />
+                <span className="label">Broadcast Support Enabled</span>
+              </div>
+              <div className="input-container">
+                <input type="checkbox" name="httpSupport" checked={!!httpSupport} onChange={handleChange} />
+                <span className="label">HTTP Support Enabled</span>
+              </div>
+              <div className="input-container">
+                <input type="checkbox" name="audioOnlyEnabled" checked={!!audioOnlyEnabled} onChange={handleChange} />
+                <span className="label">Share audio only URL Enabled</span>
+              </div>
+              <div className="input-container">
+                <input type="checkbox" name="embedEnabled" checked={!!embedEnabled} onChange={handleChange} />
+                <span className="label">Enable Embed</span>
+              </div>
+              <div className="input-container">
+                <input type="checkbox" name="copyAdminEnabled" checked={!!copyAdminEnabled} onChange={handleChange} />
+                <span className="label">Enable copy admin buttons</span>
+              </div>
             </div>
-            <div className="input-container">
-              <input type="checkbox" name="httpSupport" checked={!!httpSupport} onChange={handleChange} />
-              <span className="label">HTTP Support Enabled</span>
+            <div className="edit-user-buttons">
+              <input type="submit" className="btn action green" value={newUser ? 'Create User' : 'Save'} />
+              { !newUser && <button className="btn action green" onClick={toggleEditPanel}>Cancel</button> }
             </div>
-            <div className="input-container">
-              <input type="checkbox" name="audioOnlyEnabled" checked={!!audioOnlyEnabled} onChange={handleChange} />
-              <span className="label">Share audio only URL Enabled</span>
-            </div>
-            <input type="submit" className="btn action green" value={newUser ? 'Create User' : 'Save'} />
-            { !newUser && <button className="btn action green" onClick={toggleEditPanel}>Cancel</button> }
           </div>
         </form>
       </div>
