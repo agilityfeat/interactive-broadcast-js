@@ -1,0 +1,18 @@
+.label .tooltip-icon {
+  padding: 0px 10px;
+  color: var(--link-color);
+}
+
+.label .tooltip {
+  max-width: 200px;
+  margin: 0px;
+  background-color: var(--main-body-bg);
+  color: var(--link-color);
+  border: 1px solid var(--link-color);
+  border-radius: 10px;
+}
+
+.label .tooltip:after {
+  display: none;
+  width: 0px;
+}

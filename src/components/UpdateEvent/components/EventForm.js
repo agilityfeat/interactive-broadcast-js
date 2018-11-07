@@ -8,6 +8,7 @@ import classNames from 'classnames';
 import moment from 'moment';
 import Icon from 'react-fontawesome';
 import CopyToClipboard from '../../Common/CopyToClipboard';
+import Label from '../../Common/Label';
 import DatePicker from '../../Common/DatePicker';
 import firebase from '../../../services/firebase';
 import createUrls from '../../../services/eventUrls';
@@ -21,7 +22,7 @@ type BaseProps = {
   user: User,
   event: BroadcastEvent,
   errors: null | { fields: {[field: string]: boolean}, message: string },
-  submitting: false,
+  submitting: false
 };
 type DispatchProps = {
   uploadImage: Unit,
@@ -94,7 +95,7 @@ class EventForm extends Component {
         celebrityUrl: '',
         redirectUrl: '',
         rtmpUrl: '',
-        uncomposed: true,
+        uncomposed: false,
       },
       submitting: false,
     };
@@ -169,6 +170,7 @@ class EventForm extends Component {
     const { fields } = this.state;
     const { startImage, endImage } = fields;
     const hasAPIKey = this.props.user.otApiKey;
+    const { audioOnlyEnabled } = this.props.user;
     return (
       <form className="EventForm" onSubmit={handleSubmit}>
         <div className="input-container">
@@ -211,27 +213,29 @@ class EventForm extends Component {
         </div>
 
         <div className="input-container disabled">
-          <div className="label">Fan URL</div>
+          <div className="label">Viewer URL</div>
           <Icon className="icon" name="link" style={{ color: 'darkgrey' }} />
           <input type="url" name="fanUrl" value={fields.fanUrl} onChange={handleChange} disabled />
-          <CopyToClipboard text={fields.fanUrl} onCopyText="Fan URL" >
+          <CopyToClipboard text={fields.fanUrl} onCopyText="Viewer URL" >
             <button className="btn white copy" type="button">
               <Icon className="icon" name="copy" style={{ color: '#607d8b' }} />
-              Copy Fan URL
+              Copy Viewer URL
             </button>
           </CopyToClipboard>
         </div>
+        {audioOnlyEnabled &&
         <div className="input-container disabled">
-          <div className="label">Fan Audio-Only URL</div>
+          <div className="label">Viewer Audio-Only URL</div>
           <Icon className="icon" name="link" style={{ color: 'darkgrey' }} />
           <input type="url" name="fanAudioUrl" value={fields.fanAudioUrl} onChange={handleChange} disabled />
-          <CopyToClipboard text={fields.fanAudioUrl} onCopyText="Fan Audio URL" >
+          <CopyToClipboard text={fields.fanAudioUrl} onCopyText="Viewer Audio URL" >
             <button className="btn white copy" type="button">
               <Icon className="icon" name="copy" style={{ color: '#607d8b' }} />
-              Copy Fan Audio URL
+              Copy Viewer Audio URL
             </button>
           </CopyToClipboard>
         </div>
+        }
         <div className="input-container disabled">
           <div className="label">Host URL</div>
           <Icon className="icon" name="link" style={{ color: 'darkgrey' }} />
@@ -244,36 +248,46 @@ class EventForm extends Component {
           </CopyToClipboard>
         </div>
         <div className="input-container disabled">
-          <div className="label">Celebrity URL</div>
+          <div className="label">Guest URL</div>
           <Icon className="icon" name="link" style={{ color: 'darkgrey' }} />
           <input type="url" name="celebrityUrl" value={fields.celebrityUrl} disabled />
-          <CopyToClipboard text={fields.celebrityUrl} onCopyText="Celebrity URL" >
+          <CopyToClipboard text={fields.celebrityUrl} onCopyText="Guest URL" >
             <button className="btn white copy" type="button" >
               <Icon className="icon" name="copy" style={{ color: '#607d8b' }} />
-              Copy Celebrity URL
+              Copy Guest URL
             </button>
           </CopyToClipboard>
         </div>
         <div className="input-container">
-          <div className="label">Redirect URL (optional)</div>
+          <Label
+            hint={'Redirect URL is an optional field that will redirect '
+                  + 'viewers to the entered URL once the event is over'}
+          >
+            Redirect URL (optional)
+          </Label>
           <Icon className="icon" name="link" style={{ color: 'darkgrey' }} />
           <input type="url" className="enabled" name="redirectUrl" value={fields.redirectUrl} onChange={handleChange} />
         </div>
 
         <div className="input-container">
-          <div className="label">RTMP URL (optional)</div>
+          <Label hint="RTMP URL is an optional field that will allow you to stream to FB or Youtube">
+            RTMP URL (optional)
+          </Label>
           <Icon className="icon" name="link" style={{ color: 'darkgrey' }} />
           <input type="url" className="enabled" name="rtmpUrl" value={fields.rtmpUrl} onChange={handleChange} />
         </div>
 
         <div className="input-container checkbox">
           <input type="checkbox" name="archiveEvent" checked={fields.archiveEvent} onChange={handleChange} />
-          <span className="label">Archive Event</span>
+          <span className="label">Record Event</span>
         </div>
+
+        {/*
         <div className="input-container checkbox">
           <input type="checkbox" name="uncomposed" checked={fields.uncomposed} onChange={handleChange} />
-          <span className="label">Archive Individual Streams (Uncheck for Composed Video)</span>
+          <span className="label">Record Individual Streams (Uncheck for Composed Video)</span>
         </div>
+        */}
 
         { hasAPIKey &&
           <div className="input-container submit">
