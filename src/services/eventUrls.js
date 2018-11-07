@@ -17,7 +17,7 @@ const createUrls = ({ name, adminId }: { name?: string, adminId: string}): Event
     fanUrl: `${base}/show/${adminId}/${eventName}`,
     fanAudioUrl: `${base}/post-production/${adminId}/${eventName}`,
     hostUrl: `${base}/show-host/${adminId}/${eventNameHash}`,
-    celebrityUrl: `${base}/show-celebrity/${adminId}/${eventNameHash}`,
+    celebrityUrl: `${base}/show-guest/${adminId}/${eventNameHash}`,
   };
 };
 
