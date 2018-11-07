@@ -16,9 +16,10 @@ const emptyUser: UserFormData = {
   otSecret: '',
   hls: true,
   httpSupport: false,
+  audioOnlyEnabled: false,
 };
 
-const formFields = ['email', 'displayName', 'hls', 'httpSupport'];
+const formFields = ['email', 'displayName', 'hls', 'httpSupport', 'audioOnlyEnabled'];
 
 type BaseProps = {
   user: null | User,
@@ -114,7 +115,7 @@ class EditUser extends Component {
 
   render(): ReactComponent {
     const { errors, fields, showCredentials } = this.state;
-    const { email, displayName, otApiKey, otSecret, hls, httpSupport } = fields;
+    const { email, displayName, otApiKey, otSecret, hls, httpSupport, audioOnlyEnabled } = fields;
     const { toggleEditPanel, newUser } = this.props;
     const { handleSubmit, handleChange } = this;
     const errorFields = R.propOr({}, 'fields', errors);
@@ -184,6 +185,10 @@ class EditUser extends Component {
             <div className="input-container">
               <input type="checkbox" name="httpSupport" checked={!!httpSupport} onChange={handleChange} />
               <span className="label">HTTP Support Enabled</span>
+            </div>
+            <div className="input-container">
+              <input type="checkbox" name="audioOnlyEnabled" checked={!!audioOnlyEnabled} onChange={handleChange} />
+              <span className="label">Share audio only URL Enabled</span>
             </div>
             <input type="submit" className="btn action green" value={newUser ? 'Create User' : 'Save'} />
             { !newUser && <button className="btn action green" onClick={toggleEditPanel}>Cancel</button> }
