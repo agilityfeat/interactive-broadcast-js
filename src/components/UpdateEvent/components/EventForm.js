@@ -22,7 +22,7 @@ type BaseProps = {
   user: User,
   event: BroadcastEvent,
   errors: null | { fields: {[field: string]: boolean}, message: string },
-  submitting: false,
+  submitting: false
 };
 type DispatchProps = {
   uploadImage: Unit,
@@ -95,7 +95,7 @@ class EventForm extends Component {
         celebrityUrl: '',
         redirectUrl: '',
         rtmpUrl: '',
-        uncomposed: true,
+        uncomposed: false,
       },
       submitting: false,
     };
@@ -170,6 +170,7 @@ class EventForm extends Component {
     const { fields } = this.state;
     const { startImage, endImage } = fields;
     const hasAPIKey = this.props.user.otApiKey;
+    const { audioOnlyEnabled } = this.props.user;
     return (
       <form className="EventForm" onSubmit={handleSubmit}>
         <div className="input-container">
@@ -222,6 +223,7 @@ class EventForm extends Component {
             </button>
           </CopyToClipboard>
         </div>
+        {audioOnlyEnabled &&
         <div className="input-container disabled">
           <div className="label">Viewer Audio-Only URL</div>
           <Icon className="icon" name="link" style={{ color: 'darkgrey' }} />
@@ -233,6 +235,7 @@ class EventForm extends Component {
             </button>
           </CopyToClipboard>
         </div>
+        }
         <div className="input-container disabled">
           <div className="label">Host URL</div>
           <Icon className="icon" name="link" style={{ color: 'darkgrey' }} />
