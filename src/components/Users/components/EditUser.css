@@ -35,6 +35,10 @@
     color: #58666e;
 }
 
+.EditUser-form .edit-user-buttons {
+	display: flex;
+}
+
 .EditUser .input-container .icon {
     position: absolute;
     top: 10px;
