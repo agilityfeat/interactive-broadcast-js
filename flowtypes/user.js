@@ -13,8 +13,7 @@ declare type User = {
   hls: boolean,
   httpSupport: boolean,
   audioOnlyEnabled: boolean,
-  embedEnabled: boolean,
-  copyAdminEnable: boolean
+  embedEnabled: boolean
  };
 
 declare type HostCelebCredentials = {

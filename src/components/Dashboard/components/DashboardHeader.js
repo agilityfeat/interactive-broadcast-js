@@ -43,7 +43,7 @@ class DashboardHeader extends Component {
         <div className="DashboardHeader-controls">
           {currentUser.embedEnabled && <CopyEmbedCode />}
           {
-            currentUser.copyAdminEnabled &&
+            currentUser.embedEnabled &&
             <CopyToClipboard text={currentUser.id} onCopyText="User ID" >
               <button className="btn white control">Copy User ID</button>
             </CopyToClipboard>

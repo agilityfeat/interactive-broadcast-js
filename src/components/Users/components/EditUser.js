@@ -18,7 +18,6 @@ const emptyUser: UserFormData = {
   httpSupport: false,
   audioOnlyEnabled: false,
   embedEnabled: false,
-  copyAdminEnable: false,
 };
 
 const formFields = [
@@ -28,7 +27,6 @@ const formFields = [
   'httpSupport',
   'audioOnlyEnabled',
   'embedEnabled',
-  'copyAdminEnable',
 ];
 
 type BaseProps = {
@@ -134,7 +132,6 @@ class EditUser extends Component {
       httpSupport,
       audioOnlyEnabled,
       embedEnabled,
-      copyAdminEnabled
     } = fields;
     const { toggleEditPanel, newUser } = this.props;
     const { handleSubmit, handleChange } = this;
@@ -214,10 +211,6 @@ class EditUser extends Component {
               <div className="input-container">
                 <input type="checkbox" name="embedEnabled" checked={!!embedEnabled} onChange={handleChange} />
                 <span className="label">Enable Embed</span>
-              </div>
-              <div className="input-container">
-                <input type="checkbox" name="copyAdminEnabled" checked={!!copyAdminEnabled} onChange={handleChange} />
-                <span className="label">Enable copy admin buttons</span>
               </div>
             </div>
             <div className="edit-user-buttons">
