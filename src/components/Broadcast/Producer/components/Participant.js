@@ -6,7 +6,7 @@ import classNames from 'classnames';
 import Icon from 'react-fontawesome';
 import CopyToClipboard from '../../../Common/CopyToClipboard';
 import createUrls from '../../../../services/eventUrls';
-import { isFan, getRoleTranslation } from '../../../../services/util';
+import { isFan, translateRole } from '../../../../services/util';
 import ControlIcon from './ControlIcon';
 import { toggleParticipantProperty } from '../../../../actions/broadcast';
 import { connectPrivateCall, chatWithParticipant, sendToStage, kickFanFromFeed } from '../../../../actions/producer';
@@ -15,7 +15,7 @@ import './Participant.css';
 const isBackstageFan = R.equals('backstageFan');
 const isOnStageFan = R.equals('fan');
 
-const getHeaderLabel = (type: string): string => R.toUpper(getRoleTranslation(type));
+const getHeaderLabel = (type: string): string => R.toUpper(translateRole(type));
 
 type OwnProps = {
   type: ParticipantType
@@ -71,7 +71,7 @@ const Participant = (props: Props): ReactComponent => {
       </div>
       { isBackstageFan(type) ?
         <div className="Participant-move-fan">
-          <button className="move btn transparent" onClick={sendFanToStage}>Move to {getRoleTranslation('fan')} feed</button>
+          <button className="move btn transparent" onClick={sendFanToStage}>Move to {translateRole('fan')} feed</button>
         </div> :
         <div className="Participant-url">
           <span className="url">{ url }</span>
