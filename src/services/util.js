@@ -32,7 +32,7 @@ const isFan = (type: UserRole | 'activeFan'): boolean => R.contains(type, ['fan'
 
 const isUserOnStage = (user: ParticipantType | 'activeFan'): boolean => R.contains(user, ['fan', 'host', 'celebrity']);
 
-const getRoleTranslation = (type: ParticipantType): string => {
+const translateRole = (type: ParticipantType): string => {
   const translation = {
     fan: 'viewer',
     host: 'host',
@@ -49,5 +49,5 @@ module.exports = {
   isFan,
   isUserOnStage,
   properCase,
-  getRoleTranslation,
+  translateRole,
 };
