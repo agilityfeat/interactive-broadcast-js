@@ -65,9 +65,11 @@ const ProducerHeader = ({ broadcast, showingSidePanel, toggleSidePanel, currentU
             END SHOW
           </button>
         }
-        <CopyToClipboard text={currentUser.id} onCopyText="Admin ID" >
-          <button className="btn white copy-admin-id">COPY ADMIN ID</button>
-        </CopyToClipboard>
+        {currentUser.embedEnabled &&
+          <CopyToClipboard text={currentUser.id} onCopyText="Admin ID" >
+            <button className="btn white copy-admin-id">COPY ADMIN ID</button>
+          </CopyToClipboard>
+        }
         <button className="btn white" onClick={toggleSidePanel}>
           <Icon name={showingSidePanel ? 'caret-square-o-right' : 'caret-square-o-left'} />
         </button>
