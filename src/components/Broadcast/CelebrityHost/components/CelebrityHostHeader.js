@@ -2,7 +2,7 @@
 import React from 'react';
 import classNames from 'classnames';
 import R from 'ramda';
-import { isUserOnStage } from '../../../../services/util';
+import { isUserOnStage, translateRole } from '../../../../services/util';
 import './CelebrityHostHeader.css';
 
 type Props = {
@@ -32,7 +32,7 @@ const CelebrityHostHeader = (props: Props): ReactComponent => {
           }
         </div>
         <div className="user-role">
-          {userType}
+          {translateRole(userType)}
         </div>
       </div>
       <div className={classNames('CelebrityHostHeader-notice', { active: (inPrivateCall || otherInPrivateCall || disconnected) })}>
