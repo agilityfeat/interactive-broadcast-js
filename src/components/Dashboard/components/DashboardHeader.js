@@ -41,10 +41,13 @@ class DashboardHeader extends Component {
       <div className="DashboardHeader admin-page-header">
         <h3>Dashboard</h3>
         <div className="DashboardHeader-controls">
-          <CopyEmbedCode />
-          <CopyToClipboard text={currentUser.id} onCopyText="User ID" >
-            <button className="btn white control">Copy User ID</button>
-          </CopyToClipboard>
+          {currentUser.embedEnabled && <CopyEmbedCode />}
+          {
+            currentUser.embedEnabled &&
+            <CopyToClipboard text={currentUser.id} onCopyText="User ID" >
+              <button className="btn white control">Copy User ID</button>
+            </CopyToClipboard>
+          }
           <Link to="/events/new">
             <button className="btn white control"><Icon name="plus" />Add New Event</button>
           </Link>

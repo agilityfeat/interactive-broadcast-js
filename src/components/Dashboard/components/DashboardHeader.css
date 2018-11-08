@@ -12,13 +12,13 @@
 }
 
 .DashboardHeader-controls {
-  width: 650px;
   display: flex;
   align-items: center;
   justify-content: space-around;
 }
 
 .DashboardHeader-controls .btn {
+  margin-left: 5px;
   font-size: 12px;
   width: 150px;
   height: 34px;
