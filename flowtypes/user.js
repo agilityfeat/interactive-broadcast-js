@@ -14,6 +14,9 @@ declare type User = {
   httpSupport: boolean,
   audioOnlyEnabled: boolean,
   embedEnabled: boolean
+  embedEnabled: boolean,
+  registrationEnabled: boolean,
+  fileSharingEnabled: boolean,
  };
 
 declare type HostCelebCredentials = {

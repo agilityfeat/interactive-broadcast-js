@@ -18,6 +18,8 @@ const emptyUser: UserFormData = {
   httpSupport: false,
   audioOnlyEnabled: false,
   embedEnabled: false,
+  registrationEnabled: false,
+  fileSharingEnabled: false,
 };
 
 const formFields = [
@@ -27,6 +29,8 @@ const formFields = [
   'httpSupport',
   'audioOnlyEnabled',
   'embedEnabled',
+  'registrationEnabled',
+  'fileSharingEnabled',
 ];
 
 type BaseProps = {
@@ -117,8 +121,13 @@ class EditUser extends Component {
   handleChange(e: SyntheticInputEvent) {
     const field = e.target.name;
     const value = e.target.type === 'checkbox' ? !this.state.fields[field] : e.target.value;
+
     this.setState({ fields: R.assoc(field, value, this.state.fields) });
     this.state.submissionAttemped && this.hasErrors();
+  }
+
+  handleColorChange(hex: string) {
+    this.setState({ fields: R.assoc('siteColor', hex, this.state.fields) });
   }
 
   render(): ReactComponent {
@@ -132,6 +141,8 @@ class EditUser extends Component {
       httpSupport,
       audioOnlyEnabled,
       embedEnabled,
+      registrationEnabled,
+      fileSharingEnabled,
     } = fields;
     const { toggleEditPanel, newUser } = this.props;
     const { handleSubmit, handleChange } = this;
@@ -211,6 +222,14 @@ class EditUser extends Component {
               <div className="input-container">
                 <input type="checkbox" name="embedEnabled" checked={!!embedEnabled} onChange={handleChange} />
                 <span className="label">Enable Embed</span>
+              </div>
+              <div className="input-container">
+                <input type="checkbox" name="registrationEnabled" checked={!!registrationEnabled} onChange={handleChange} />
+                <span className="label">Enable Registration</span>
+              </div>
+              <div className="input-container">
+                <input type="checkbox" name="fileSharingEnabled" checked={!!fileSharingEnabled} onChange={handleChange} />
+                <span className="label">Enable File Sharing</span>
               </div>
             </div>
             <div className="edit-user-buttons">
