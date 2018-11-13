@@ -37,8 +37,7 @@ class ColorPicker extends Component {
     this.changeHandler = this.changeHandler.bind(this);
   }
 
-  togglePicker(e: SyntheticInputEvent) {
-    e.preventDefault();
+  togglePicker() {
     this.setState({ showPicker: !this.state.showPicker });
   }
 
