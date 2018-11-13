@@ -8,6 +8,8 @@ import Icon from 'react-fontawesome';
 import uuid from 'uuid';
 import './EditUser.css';
 import { createNewUser, updateUserRecord } from '../../../actions/users';
+import ColorPicker from '../../Common/ColorPicker';
+
 
 const emptyUser: UserFormData = {
   email: '',
@@ -20,6 +22,7 @@ const emptyUser: UserFormData = {
   embedEnabled: false,
   registrationEnabled: false,
   fileSharingEnabled: false,
+  siteColor: null,
 };
 
 const formFields = [
@@ -31,6 +34,7 @@ const formFields = [
   'embedEnabled',
   'registrationEnabled',
   'fileSharingEnabled',
+  'siteColor',
 ];
 
 type BaseProps = {
@@ -55,6 +59,7 @@ class EditUser extends Component {
     showCredentials: boolean
   };
   handleChange: (string, SyntheticInputEvent) => void;
+  handleColorChange: (string) => void;
   hasErrors: () => boolean;
   toggleCredentials: () => void;
   handleSubmit: Unit;
@@ -68,6 +73,7 @@ class EditUser extends Component {
       showCredentials: false,
     };
     this.handleChange = this.handleChange.bind(this);
+    this.handleColorChange = this.handleColorChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.hasErrors = this.hasErrors.bind(this);
     this.toggleCredentials = this.toggleCredentials.bind(this);
@@ -143,9 +149,10 @@ class EditUser extends Component {
       embedEnabled,
       registrationEnabled,
       fileSharingEnabled,
+      siteColor,
     } = fields;
     const { toggleEditPanel, newUser } = this.props;
-    const { handleSubmit, handleChange } = this;
+    const { handleSubmit, handleChange, handleColorChange } = this;
     const errorFields = R.propOr({}, 'fields', errors);
     const shouldShowCredentials = newUser || showCredentials;
     return (
@@ -230,6 +237,12 @@ class EditUser extends Component {
               <div className="input-container">
                 <input type="checkbox" name="fileSharingEnabled" checked={!!fileSharingEnabled} onChange={handleChange} />
                 <span className="label">Enable File Sharing</span>
+              </div>
+            </div>
+            <div className="edit-user-other-settings">
+              <div className="input-container">
+                <span className="label">Choose Admin Color:</span>
+                <ColorPicker value={siteColor} onChange={handleColorChange} />
               </div>
             </div>
             <div className="edit-user-buttons">

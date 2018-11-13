@@ -4,7 +4,8 @@
 }
 
 .EditUser-form .edit-user-top,
-.EditUser-form .edit-user-bottom {
+.EditUser-form .edit-user-bottom,
+.EditUser-form .edit-user-other-settings {
     display: flex;
     align-items: center;
     margin: 10px 0;
@@ -28,7 +29,21 @@
     margin-right: 10px;
 }
 
-.EditUser-form .edit-user-bottom .input-container .label {
+.EditUser-form .edit-user-other-settings .input-container {
+    margin-right: 10px;
+	display: flex;
+	align-items: center;
+}
+
+.EditUser-form .edit-user-bottom .input-container .label,
+.EditUser-form .edit-user-other-settings .input-container .label {
+	margin-left: 5px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #58666e;
+}
+
+.EditUser-form .edit-user-other-settings .input-container .label {
     margin-left: 5px;
     font-size: 13px;
     font-weight: 700;
