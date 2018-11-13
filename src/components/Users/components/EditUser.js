@@ -8,6 +8,8 @@ import Icon from 'react-fontawesome';
 import uuid from 'uuid';
 import './EditUser.css';
 import { createNewUser, updateUserRecord } from '../../../actions/users';
+import ColorPicker from '../../Common/ColorPicker';
+
 
 const emptyUser: UserFormData = {
   email: '',
@@ -18,6 +20,10 @@ const emptyUser: UserFormData = {
   httpSupport: false,
   audioOnlyEnabled: false,
   embedEnabled: false,
+  registrationEnabled: false,
+  fileSharingEnabled: false,
+  siteColor: null,
+  domain: '',
 };
 
 const formFields = [
@@ -27,6 +33,10 @@ const formFields = [
   'httpSupport',
   'audioOnlyEnabled',
   'embedEnabled',
+  'registrationEnabled',
+  'fileSharingEnabled',
+  'siteColor',
+  'domain',
 ];
 
 type BaseProps = {
@@ -51,6 +61,7 @@ class EditUser extends Component {
     showCredentials: boolean
   };
   handleChange: (string, SyntheticInputEvent) => void;
+  handleColorChange: (string) => void;
   hasErrors: () => boolean;
   toggleCredentials: () => void;
   handleSubmit: Unit;
@@ -64,6 +75,7 @@ class EditUser extends Component {
       showCredentials: false,
     };
     this.handleChange = this.handleChange.bind(this);
+    this.handleColorChange = this.handleColorChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.hasErrors = this.hasErrors.bind(this);
     this.toggleCredentials = this.toggleCredentials.bind(this);
@@ -74,6 +86,7 @@ class EditUser extends Component {
     const isRequired = (field: string): boolean => field === 'displayName' || field === 'email';
     const isEmptyField = (acc: string[], field: string): string[] => R.isEmpty(userData[field]) && isRequired(field) ? R.append(field, acc) : acc;
     const emptyFields = R.reduce(isEmptyField, [], R.keys(userData));
+
     if (R.isEmpty(emptyFields)) {
       this.setState({ errors: null });
       return false;
@@ -117,8 +130,13 @@ class EditUser extends Component {
   handleChange(e: SyntheticInputEvent) {
     const field = e.target.name;
     const value = e.target.type === 'checkbox' ? !this.state.fields[field] : e.target.value;
+
     this.setState({ fields: R.assoc(field, value, this.state.fields) });
     this.state.submissionAttemped && this.hasErrors();
+  }
+
+  handleColorChange(hex: string) {
+    this.setState({ fields: R.assoc('siteColor', hex, this.state.fields) });
   }
 
   render(): ReactComponent {
@@ -132,9 +150,13 @@ class EditUser extends Component {
       httpSupport,
       audioOnlyEnabled,
       embedEnabled,
+      registrationEnabled,
+      fileSharingEnabled,
+      siteColor,
+      domain,
     } = fields;
     const { toggleEditPanel, newUser } = this.props;
-    const { handleSubmit, handleChange } = this;
+    const { handleSubmit, handleChange, handleColorChange } = this;
     const errorFields = R.propOr({}, 'fields', errors);
     const shouldShowCredentials = newUser || showCredentials;
     return (
@@ -194,6 +216,7 @@ class EditUser extends Component {
               </div>
             }
           </div>
+          <hr />
           <div className="edit-user-options">
             <div className="edit-user-bottom">
               <div className="input-container">
@@ -212,7 +235,46 @@ class EditUser extends Component {
                 <input type="checkbox" name="embedEnabled" checked={!!embedEnabled} onChange={handleChange} />
                 <span className="label">Enable Embed</span>
               </div>
+              <div className="input-container">
+                <input type="checkbox" name="registrationEnabled" checked={!!registrationEnabled} onChange={handleChange} />
+                <span className="label">Enable Registration</span>
+              </div>
+              <div className="input-container">
+                <input type="checkbox" name="fileSharingEnabled" checked={!!fileSharingEnabled} onChange={handleChange} />
+                <span className="label">Enable File Sharing</span>
+              </div>
             </div>
+            <hr />
+            <div className="edit-user-other-settings">
+              <div className="input-container">
+                <Icon className="icon" name="location-arrow" style={{ color: 'darkgrey' }} />
+                <input
+                  className={classNames({ error: errorFields.otApiKey })}
+                  type="text"
+                  name="domain"
+                  value={domain}
+                  placeholder="Domain"
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="input-container">
+                <span className="label">Choose Admin Color:</span>
+                <ColorPicker value={siteColor} onChange={handleColorChange} />
+              </div>
+              <div className="input-container">
+                <div className="label">Site logo:</div>
+                <Icon className="icon" name="image" style={{ color: 'darkgrey', left: '74px' }} />
+                <input type="file" name="siteLogo" />
+              </div>
+            </div>
+            <div className="edit-user-other-settings">
+              <div className="input-container">
+                <div className="label">Site favicon:</div>
+                <Icon className="icon" name="image" style={{ color: 'darkgrey', left: '90px' }} />
+                <input type="file" name="siteFavicon" />
+              </div>
+            </div>
+            <hr />
             <div className="edit-user-buttons">
               <input type="submit" className="btn action green" value={newUser ? 'Create User' : 'Save'} />
               { !newUser && <button className="btn action green" onClick={toggleEditPanel}>Cancel</button> }

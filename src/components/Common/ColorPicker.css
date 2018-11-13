@@ -1,0 +1,9 @@
+.colorpicker {
+	display: flex;
+}
+
+.colorpicker .colorpicker-container {
+	position: absolute;
+	top: 40px;
+	z-index: 1000;
+}
