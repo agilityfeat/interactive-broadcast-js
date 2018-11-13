@@ -23,6 +23,7 @@ const emptyUser: UserFormData = {
   registrationEnabled: false,
   fileSharingEnabled: false,
   siteColor: null,
+  domain: '',
 };
 
 const formFields = [
@@ -35,6 +36,7 @@ const formFields = [
   'registrationEnabled',
   'fileSharingEnabled',
   'siteColor',
+  'domain',
 ];
 
 type BaseProps = {
@@ -84,6 +86,7 @@ class EditUser extends Component {
     const isRequired = (field: string): boolean => field === 'displayName' || field === 'email';
     const isEmptyField = (acc: string[], field: string): string[] => R.isEmpty(userData[field]) && isRequired(field) ? R.append(field, acc) : acc;
     const emptyFields = R.reduce(isEmptyField, [], R.keys(userData));
+
     if (R.isEmpty(emptyFields)) {
       this.setState({ errors: null });
       return false;
@@ -150,6 +153,7 @@ class EditUser extends Component {
       registrationEnabled,
       fileSharingEnabled,
       siteColor,
+      domain,
     } = fields;
     const { toggleEditPanel, newUser } = this.props;
     const { handleSubmit, handleChange, handleColorChange } = this;
@@ -212,6 +216,7 @@ class EditUser extends Component {
               </div>
             }
           </div>
+          <hr />
           <div className="edit-user-options">
             <div className="edit-user-bottom">
               <div className="input-container">
@@ -239,12 +244,37 @@ class EditUser extends Component {
                 <span className="label">Enable File Sharing</span>
               </div>
             </div>
+            <hr />
             <div className="edit-user-other-settings">
+              <div className="input-container">
+                <Icon className="icon" name="location-arrow" style={{ color: 'darkgrey' }} />
+                <input
+                  className={classNames({ error: errorFields.otApiKey })}
+                  type="text"
+                  name="domain"
+                  value={domain}
+                  placeholder="Domain"
+                  onChange={handleChange}
+                />
+              </div>
               <div className="input-container">
                 <span className="label">Choose Admin Color:</span>
                 <ColorPicker value={siteColor} onChange={handleColorChange} />
               </div>
+              <div className="input-container">
+                <div className="label">Site logo:</div>
+                <Icon className="icon" name="image" style={{ color: 'darkgrey', left: '74px' }} />
+                <input type="file" name="siteLogo" />
+              </div>
             </div>
+            <div className="edit-user-other-settings">
+              <div className="input-container">
+                <div className="label">Site favicon:</div>
+                <Icon className="icon" name="image" style={{ color: 'darkgrey', left: '90px' }} />
+                <input type="file" name="siteFavicon" />
+              </div>
+            </div>
+            <hr />
             <div className="edit-user-buttons">
               <input type="submit" className="btn action green" value={newUser ? 'Create User' : 'Save'} />
               { !newUser && <button className="btn action green" onClick={toggleEditPanel}>Cancel</button> }

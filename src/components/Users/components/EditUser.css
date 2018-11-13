@@ -1,3 +1,7 @@
+hr {
+	border-top: 1px solid #e8ebed;
+}
+
 .EditUser {
     display: flex;
     flex-direction: column;
@@ -15,14 +19,15 @@
     position: relative;
 }
 
-.EditUser-form .edit-user-top input {
+.EditUser-form .edit-user-top input,
+.EditUser-form .edit-user-other-settings input {
     font-size: 13px;
     height: 34px;
     border: 1px solid #BDC4C9;
     border-radius: 3px;
     box-shadow: inset 0px 1px 0px #F1F0F1;
     margin: 0 5px;
-    padding: 6px 12px 6px 40px;
+    padding: 6px 12px 6px 30px;
 }
 
 .EditUser-form .edit-user-bottom .input-container {

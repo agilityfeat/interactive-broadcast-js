@@ -43,7 +43,6 @@ class ColorPicker extends Component {
   }
 
   changeHandler(c: Color, e: SyntheticInputEvent) {
-    e.preventDefault();
     this.props.onChange(c.hex, e);
     this.togglePicker();
   }
@@ -55,7 +54,8 @@ class ColorPicker extends Component {
     return (
       <div className="colorpicker">
         <button
-          style={{ backgroundColor: value }}
+          type="button"
+          style={{ backgroundColor: value, minWidth: '90px', maxWidth: '90px' }}
           className="btn action"
           onClick={this.togglePicker}
         >
