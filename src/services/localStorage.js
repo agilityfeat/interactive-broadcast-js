@@ -7,7 +7,18 @@ export const loadState = (): LocalStorageState | void => {
     if (!serializedState) {
       return undefined;
     }
-    return JSON.parse(serializedState);
+
+    const state = JSON.parse(serializedState);
+    if (state.settings.siteColor) {
+      const { siteColor } = state.settings;
+      const html = document.getElementsByTagName('html')[0];
+
+      html.style.setProperty('--main-header-bg', siteColor);
+      html.style.setProperty('--main-btn-bg', siteColor);
+      html.style.setProperty('--link-color', siteColor);
+    }
+
+    return state;
   } catch (error) {
     return undefined;
   }
@@ -30,5 +41,5 @@ export const saveAuthToken = (token: string): void => {
   }
 };
 
-export const loadAuthToken = (): string => localStorage.getItem(`${storageKey}-token`) || '';
 
+export const loadAuthToken = (): string => localStorage.getItem(`${storageKey}-token`) || '';

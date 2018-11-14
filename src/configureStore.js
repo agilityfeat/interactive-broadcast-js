@@ -13,12 +13,13 @@ const configureStore = (): Store<State> => {
     interactiveBroadcastApp,
     persistedState,
     composeEnhancers(applyMiddleware(thunk)) // eslint-disable-line comma-dangle
-    );
+  );
 
   // What do we want to persist to local storage?
   store.subscribe(throttle(() => {
     saveState({
       currentUser: store.getState().currentUser,
+      settings: store.getState().settings,
     });
   }, 1000));
 

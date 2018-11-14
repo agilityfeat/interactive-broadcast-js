@@ -23,7 +23,7 @@ const emptyUser: UserFormData = {
   registrationEnabled: false,
   fileSharingEnabled: false,
   siteColor: null,
-  domain: '',
+  domain: window.location.hostname,
 };
 
 const formFields = [
