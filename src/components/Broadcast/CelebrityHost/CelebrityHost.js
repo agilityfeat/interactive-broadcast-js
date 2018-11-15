@@ -63,7 +63,7 @@ class CelebrityHost extends Component {
   }
 
   render(): ReactComponent {
-    const { userType, togglePublishOnly, broadcast, disconnected, authError, isEmbed } = this.props;
+    const { userType, togglePublishOnly, broadcast, disconnected, authError, isEmbed, settings } = this.props;
     const { event, participants, publishOnlyEnabled, privateCall, chats } = broadcast;
     const producerChat = R.prop('producer', chats);
     if (authError) return <NoEvents />;
@@ -84,6 +84,7 @@ class CelebrityHost extends Component {
             disconnected={disconnected}
           />
           <CelebrityHostBody
+            settings={settings}
             endImage={event.endImage}
             participants={availableParticipants}
             status={event.status}
@@ -108,6 +109,7 @@ const mapStateToProps = (state: State, ownProps: InitialProps): BaseProps => {
     broadcast: R.prop('broadcast', state),
     disconnected: R.path(['broadcast', 'disconnected'], state),
     authError: R.path(['auth', 'error'], state),
+    settings: R.path(['settings'], state),
   };
 };
 
