@@ -3,11 +3,19 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import R from 'ramda';
+import shortid from 'shortid';
 import classNames from 'classnames';
 import Icon from 'react-fontawesome';
 import uuid from 'uuid';
+import firebase from '../../../services/firebase';
 import './EditUser.css';
-import { createNewUser, updateUserRecord } from '../../../actions/users';
+import {
+  createNewUser,
+  updateUserRecord,
+  uploadImage,
+  uploadImageSuccess,
+  uploadImageCancel,
+} from '../../../actions/users';
 import ColorPicker from '../../Common/ColorPicker';
 
 
@@ -36,6 +44,8 @@ const formFields = [
   'registrationEnabled',
   'fileSharingEnabled',
   'siteColor',
+  'siteLogo',
+  'siteFavicon',
   'domain',
 ];
 
@@ -48,7 +58,9 @@ type BaseProps = {
 type DispatchProps = {
   updateUser: UserFormData => void,
   updateCurrentUser: UserFormData => void,
-  createUser: UserFormData => Promise<void>
+  createUser: UserFormData => Promise<void>,
+  uploadImage: string => void,
+  uploadImageSuccess: string => void
 };
 type Props = BaseProps & DispatchProps;
 class EditUser extends Component {
@@ -74,6 +86,7 @@ class EditUser extends Component {
       submissionAttemped: false,
       showCredentials: false,
     };
+    this.uploadFile = this.uploadFile.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleColorChange = this.handleColorChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -97,6 +110,28 @@ class EditUser extends Component {
     };
     this.setState({ errors });
     return true;
+  }
+
+  uploadFile(title: string): (e: SyntheticInputEvent) => AsyncVoid {
+    return async (e: SyntheticInputEvent): AsyncVoid => {
+      const field = e.target.name;
+      const file = R.head(e.target.files);
+      if (file) {
+        this.props.uploadImage(title);
+        const imageId = shortid.generate();
+        const ref = firebase.storage().ref().child(`eventImages/${imageId}`);
+        try {
+          const snapshot: * = await ref.put(file);
+          const imageData = { id: imageId, url: snapshot.downloadURL };
+          this.setState({ fields: R.assoc(field, imageData, this.state.fields) });
+          this.props.uploadImageSuccess(title);
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.log('Error uploading image', error);
+          this.props.uploadImageCancel(title);
+        }
+      }
+    };
   }
 
   async handleSubmit(e: SyntheticInputEvent): AsyncVoid {
@@ -264,14 +299,14 @@ class EditUser extends Component {
               <div className="input-container">
                 <div className="label">Site logo:</div>
                 <Icon className="icon" name="image" style={{ color: 'darkgrey', left: '74px' }} />
-                <input type="file" name="siteLogo" />
+                <input type="file" name="siteLogo" onChange={this.uploadFile('Site Logo Upload')} />
               </div>
             </div>
             <div className="edit-user-other-settings">
               <div className="input-container">
                 <div className="label">Site favicon:</div>
                 <Icon className="icon" name="image" style={{ color: 'darkgrey', left: '90px' }} />
-                <input type="file" name="siteFavicon" />
+                <input type="file" name="siteFavicon" onChange={this.uploadFile('Site Favicon Upload')} />
               </div>
             </div>
             <hr />
@@ -291,6 +326,9 @@ const mapDispatchToProps: MapDispatchToProps<DispatchProps> = (dispatch: Dispatc
       dispatch(updateUserRecord(userData));
     },
     createUser: async (userData: UserFormData): AsyncVoid => dispatch(createNewUser(userData)),
+    uploadImage: (title: string): void => dispatch(uploadImage(title)),
+    uploadImageSuccess: (title: string): void => dispatch(uploadImageSuccess(title)),
+    uploadImageCancel: (): void => dispatch(uploadImageCancel()),
   });
 
 export default withRouter(connect(null, mapDispatchToProps)(EditUser));

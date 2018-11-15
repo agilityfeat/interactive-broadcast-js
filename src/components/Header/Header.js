@@ -2,8 +2,10 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
+import Favicon from 'react-favicon';
 import Logout from '../Logout/Logout';
 import logo from '../../images/uni-brand-wide.png';
+import favicon from '../../images/favicon.ico';
 import { listenSiteSettings } from '../../actions/settings';
 import './Header.css';
 
@@ -18,6 +20,10 @@ type InitialProps = {
 
 type DispatchProps = {
   listenSiteSettings: () => void
+};
+
+type LogoProps = {
+  src: string
 };
 
 type Props = InitialProps & BaseProps & DispatchProps;
@@ -42,19 +48,20 @@ class Header extends React.Component {
   }
 
   render(): ReactComponent {
-    const { routes } = this.props;
+    const { routes, settings: { siteLogo, siteFavicon } } = this.props;
     const currentRoute = routes[routes.length - 1];
 
     if (currentRoute.hideHeader) return null;
     return (
       <div className="Header">
-        <DefaultLogo />
+        <Favicon url={(siteFavicon && siteFavicon.url) || favicon} />
+        <Logo src={(siteLogo && siteLogo.url) || logo} />
         <Logout />
       </div>
     );
   }
 }
-const DefaultLogo = (): ReactComponent => <div className="Header-logo"><img src={logo} alt="opentok" /></div>;
+const Logo = ({ src }: LogoProps): ReactComponent => <div className="Header-logo"><img src={src} alt="opentok" /></div>;
 
 const mapStateToProps = (state: State): BaseProps => ({
   user: state.currentUser,
