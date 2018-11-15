@@ -14,12 +14,13 @@ const listenSiteSettings: ThunkActionCreator = (): Thunk =>
 
           ref.on('value', (snapshot: firebase.database.DataSnapshot) => {
             const admin = snapshot.val();
-            const settings = R.pick(
-              ['siteColor', 'registerEnabled', 'siteLogo', 'siteFavicon'],
-              admin[Object.keys(admin)[0]],
-            );
-
-            dispatch({ type: 'SET_SITE_SETTINGS', settings });
+            if (admin) {
+              const settings = R.pick(
+                ['siteColor', 'registerEnabled', 'siteLogo', 'siteFavicon'],
+                admin[Object.keys(admin)[0]],
+              );
+              dispatch({ type: 'SET_SITE_SETTINGS', settings });
+            }
           });
         } else {
           await firebase.auth().signInAnonymously();
