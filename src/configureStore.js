@@ -2,7 +2,7 @@
 import { createStore, applyMiddleware, compose } from 'redux';
 import thunk from 'redux-thunk';
 import throttle from 'lodash.throttle';
-import { loadState, saveState } from './services/localStorage';
+import { loadState, saveState, saveSettings } from './services/localStorage';
 import interactiveBroadcastApp from './reducers/root';
 
  // eslint-disable-next-line no-underscore-dangle
@@ -19,8 +19,9 @@ const configureStore = (): Store<State> => {
   store.subscribe(throttle(() => {
     saveState({
       currentUser: store.getState().currentUser,
-      settings: store.getState().settings,
     });
+
+    saveSettings({ ...store.getState().settings });
   }, 1000));
 
   return store;
