@@ -14,6 +14,7 @@ declare type Settings = {
 
 declare type SettingsAction =
     { type: 'LISTEN_SITE_SETTINGS' } |
-    { type: 'SET_SITE_SETTINGS', settings: SiteSettings };
+    { type: 'SET_SITE_SETTINGS', settings: SiteSettings } |
+    { type: 'SITE_SETTINGS_ERR' };
 
 declare type SettingsState = Settings | null;

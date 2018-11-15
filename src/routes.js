@@ -2,6 +2,7 @@
 import React from 'react';
 import { Router, Route, IndexRedirect, browserHistory } from 'react-router';
 import { connect } from 'react-redux';
+import Favicon from 'react-favicon';
 import App from './components/App/App';
 import Login from './components/Login/Login';
 import Loading from './components/Common/Loading';
@@ -65,7 +66,13 @@ class Routes extends React.Component {
   }
 
   render(): ReactComponent {
-    return this.props.settings.loading ? <Loading /> : routes;
+    const { settings: { siteFavicon, loading } } = this.props;
+    return (
+      <div>
+        <Favicon url={(siteFavicon && siteFavicon.url)} />
+        {loading ? <Loading /> : routes}
+      </div>
+    );
   }
 }
 
