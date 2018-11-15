@@ -12,6 +12,8 @@ const settings = (state: Settings = initialState, action: UserAction): SettingsS
   switch (action.type) {
     case 'SET_SITE_SETTINGS':
       return { ...action.settings, loading: false };
+    case 'SITE_SETTINGS_ERR':
+      return { ...state, loading: false };
     default:
       return state;
   }

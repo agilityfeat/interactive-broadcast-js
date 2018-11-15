@@ -20,6 +20,8 @@ const listenSiteSettings: ThunkActionCreator = (): Thunk =>
                 admin[Object.keys(admin)[0]],
               );
               dispatch({ type: 'SET_SITE_SETTINGS', settings });
+            } else {
+              dispatch({ type: 'SITE_SETTINGS_ERR' });
             }
           });
         } else {
