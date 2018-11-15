@@ -2,10 +2,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
-import Favicon from 'react-favicon';
 import Logout from '../Logout/Logout';
 import logo from '../../images/uni-brand-wide.png';
-import favicon from '../../images/favicon.ico';
 import { listenSiteSettings } from '../../actions/settings';
 import './Header.css';
 
@@ -29,13 +27,12 @@ type LogoProps = {
 type Props = InitialProps & BaseProps & DispatchProps;
 
 const Header = (props: Props): ReactComponent => {
-  const { routes, settings: { siteLogo, siteFavicon } } = props;
+  const { routes, settings: { siteLogo } } = props;
   const currentRoute = routes[routes.length - 1];
 
   if (currentRoute.hideHeader) return null;
   return (
     <div className="Header">
-      <Favicon url={(siteFavicon && siteFavicon.url) || favicon} />
       <Logo src={(siteLogo && siteLogo.url) || logo} />
       <Logout />
     </div>
