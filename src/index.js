@@ -4,7 +4,7 @@ import { Provider } from 'react-redux';
 import { render } from 'react-dom';
 import ReduxToastr from 'react-redux-toastr';
 import 'babel-polyfill';
-import routes from './routes';
+import Routes from './routes';
 import configureStore from './configureStore';
 import './index.css';
 import './theme.css';
@@ -12,7 +12,7 @@ import './theme.css';
 render((
   <Provider store={configureStore()}>
     <div>
-      { routes }
+      <Routes />
       <ReduxToastr
         timeOut={3000}
         preventDuplicates={true} // eslint-disable-line react/jsx-boolean-value
