@@ -1,8 +1,10 @@
 // @flow
 import React from 'react';
 import { Router, Route, IndexRedirect, browserHistory } from 'react-router';
+import { connect } from 'react-redux';
 import App from './components/App/App';
 import Login from './components/Login/Login';
+import Loading from './components/Common/Loading';
 import Dashboard from './components/Dashboard/Dashboard';
 import Users from './components/Users/Users';
 import UpdateEvent from './components/UpdateEvent/UpdateEvent';
@@ -11,6 +13,12 @@ import Producer from './components/Broadcast/Producer/Producer';
 import AuthRoutes from './components/AuthRoutes/AuthRoutes';
 import CelebrityHost from './components/Broadcast/CelebrityHost/CelebrityHost';
 import Fan from './components/Broadcast/Fan/Fan';
+import { listenSiteSettings } from './actions/settings';
+
+type Props = {
+  settings: SettingsState,
+  listenSiteSettings: () => void
+};
 
 const routes = (
   <Router history={browserHistory}>
@@ -34,6 +42,40 @@ const routes = (
         <Route path="events/:id/view" component={ViewEvent} />
       </Route>
     </Route>
-  </Router>);
+  </Router>
+);
 
-export default routes;
+class Routes extends React.Component {
+  constructor(props: Props) {
+    super(props);
+
+    props.listenSiteSettings();
+  }
+
+  componentDidUpdate(prevProps: Props) {
+    const { siteColor } = this.props.settings;
+    const prevSiteColor = prevProps.settings.siteColor;
+
+    if (prevSiteColor !== siteColor) {
+      const html = document.getElementsByTagName('html')[0];
+      html.style.setProperty('--main-header-bg', siteColor);
+      html.style.setProperty('--main-btn-bg', siteColor);
+      html.style.setProperty('--link-color', siteColor);
+    }
+  }
+
+  render(): ReactComponent {
+    return this.props.settings.loading ? <Loading /> : routes;
+  }
+}
+
+const mapStateToProps = (state: State): Props => ({
+  settings: state.settings,
+});
+
+const mapDispatchToProps: MapDispatchToProps<DispatchProps> = (dispatch: Dispatch): DispatchProps => ({
+  listenSiteSettings: (): void => dispatch(listenSiteSettings()),
+});
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(Routes);
