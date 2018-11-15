@@ -1,6 +1,6 @@
 // @flow
 import R from 'ramda';
-import { resetAlert, setError, setWarning, setSuccess } from './alert';
+import { setInfo, resetAlert, setError, setWarning, setSuccess } from './alert';
 import firebase from '../services/firebase';
 import { getAllUsers, deleteUserRecord, updateUser as update, createUser } from '../services/api';
 import { setCurrentUser } from './currentUser';
@@ -20,6 +20,34 @@ const removeUser: ActionCreator = (userId: UserId): ManageUsersAction => ({
   type: 'REMOVE_USER',
   userId,
 });
+
+const uploadImage: ThunkActionCreator = (title: string): Thunk =>
+  async (dispatch: Dispatch): null => {
+    const options: AlertPartialOptions = {
+      title,
+      text: 'This may take a few seconds . . .',
+      showConfirmButton: false,
+    };
+
+    dispatch(setInfo(options));
+  };
+
+
+const uploadImageCancel: ThunkActionCreator = (): Thunk =>
+  (dispatch: Dispatch) => {
+    dispatch(resetAlert());
+  };
+
+const uploadImageSuccess: ThunkActionCreator = (title: string): Thunk =>
+  (dispatch: Dispatch) => {
+    const options: AlertPartialOptions = {
+      title,
+      text: 'Your image has been uploaded.',
+      showConfirmButton: true,
+      onConfirm: (): void => dispatch(resetAlert()),
+    };
+    dispatch(setSuccess(options));
+  };
 
 const getUsers: ThunkActionCreator = (): Thunk =>
   async (dispatch: Dispatch): AsyncVoid => {
@@ -94,4 +122,7 @@ module.exports = {
   deleteUser,
   createNewUser,
   updateUserRecord,
+  uploadImage,
+  uploadImageSuccess,
+  uploadImageCancel,
 };
