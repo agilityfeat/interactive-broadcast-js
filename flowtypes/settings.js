@@ -1,4 +1,5 @@
 declare type Settings = {
+  loading: boolean,
   siteColor: string,
   registerEnabled?: boolean,
   siteLogo: {

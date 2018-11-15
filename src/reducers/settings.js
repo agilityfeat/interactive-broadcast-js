@@ -1,7 +1,8 @@
 // @flow
 
 const initialState: Settings = {
-  requireRegister: null,
+  loading: true,
+  registerEnabled: false,
   siteColor: null,
   siteLogo: null,
   siteFavIcon: null,
@@ -10,7 +11,7 @@ const initialState: Settings = {
 const settings = (state: Settings = initialState, action: UserAction): SettingsState => {
   switch (action.type) {
     case 'SET_SITE_SETTINGS':
-      return action.settings;
+      return { ...action.settings, loading: false };
     default:
       return state;
   }
