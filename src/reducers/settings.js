@@ -3,6 +3,8 @@
 const initialState: Settings = {
   requireRegister: null,
   siteColor: null,
+  siteLogo: null,
+  siteFavIcon: null,
 };
 
 const settings = (state: Settings = initialState, action: UserAction): SettingsState => {
