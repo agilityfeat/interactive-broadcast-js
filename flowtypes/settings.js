@@ -1,6 +1,14 @@
 declare type Settings = {
   siteColor: string,
-  registerEnabled?: boolean
+  registerEnabled?: boolean,
+  siteLogo: {
+    id: string | null,
+    url: string | null
+  } | null,
+  siteFavicon: {
+    id: string | null,
+    url: string | null
+  } | null
 };
 
 declare type SettingsAction =
