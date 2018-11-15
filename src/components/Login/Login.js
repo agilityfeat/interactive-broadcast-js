@@ -61,12 +61,12 @@ class Login extends Component {
   render(): ReactComponent {
     const { resetError, handleSubmit } = this;
     const { error } = this.state;
-    const { onForgotPassword } = this.props;
+    const { onForgotPassword, settings: { siteLogo } } = this.props;
     const { forgotPassword } = this.props.auth;
     return (
       <div className="Login">
         <div className="Login-header" >
-          <img src={logo} alt="opentok" />
+          <img src={(siteLogo && siteLogo.url) || logo} alt="opentok" />
         </div>
         <LoginForm onSubmit={handleSubmit} onUpdate={resetError} error={error} forgotPassword={forgotPassword} />
         <div className="Login-messages">
@@ -80,7 +80,7 @@ class Login extends Component {
   }
 }
 
-const mapStateToProps = (state: State): BaseProps => R.pick(['auth', 'currentUser'], state);
+const mapStateToProps = (state: State): BaseProps => R.pick(['auth', 'currentUser', 'settings'], state);
 const mapDispatchToProps: MapDispatchToProps<DispatchProps> = (dispatch: Dispatch): DispatchProps =>
   ({
     authenticateUser: (credentials: AuthCredentials) => {
