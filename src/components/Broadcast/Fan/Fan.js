@@ -90,6 +90,7 @@ class Fan extends Component {
       publisherMinimized,
       minimizePublisher,
       restorePublisher,
+      settings,
     } = this.props;
     if (authError) return <NoEvents />;
     if (!event) return <Loading />;
@@ -117,6 +118,7 @@ class Fan extends Component {
           />
           { !isClosed && <FanStatusBar fanStatus={fanStatus} /> }
           <FanBody
+            settings={settings}
             publisherMinimized={publisherMinimized}
             restorePublisher={restorePublisher}
             minimizePublisher={minimizePublisher}
@@ -160,6 +162,7 @@ const mapStateToProps = (state: State, ownProps: InitialProps): BaseProps => {
     producerChat: R.path(['broadcast', 'chats', 'producer'], state),
     disconnected: R.path(['broadcast', 'disconnected'], state),
     authError: R.path(['auth', 'error'], state),
+    settings: R.path(['settings'], state),
     publisherMinimized: R.path(['fan', 'publisherMinimized'], state),
   };
 };

@@ -22,7 +22,8 @@ type Props = {
   postProduction: boolean,
   publisherMinimized: boolean,
   restorePublisher: Unit,
-  minimizePublisher: Unit
+  minimizePublisher: Unit,
+  settings: SettingsState
 };
 
 const FanBody = (props: Props): ReactComponent => {
@@ -40,6 +41,7 @@ const FanBody = (props: Props): ReactComponent => {
     publisherMinimized,
     minimizePublisher,
     restorePublisher,
+    settings,
   } = props;
   const fanOnStage = R.equals('stage', fanStatus);
   const showImage = ((!isLive && !postProduction) || (!hasStreams && ableToJoin)) && !fanOnStage;
@@ -48,11 +50,13 @@ const FanBody = (props: Props): ReactComponent => {
   const showHLSPlayer = isLive && !ableToJoin && hlsUrl;
   const isInLine = fanStatus !== 'disconnected' && fanStatus !== 'connected';
   const mainClassNames = classNames('FanBody', { inLine: isInLine });
+  const imgHolderDefault = settings.siteLogo ? settings.siteLogo.url : defaultImg;
+  const backgroundDefault = !image && settings ? settings.siteColor : '#fff';
   return (
     <div className={mainClassNames}>
       { showImage &&
-        <div className="imageHolder">
-          <img src={image ? image.url : defaultImg} alt="event" className={image ? '' : 'default'}/>
+        <div className="imageHolder" style={{ background: backgroundDefault }}>
+          <img src={image ? image.url : imgHolderDefault} alt="event" className={image ? '' : 'default'}/>
         </div>
       }
       { !isClosed &&

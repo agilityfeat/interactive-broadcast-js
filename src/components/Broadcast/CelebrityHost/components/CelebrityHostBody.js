@@ -11,18 +11,22 @@ type Props = {
   status: EventStatus,
   endImage?: EventImage,
   participants: null | BroadcastParticipants, // publishOnly => null
-  userType: 'host' | 'celebrity'
+  userType: 'host' | 'celebrity',
+  settings: SettingsState
 };
 const CelebrityHostBody = (props: Props): ReactComponent => {
-  const { status, endImage, participants, userType } = props;
+  const { status, endImage, participants, userType, settings } = props;
   const isClosed = status === 'closed';
   const imgClass = classNames('CelebrityHostBody', { withStreams: !isClosed });
   const endImageUrl = endImage ? endImage.url : null;
+  const closeImageClass = classNames('closeImage', { default: !endImageUrl });
+  const imgHolderDefault = settings && settings.siteLogo ? settings.siteLogo.url : defaultImg;
+  const backgroundDefault = !endImageUrl && settings ? settings.siteColor : '#fff';
   return (
     <div className={imgClass}>
       { isClosed &&
-        <div className="closeImageHolder">
-          <img src={endImageUrl || defaultImg} alt="event ended" className="closeImage" />
+        <div className="closeImageHolder" style={{ background: backgroundDefault }}>
+          <img src={endImageUrl || imgHolderDefault} alt="event ended" className={closeImageClass} />
         </div>
       }
       { !isClosed && userTypes.map((type: ParticipantType): ReactComponent =>
