@@ -39,7 +39,7 @@ class Login extends Component {
 
   componentDidMount() {
     const { currentUser } = this.props;
-    if (currentUser) {
+    if (currentUser && !currentUser.adminId) {
       browserHistory.push('/admin');
     }
   }
