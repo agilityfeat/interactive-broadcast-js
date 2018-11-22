@@ -1,7 +1,8 @@
 declare type Settings = {
+  id?: string,
   loading: boolean,
   siteColor: string,
-  registerEnabled?: boolean,
+  registrationEnabled?: boolean,
   siteLogo: {
     id: string | null,
     url: string | null

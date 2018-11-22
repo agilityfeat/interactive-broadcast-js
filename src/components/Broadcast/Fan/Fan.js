@@ -35,7 +35,9 @@ type BaseProps = {
   postProduction: boolean,
   authError: Error,
   isEmbed: boolean,
-  publisherMinimized: boolean
+  publisherMinimized: boolean,
+  isAnonymous: boolean,
+  settings: Settings
 };
 type DispatchProps = {
   init: FanInitOptions => void,
@@ -90,8 +92,14 @@ class Fan extends Component {
       publisherMinimized,
       minimizePublisher,
       restorePublisher,
-      settings,
+      user,
+      settings: { registrationEnabled },
     } = this.props;
+
+    if (!user && registrationEnabled) {
+      this.props.router.push('/login');
+    }
+
     if (authError) return <NoEvents />;
     if (!event) return <Loading />;
     const participantIsConnected = (type: ParticipantType): boolean => R.path([type, 'connected'], participants || {});
@@ -145,6 +153,7 @@ class Fan extends Component {
 const mapStateToProps = (state: State, ownProps: InitialProps): BaseProps => {
   const { fanUrl } = ownProps.params;
   return {
+    user: state.user,
     fitMode: R.path(['location', 'query', 'fitMode'], ownProps),
     adminId: R.path(['params', 'adminId'], ownProps),
     userType: R.path(['route', 'userType'], ownProps),
@@ -164,6 +173,7 @@ const mapStateToProps = (state: State, ownProps: InitialProps): BaseProps => {
     authError: R.path(['auth', 'error'], state),
     settings: R.path(['settings'], state),
     publisherMinimized: R.path(['fan', 'publisherMinimized'], state),
+    settings: state.settings,
   };
 };
 
