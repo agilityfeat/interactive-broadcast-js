@@ -82,6 +82,7 @@ class Fan extends Component {
       status,
       participants,
       userUrl,
+      adminId,
       inPrivateCall,
       broadcast,
       joinLine,
@@ -102,7 +103,7 @@ class Fan extends Component {
       settings: { registrationEnabled },
     } = this.props;
 
-    if (!user && registrationEnabled) return <RegisterViewer userUrl={userUrl} event={event} />;
+    if (!user && registrationEnabled) return <RegisterViewer adminId={adminId} userUrl={userUrl} event={event} />;
     else if (!event) return <NoEvents />;
 
     const participantIsConnected = (type: ParticipantType): boolean => R.path([type, 'connected'], participants || {});
