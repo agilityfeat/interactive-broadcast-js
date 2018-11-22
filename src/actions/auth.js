@@ -3,7 +3,7 @@ import R from 'ramda';
 import firebase from '../services/firebase';
 import { getAuthToken, getAuthTokenUser } from '../services/api';
 import { saveAuthToken, saveState } from '../services/localStorage';
-import { logIn, logOut } from './currentUser';
+import { logIn, logInViewer, logOut } from './currentUser';
 import { setSuccess, resetAlert, setInfo } from './alert';
 
 const authError: ActionCreator = (error: null | Error): AuthAction => ({
@@ -28,11 +28,28 @@ const validate: ThunkActionCreator = (uid: string, idToken: string): Thunk =>
     }
   };
 
-const validateUser: ThunkActionCreator = (adminId: string, userType: UserRole, userUrl: string): Thunk =>
+const validateUser: ThunkActionCreator = (userType: UserRole, userUrl: string, idToken?: string, uid?: string): Thunk =>
+  async (dispatch: Dispatch, getState: () => State): AsyncVoid => {
+    try {
+      const { settings } = getState();
+      const { token } = await getAuthTokenUser(settings.id, userType, userUrl, idToken);
+      dispatch({ type: 'SET_AUTH_TOKEN', token });
+      saveAuthToken(token);
+
+      if (settings.registrationEnabled && userType === 'fan') {
+        await dispatch(logInViewer(uid));
+      }
+    } catch (error) {
+      await dispatch(authError(error));
+    }
+  };
+
+const signInViewer: ThunkActionCreator = ({ email, password, userUrl }: ViewerAuthCredentials): Thunk =>
   async (dispatch: Dispatch): AsyncVoid => {
     try {
-      const { token } = await getAuthTokenUser(adminId, userType, userUrl);
-      dispatch({ type: 'SET_AUTH_TOKEN', token });
+      const user = await firebase.auth().signInWithEmailAndPassword(email, password);
+      const idToken = await user.getIdToken(true);
+      await dispatch(validateUser('fan', userUrl, idToken, user.uid));
     } catch (error) {
       await dispatch(authError(error));
     }
@@ -49,12 +66,14 @@ const signIn: ThunkActionCreator = ({ email, password }: AuthCredentials): Thunk
     }
   };
 
-const signOut: ThunkActionCreator = (): Thunk =>
+const signOut: ThunkActionCreator = (redirect: boolean = true): Thunk =>
   (dispatch: Dispatch) => {
     dispatch(logOut());
     // We need to ensure the localstorage is updated ASAP
     saveState({ currentUser: null });
-    firebase.auth().signOut().then((): void => (window.location.href = '/'));
+    firebase.auth().signOut().then(() => {
+      if (redirect) window.location.href = '/';
+    });
   };
 
 const resetPassword: ThunkActionCreator = ({ email }: AuthCredentials): Thunk =>
@@ -74,6 +93,7 @@ const resetPassword: ThunkActionCreator = ({ email }: AuthCredentials): Thunk =>
 
 module.exports = {
   signIn,
+  signInViewer,
   signOut,
   userForgotPassword,
   resetPassword,
