@@ -3,10 +3,10 @@ import React from 'react';
 import R from 'ramda';
 import { Link } from 'react-router';
 import { connect } from 'react-redux';
-import truncate from 'lodash.truncate';
+// import truncate from 'lodash.truncate';
 import Icon from 'react-fontawesome';
 import CopyToClipboard from '../../../Common/CopyToClipboard';
-import createUrls from '../../../../services/eventUrls';
+// import createUrls from '../../../../services/eventUrls';
 import { changeStatus, goLive } from '../../../../actions/producer';
 import './ProducerHeader.css';
 
@@ -31,7 +31,7 @@ const ProducerHeader = ({ broadcast, showingSidePanel, toggleSidePanel, currentU
   const event = R.defaultTo({})(broadcast.event);
   const { status, archiveId } = event;
   const { connected, archiving, disconnected } = broadcast;
-  const { fanAudioUrl } = createUrls(event);
+  // const { fanAudioUrl } = createUrls(event);
 
   return (
     <div className="ProducerHeader">
