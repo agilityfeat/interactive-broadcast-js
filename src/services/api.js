@@ -79,8 +79,8 @@ const del = (route: string, requiresAuth: boolean = true): Promise<*> => execute
 /** Exports */
 
 /** Auth */
-const getAuthTokenUser = (adminId: string, userType: string, userUrl: string): Promise<{token: AuthToken}> =>
-  post(`auth/token-${userType}`, R.assoc(`${userType}Url`, userUrl, { adminId }), false);
+const getAuthTokenUser = (adminId: string, userType: string, userUrl: string, idToken?: string): Promise<{token: AuthToken}> =>
+  post(`auth/token-${userType}`, R.assoc(`${userType}Url`, userUrl, { adminId, idToken }), false);
 const getAuthToken = (idToken: string): Promise<{ token: AuthToken }> => post('auth/token', { idToken }, false);
 
 /** User */
@@ -89,6 +89,10 @@ const createUser = (userData: UserFormData): Promise<User> => post('admin', user
 const updateUser = (userData: UserUpdateFormData): Promise<User> => patch(`admin/${userData.id}`, userData);
 const getAllUsers = (): Promise<[User]> => get('admin');
 const deleteUserRecord = (userId: string): Promise<boolean> => del(`admin/${userId}`);
+
+/** Viewer */
+const getViewer = (adminId: string, userId: string, authToken?: string): Promise<User> => get(`viewer/${adminId}/${userId}`, true, authToken);
+const createViewer = (adminId: string, viewerData: ViewerFormData): Promise<*> => post('viewer', viewerData, false);
 
 /** Events */
 const getEvents = (adminId: string): Promise<BroadcastEventMap> => get(`event?adminId=${adminId}`);
@@ -124,4 +128,6 @@ module.exports = {
   url,
   getEventWithCredentials,
   getEmbedEventWithCredentials,
+  getViewer,
+  createViewer,
 };
