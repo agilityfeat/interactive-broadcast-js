@@ -3,8 +3,8 @@ import R from 'ramda';
 import platform from 'platform';
 import { toastr } from 'react-redux-toastr';
 import uuidv4 from 'uuid/v4';
-import { validateUser } from './auth';
 import firebase from '../services/firebase';
+import { validateUser } from './auth';
 import {
   setBroadcastEvent,
   setBroadcastState,
@@ -649,11 +649,16 @@ const connectToPresence: ThunkActionCreator = (adminId: UserId, fanUrl: string):
     }
   };
 
-const initializeBroadcast: ThunkActionCreator = ({ adminId, userUrl, fitMode }: FanInitOptions): Thunk =>
+const initializeBroadcast: ThunkActionCreator = ({ userUrl, fitMode }: FanInitOptions): Thunk =>
   async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
     try {
       // Get an Auth Token
-      await dispatch(validateUser(adminId, 'fan', userUrl));
+      const { registrationEnabled } = getState().settings;
+      const adminId = getState().settings.id;
+
+      if (!registrationEnabled) {
+        await dispatch(validateUser('fan', userUrl));
+      }
 
       // If the user receives an auth error here means there's no event.
       if (R.prop('error', getState().auth)) return;
@@ -671,12 +676,13 @@ const initializeBroadcast: ThunkActionCreator = ({ adminId, userUrl, fitMode }: 
       // Connect to firebase and check the number of viewers
       firebase.auth().onAuthStateChanged(async (user: InteractiveFan): AsyncVoid => {
         if (user) {
-          dispatch(connectToPresence(adminId, eventData.fanUrl));
+          if ((registrationEnabled && !user.isAnonymous) || !registrationEnabled) {
+            dispatch(connectToPresence(adminId, eventData.fanUrl));
+          }
         } else {
           await firebase.auth().signInAnonymously();
         }
       });
-
     } catch (error) {
       console.log('error', error);
     }
@@ -724,20 +730,27 @@ const connectToBackstage: ThunkActionCreator = (fanName: string): Thunk =>
 const getInLine: ThunkActionCreator = (): Thunk =>
   (dispatch: Dispatch, getState: GetState) => {
     const fanName = R.path(['fan', 'fanName'], getState());
-    const options = (): AlertPartialOptions => ({
-      title: 'Almost done!',
-      text: 'You may enter you name below.',
-      type: 'input',
-      closeOnConfirm: false,
-      inputPlaceholder: 'Name (Optional)',
-      allowEscapeKey: false,
-      html: true,
-      confirmButtonColor: '#00a3e3',
-      onCancel: (): void => dispatch(connectToBackstage('Anonymous')),
-      onConfirm: (inputValue: string): void => dispatch(connectToBackstage(inputValue || 'Anonymous')),
-    });
-    dispatch(setFanStatus('connecting'));
-    dispatch(R.isEmpty(fanName) ? setInfo(options()) : connectToBackstage(fanName));
+    const displayName = R.path(['currentUser', 'displayName'], getState());
+
+    if (!displayName) {
+      const options = (): AlertPartialOptions => ({
+        title: 'Almost done!',
+        text: 'You may enter you name below.',
+        type: 'input',
+        closeOnConfirm: false,
+        inputPlaceholder: 'Name (Optional)',
+        allowEscapeKey: false,
+        html: true,
+        confirmButtonColor: '#00a3e3',
+        onCancel: (): void => dispatch(connectToBackstage('Anonymous')),
+        onConfirm: (inputValue: string): void => dispatch(connectToBackstage(inputValue || 'Anonymous')),
+      });
+      dispatch(setFanStatus('connecting'));
+      dispatch(R.isEmpty(fanName) ? setInfo(options()) : connectToBackstage(fanName));
+    } else {
+      dispatch(setFanStatus('connecting'));
+      dispatch(connectToBackstage(displayName));
+    }
   };
 
 module.exports = {
