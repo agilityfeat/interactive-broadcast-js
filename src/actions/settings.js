@@ -16,7 +16,7 @@ const listenSiteSettings: ThunkActionCreator = (): Thunk =>
             const admin = snapshot.val();
             if (admin) {
               const settings = R.pick(
-                ['siteColor', 'registrationEnabled', 'siteLogo', 'siteFavicon'],
+                ['id', 'siteColor', 'registrationEnabled', 'siteLogo', 'siteFavicon'],
                 admin[Object.keys(admin)[0]],
               );
               dispatch({ type: 'SET_SITE_SETTINGS', settings });
