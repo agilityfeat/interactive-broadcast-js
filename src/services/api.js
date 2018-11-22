@@ -97,6 +97,7 @@ const createViewer = (adminId: string, viewerData: ViewerFormData): Promise<*> =
 /** Events */
 const getEvents = (adminId: string): Promise<BroadcastEventMap> => get(`event?adminId=${adminId}`);
 const getEvent = (id: string): Promise<BroadcastEvent> => get(`event/${id}`);
+const getEventByKey = (adminId: string, slug: string): Promise<BroadcastEvent> => get(`event/get-by-key?adminId=${adminId}&slug=${slug}`);
 const createEvent = (data: BroadcastEventFormData): Promise<BroadcastEvent> => post('event', data);
 const updateEvent = (data: BroadcastEventUpdateFormData): Promise<BroadcastEvent> => patch(`event/${data.id}`, data);
 const updateEventStatus = (id: string, status: EventStatus): Promise<BroadcastEvent> => put(`event/change-status/${id}`, { status });
@@ -117,6 +118,7 @@ module.exports = {
   updateUser,
   getAllUsers,
   getEvent,
+  getEventByKey,
   getEvents,
   getMostRecentEvent,
   createEvent,
