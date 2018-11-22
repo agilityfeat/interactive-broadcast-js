@@ -3,7 +3,6 @@ import React, { Component } from 'react';
 import R from 'ramda';
 import { connect } from 'react-redux';
 import Icon from 'react-fontawesome';
-import classNames from 'classnames';
 import { userForgotPassword, resetPassword, signInViewer } from '../../../actions/auth';
 import { initializeBroadcast } from '../../../actions/fan';
 import './LoginViewerForm.css';

@@ -46,7 +46,7 @@ class RegisterViewer extends React.Component {
   }
 
   render(): ReactComponent {
-    const { settings, onSuccess, event, userUrl } = this.props;
+    const { settings, onSuccess, userUrl } = this.props;
     const { register } = this.state;
 
     return (
