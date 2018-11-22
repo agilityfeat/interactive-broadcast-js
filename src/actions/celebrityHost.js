@@ -294,7 +294,7 @@ const initializeBroadcast: ThunkActionCreator = ({ adminId, userType, userUrl }:
   async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
     try {
       // Get/set an Auth Token
-      await dispatch(validateUser(adminId, userType, userUrl));
+      await dispatch(validateUser(userType, userUrl));
 
       // Get the event data + OT credentials
       await dispatch(setBroadcastEventWithCredentials(adminId, userType, userUrl));
