@@ -5,12 +5,13 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import classNames from 'classnames';
 import { setBroadcastEventStatus } from '../../../actions/broadcast';
+import { signOut } from '../../../actions/auth';
 import { initializeBroadcast, getInLine, leaveTheLine, setPublisherMinimized } from '../../../actions/fan';
 import FanHeader from './components/FanHeader';
 import FanBody from './components/FanBody';
 import FanStatusBar from './components/FanStatusBar';
 import NoEvents from '../../Common/NoEvents';
-import Loading from '../../../components/Common/Loading';
+import RegisterViewer from '../../../components/RegisterViewer/RegisterViewer';
 import Chat from '../../../components/Common/Chat';
 import NetworkReconnect from '../../Common/NetworkReconnect';
 import { disconnect } from '../../../services/opentok';
@@ -40,6 +41,7 @@ type BaseProps = {
   settings: Settings
 };
 type DispatchProps = {
+  signOut: () => void,
   init: FanInitOptions => void,
   changeEventStatus: EventStatus => void,
   joinLine: Unit,
@@ -57,14 +59,16 @@ class Fan extends Component {
   changeEventStatus: Unit;
 
   componentDidMount() {
-    const { adminId, userType, userUrl, init, fitMode } = this.props;
-    const options = {
-      adminId,
-      userType,
-      userUrl,
-      fitMode,
-    };
-    init(options);
+    const { settings, adminId, userType, user, userUrl, init, fitMode } = this.props;
+    if (!settings.registrationEnabled || user) {
+      const options = {
+        adminId,
+        userType,
+        userUrl,
+        fitMode,
+      };
+      init(options);
+    }
   }
 
   componentWillReceiveProps(nextProps: Props) {
@@ -77,6 +81,7 @@ class Fan extends Component {
       event,
       status,
       participants,
+      userUrl,
       inPrivateCall,
       broadcast,
       joinLine,
@@ -86,22 +91,20 @@ class Fan extends Component {
       producerChat,
       ableToJoin,
       disconnected,
+      logoutUser,
       postProduction,
-      authError,
+      user,
       isEmbed,
       publisherMinimized,
       minimizePublisher,
       restorePublisher,
-      user,
+      settings,
       settings: { registrationEnabled },
     } = this.props;
 
-    if (!user && registrationEnabled) {
-      this.props.router.push('/login');
-    }
+    if (!user && registrationEnabled) return <RegisterViewer userUrl={userUrl} event={event} />;
+    else if (!event) return <NoEvents />;
 
-    if (authError) return <NoEvents />;
-    if (!event) return <Loading />;
     const participantIsConnected = (type: ParticipantType): boolean => R.path([type, 'connected'], participants || {});
     const hasStreams = R.any(participantIsConnected)(['host', 'celebrity', 'fan']);
     const isClosed = R.equals(status, 'closed');
@@ -112,13 +115,17 @@ class Fan extends Component {
         <NetworkReconnect />
         <div className="Container">
           <FanHeader
+            user={user}
             name={event.name}
+            displayName={user && user.displayName}
             status={status}
             ableToJoin={ableToJoin}
             getInLine={joinLine}
+            logoutUser={logoutUser}
             postProduction={postProduction}
             leaveLine={leaveLine}
             fanStatus={fanStatus}
+            showLogout={settings.registrationEnabled}
             backstageConnected={backstageConnected}
             inPrivateCall={inPrivateCall}
             privateCall={broadcast.privateCall}
@@ -153,7 +160,7 @@ class Fan extends Component {
 const mapStateToProps = (state: State, ownProps: InitialProps): BaseProps => {
   const { fanUrl } = ownProps.params;
   return {
-    user: state.user,
+    user: state.currentUser,
     fitMode: R.path(['location', 'query', 'fitMode'], ownProps),
     adminId: R.path(['params', 'adminId'], ownProps),
     userType: R.path(['route', 'userType'], ownProps),
@@ -173,7 +180,6 @@ const mapStateToProps = (state: State, ownProps: InitialProps): BaseProps => {
     authError: R.path(['auth', 'error'], state),
     settings: R.path(['settings'], state),
     publisherMinimized: R.path(['fan', 'publisherMinimized'], state),
-    settings: state.settings,
   };
 };
 
@@ -185,6 +191,7 @@ const mapDispatchToProps: MapDispatchToProps<DispatchProps> = (dispatch: Dispatc
   leaveLine: (): void => dispatch(leaveTheLine()),
   minimizePublisher: (): void => dispatch(setPublisherMinimized(true)),
   restorePublisher: (): void => dispatch(setPublisherMinimized(false)),
+  logoutUser: (): void => dispatch(signOut(false)),
 });
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Fan));
