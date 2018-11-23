@@ -75,9 +75,9 @@ class RegisterViewer extends React.Component {
 
     return (
       <div>
-        <div className="Header">
+        <div className="Register-header">
           <Logo src={(settings.siteLogo && settings.siteLogo.url) || logo} />
-          <h3>Join {eventName}</h3>
+          <h3 className="Header-join">Join {eventName}</h3>
         </div>
         <div className="RegisterViewer">
           <div className="RegisterViewer-header" >
