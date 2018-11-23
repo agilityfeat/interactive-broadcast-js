@@ -52,14 +52,20 @@ class RegisterViewer extends React.Component {
       .catch((): void => this.setState({ noEvent: true }));
 
     this.toggleRegister = this.toggleRegister.bind(this);
+    this.handleRegisterSuccess = this.handleRegisterSuccess.bind(this);
   }
 
   toggleRegister() {
     this.setState({ register: !this.state.register });
   }
 
+  handleRegisterSuccess() {
+    this.props.onSuccess();
+    this.toggleRegister();
+  }
+
   render(): ReactComponent {
-    const { settings, onSuccess, userUrl } = this.props;
+    const { settings, userUrl } = this.props;
     const { register, noEvent, event } = this.state;
     const startImage = event && event.startImage && event.startImage.url;
     const eventName = event && event.name;
@@ -81,7 +87,7 @@ class RegisterViewer extends React.Component {
             register &&
             <div className="RegisterViewer-body">
               <h4>Create account for {window.location.host}</h4>
-              <RegisterViewerForm onSuccess={onSuccess} settings={settings} />
+              <RegisterViewerForm onSuccess={this.handleRegisterSuccess} settings={settings} />
               <button onClick={this.toggleRegister} className="btn transparent">
                 I already have an account
               </button>
@@ -91,7 +97,7 @@ class RegisterViewer extends React.Component {
             !register &&
             <div className="RegisterViewer-body">
               <h4>Sign in to {window.location.host}</h4>
-              <LoginViewerForm userUrl={userUrl} onSuccess={onSuccess} settings={settings} />
+              <LoginViewerForm userUrl={userUrl} settings={settings} />
               <button onClick={this.toggleRegister} className="btn transparent">
                 {'I don\'t have an account'}
               </button>
