@@ -13,8 +13,7 @@ type BaseProps = { auth: AuthState, currentUser: User };
 type InitialProps = {
   userUrl: string,
   settings: Settings,
-  error: boolean,
-  onSuccess: (options: AlertPartialOptions) => void
+  error: boolean
 };
 
 type DispatchProps = {
