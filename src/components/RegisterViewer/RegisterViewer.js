@@ -52,15 +52,15 @@ class RegisterViewer extends React.Component {
       .catch((): void => this.setState({ noEvent: true }));
 
     this.toggleRegister = this.toggleRegister.bind(this);
-    this.handleRegisterSuccess = this.handleRegisterSuccess.bind(this);
+    this.handleSuccess = this.handleSuccess.bind(this);
   }
 
   toggleRegister() {
     this.setState({ register: !this.state.register });
   }
 
-  handleRegisterSuccess() {
-    this.props.onSuccess();
+  handleSuccess(options: AlertPartialOptions) {
+    this.props.onSuccess(options);
     this.toggleRegister();
   }
 
@@ -87,7 +87,7 @@ class RegisterViewer extends React.Component {
             register &&
             <div className="RegisterViewer-body">
               <h4>Create account for {window.location.host}</h4>
-              <RegisterViewerForm onSuccess={this.handleRegisterSuccess} settings={settings} />
+              <RegisterViewerForm userUrl={userUrl} onSuccess={this.handleSuccess} settings={settings} />
               <button onClick={this.toggleRegister} className="btn transparent">
                 I already have an account
               </button>
