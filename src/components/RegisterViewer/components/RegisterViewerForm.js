@@ -3,15 +3,27 @@ import React, { Component } from 'react';
 import R from 'ramda';
 import Icon from 'react-fontawesome';
 import classNames from 'classnames';
+import { connect } from 'react-redux';
 import { createViewer } from '../../../services/api';
+import { signInViewer } from '../../../actions/auth';
+import { initializeBroadcast } from '../../../actions/fan';
 import './RegisterViewerForm.css';
 
 /* beautify preserve:start */
-type Props = {
+type BaseProps = { auth: AuthState, currentUser: User };
+
+type InitialProps = {
   settings: Settings,
   error: boolean,
   onSuccess: (options: AlertPartialOptions) => void
 };
+
+type DispatchProps = {
+  init: FanInitOptions => void,
+  authenticateUser: (credentials: AuthCredentials) => void
+ };
+
+type Props = BaseProps & InitialProps & DispatchProps;
 
 /* beautify preserve:end */
 
@@ -45,11 +57,13 @@ class RegisterViewerForm extends Component {
 
   async handleSubmit(e: SyntheticInputEvent): void {
     e.preventDefault();
-    const { settings, onSuccess } = this.props;
-    const viewerData = { ...this.state.fields, adminId: settings.id };
+    const { settings, onSuccess, authenticateUser, userUrl } = this.props;
+    const viewerData = { ...this.state.fields, adminId: settings.id, userUrl };
+
     try {
       await createViewer(settings.id, viewerData);
       onSuccess({ text: 'User created successfully' });
+      await authenticateUser(viewerData);
       this.setState({
         error: false,
         fields: {
@@ -68,6 +82,18 @@ class RegisterViewerForm extends Component {
     const value = e.target.value;
 
     this.setState({ error: false, fields: R.assoc(field, value, this.state.fields) });
+  }
+
+  componentDidUpdate(prevProps: Props) {
+    const { settings, userUrl } = this.props;
+
+    if (!prevProps.auth.token && this.props.auth.authToken) {
+      this.props.init({
+        adminId: settings.id,
+        userType: 'fan',
+        userUrl,
+      });
+    }
   }
 
   render(): ReactComponent {
@@ -109,4 +135,16 @@ class RegisterViewerForm extends Component {
   }
 }
 
-export default RegisterViewerForm;
+const mapStateToProps = (state: State): BaseProps => ({
+  ...R.pick(['auth', 'currentUser', 'settings'], state),
+});
+
+const mapDispatchToProps: MapDispatchToProps<DispatchProps> = (dispatch: Dispatch): DispatchProps =>
+  ({
+    init: (options: FanInitOptions): void => dispatch(initializeBroadcast(options)),
+    authenticateUser: (credentials: AuthCredentials) => {
+      dispatch(signInViewer(credentials));
+    },
+  });
+
+export default connect(mapStateToProps, mapDispatchToProps)(RegisterViewerForm);

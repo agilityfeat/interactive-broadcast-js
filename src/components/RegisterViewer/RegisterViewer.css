@@ -12,11 +12,15 @@
   background-color: white;
 }
 
-.Header {
-  justify-content: flex-start;
+.Register-header {
+    height: 60px;
+    display: flex;
+    justify-content: flex-start;
+    color: white;
+	background-color: var(--main-header-bg);
 }
 
-.Header h3 {
+.Register-header h3 {
   margin-left: 20px;
   font-size: 1.4em;
   font-weight: normal;
