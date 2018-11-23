@@ -1,0 +1,57 @@
+/*Main*/
+.RegisterViewer {
+  width: 360px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 40px auto 20px;
+  padding-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  background-color: white;
+}
+
+.Header {
+  justify-content: flex-start;
+}
+
+.Header h3 {
+  margin-left: 20px;
+  font-size: 1.4em;
+  font-weight: normal;
+}
+
+.RegisterViewer h4 {
+  color: var(--main-header-bg);
+  font-weight: normal;
+  font-size: 1.2em;
+  margin: 10px 0px 0px 0px;
+}
+
+.RegisterViewer-header {
+  width: 100%;
+  padding: 10px 10px;
+  border-bottom: 1px solid #ddd;
+  background-color: var(--main-header-bg);
+}
+
+.RegisterViewer-body {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.RegisterViewer-header img {
+  height: auto;
+  max-width: 100%;
+  min-width: 100%;
+}
+
+.RegisterViewer-messages {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  height: 50px;
+  font-style: italic;
+}

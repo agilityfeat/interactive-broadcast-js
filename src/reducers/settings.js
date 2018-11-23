@@ -1,6 +1,7 @@
 // @flow
 
 const initialState: Settings = {
+  id: null,
   loading: true,
   registerEnabled: false,
   siteColor: null,

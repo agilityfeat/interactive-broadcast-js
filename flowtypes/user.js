@@ -26,6 +26,12 @@ declare type HostCelebCredentials = {
   httpSupport: boolean
 };
 
+declare type ViewerFormData = {
+  displayName: string,
+  email: string,
+  password: string
+};
+
 declare type HostCelebEventData = BroadcastEvent & HostCelebCredentials;
 
 declare type UserCredentials = {

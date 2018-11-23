@@ -9,7 +9,7 @@ const auth = (state: AuthState = initialState, action: AuthAction): AuthState =>
     case 'AUTH_FORGOT_PASSWORD':
       return R.assoc('forgotPassword', action.forgot, state);
     case 'SET_AUTH_TOKEN':
-      return R.assoc('authToken', action.token, state);
+      return { ...state, authToken: action.token, error: false };
     default:
       return state;
   }

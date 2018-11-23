@@ -33,6 +33,7 @@ class UpdateEvent extends Component {
     const { eventId } = this.props;
     const event = R.pathOr(null, ['events', eventId], this.props);
     if (!event) return <Loading />;
+
     const poster = R.pathOr(defaultImg, ['startImage', 'url'], event);
     return (
       <div className="ViewEvent">

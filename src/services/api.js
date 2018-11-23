@@ -79,8 +79,8 @@ const del = (route: string, requiresAuth: boolean = true): Promise<*> => execute
 /** Exports */
 
 /** Auth */
-const getAuthTokenUser = (adminId: string, userType: string, userUrl: string): Promise<{token: AuthToken}> =>
-  post(`auth/token-${userType}`, R.assoc(`${userType}Url`, userUrl, { adminId }), false);
+const getAuthTokenUser = (adminId: string, userType: string, userUrl: string, idToken?: string): Promise<{token: AuthToken}> =>
+  post(`auth/token-${userType}`, R.assoc(`${userType}Url`, userUrl, { adminId, idToken }), false);
 const getAuthToken = (idToken: string): Promise<{ token: AuthToken }> => post('auth/token', { idToken }, false);
 
 /** User */
@@ -90,9 +90,14 @@ const updateUser = (userData: UserUpdateFormData): Promise<User> => patch(`admin
 const getAllUsers = (): Promise<[User]> => get('admin');
 const deleteUserRecord = (userId: string): Promise<boolean> => del(`admin/${userId}`);
 
+/** Viewer */
+const getViewer = (adminId: string, userId: string, authToken?: string): Promise<User> => get(`viewer/${adminId}/${userId}`, true, authToken);
+const createViewer = (adminId: string, viewerData: ViewerFormData): Promise<*> => post('viewer', viewerData, false);
+
 /** Events */
 const getEvents = (adminId: string): Promise<BroadcastEventMap> => get(`event?adminId=${adminId}`);
 const getEvent = (id: string): Promise<BroadcastEvent> => get(`event/${id}`);
+const getEventByKey = (adminId: string, slug: string): Promise<BroadcastEvent> => get(`event/get-by-key?adminId=${adminId}&slug=${slug}`);
 const createEvent = (data: BroadcastEventFormData): Promise<BroadcastEvent> => post('event', data);
 const updateEvent = (data: BroadcastEventUpdateFormData): Promise<BroadcastEvent> => patch(`event/${data.id}`, data);
 const updateEventStatus = (id: string, status: EventStatus): Promise<BroadcastEvent> => put(`event/change-status/${id}`, { status });
@@ -113,6 +118,7 @@ module.exports = {
   updateUser,
   getAllUsers,
   getEvent,
+  getEventByKey,
   getEvents,
   getMostRecentEvent,
   createEvent,
@@ -124,4 +130,6 @@ module.exports = {
   url,
   getEventWithCredentials,
   getEmbedEventWithCredentials,
+  getViewer,
+  createViewer,
 };

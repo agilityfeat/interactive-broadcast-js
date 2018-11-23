@@ -11,6 +11,7 @@ declare type AuthState = {
  };
 
 declare type AuthCredentials = { email: string, password?: string };
+declare type ViewerAuthCredentials = { email: string, password?: string, adminId: string };
 declare type AuthAction =
   { type: 'AUTHENTICATE_USER', credentials: AuthCredentials } |
   { type: 'AUTH_ERROR', error: null | Error } |
