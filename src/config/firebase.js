@@ -1,10 +1,10 @@
 const firebase = {
-  apiKey: 'AIzaSyB2PsJlPF6N5v4A8WrcQVLHaijaZ-sV9Ag', // firebase apikey
-  authDomain: 'meet-unicostumer-care-local.firebaseapp.com', // firebase authDomain
-  databaseURL: 'https://meet-unicostumer-care-local.firebaseio.com', // firebase databaseURL
-  projectId: 'meet-unicostumer-care-local', // firebase projectId
-  storageBucket: 'meet-unicostumer-care-local.appspot.com', // firebase storageBucket
-  messagingSenderId: '337010183710',  // firebase messagingSenderId
+  apiKey: 'AIzaSyB7L8CVZ30ONSSNVlBXgWs6eIVYPD7MNgc', // firebase apikey
+  authDomain: 'webinar-unicustomercare.firebaseapp.com', // firebase authDomain
+  databaseURL: 'https://webinar-unicustomercare.firebaseio.com', // firebase databaseURL
+  projectId: 'webinar-unicustomercare', // firebase projectId
+  storageBucket: 'webinar-unicustomercare.appspot.com', // firebase storageBucket
+  messagingSenderId: '567617893744',  // firebase messagingSenderId
 };
 
 export default firebase;
