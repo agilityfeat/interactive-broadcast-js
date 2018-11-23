@@ -61,7 +61,7 @@ class RegisterViewer extends React.Component {
   render(): ReactComponent {
     const { settings, onSuccess, userUrl } = this.props;
     const { register, noEvent, event } = this.state;
-    const startImage = event && event.startImage.url;
+    const startImage = event && event.startImage && event.startImage.url;
     const eventName = event && event.name;
 
     if (noEvent) return <NoEvents />;
