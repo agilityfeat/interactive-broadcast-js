@@ -16,7 +16,7 @@ type BaseProps = {
   eventId: null | EventId
 };
 type DispatchProps = {
-  loadEvents: UserId => void,
+  loadEvents: (string, boolean) => void,
   createEvent: BroadcastEventFormData => void,
   updateEvent: BroadcastEventUpdateFormData => void,
   noApiKeyAlert: Unit
@@ -37,17 +37,20 @@ class UpdateEvent extends Component {
     super(props);
     this.state = {
       errors: null,
-      dateTimeSet: false
+      dateTimeSet: false,
     };
     this.validateAndFormat = this.validateAndFormat.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
     this.onUpdate = this.onUpdate.bind(this);
   }
+
   componentDidMount() {
-    const { user } = this.props;
-    if (!this.props.events) {
-      this.props.loadEvents(user.id);
+    const { domainId, user, events } = this.props;
+
+    if (!events) {
+      this.props.loadEvents(domainId, user.superAdmin);
     }
+
     if (!user.otApiKey) {
       this.props.noApiKeyAlert();
     }
@@ -101,6 +104,7 @@ class UpdateEvent extends Component {
 
     return R.compose(
       R.assoc('adminId', R.path(['user', 'id'], this.props)),
+      R.assoc('domainId', this.props.domainId),
       R.evolve(formatting),
       R.omit(R.append('fanAudioUrl', fieldsToOmit)) // eslint-disable-line comma-dangle
     )(data);
@@ -124,7 +128,7 @@ class UpdateEvent extends Component {
 
   render(): ReactComponent {
     const { onSubmit, onUpdate } = this;
-    const { user, eventId } = this.props;
+    const { eventId } = this.props;
     const { errors } = this.state;
     const event = R.pathOr(null, ['events', eventId], this.props);
     return (
@@ -134,7 +138,7 @@ class UpdateEvent extends Component {
           <h3>{ eventId ? 'Edit Event' : 'Add New Event' }</h3>
         </div>
         <div className="admin-page-content">
-          <EventForm event={event} user={user} errors={errors} onUpdate={onUpdate} onSubmit={onSubmit}/>
+          <EventForm event={event} errors={errors} onUpdate={onUpdate} onSubmit={onSubmit} />
         </div>
       </div>
     );
@@ -145,11 +149,12 @@ const mapStateToProps = (state: State, ownProps: InitialProps): BaseProps => ({
   eventId: R.pathOr(null, ['params', 'id'], ownProps),
   events: R.path(['events', 'map'], state),
   user: state.currentUser,
+  domainId: R.path(['settings', 'id'], state),
 });
 
 const mapDispatchToProps: MapDispatchToProps<DispatchProps> = (dispatch: Dispatch): DispatchProps => ({
-  loadEvents: (userId: UserId) => {
-    dispatch(getBroadcastEvents(userId));
+  loadEvents: (domainId: string, superAdmin: boolean = false) => {
+    dispatch(getBroadcastEvents(domainId, superAdmin));
   },
   createEvent: (data: BroadcastEventFormData) => {
     dispatch(createBroadcastEvent(data));
