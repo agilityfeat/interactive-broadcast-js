@@ -58,7 +58,7 @@ class RegisterViewerForm extends Component {
   async handleSubmit(e: SyntheticInputEvent): void {
     e.preventDefault();
     const { settings, onSuccess, authenticateUser, userUrl } = this.props;
-    const viewerData = { ...this.state.fields, adminId: settings.id, userUrl };
+    const viewerData = { ...this.state.fields, domainId: settings.id, userUrl };
 
     try {
       await createViewer(settings.id, viewerData);

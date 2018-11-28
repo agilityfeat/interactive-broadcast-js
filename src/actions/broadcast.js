@@ -93,7 +93,7 @@ const endPrivateCall: ThunkActionCreator = (participant: ParticipantType, userIn
 const toggleParticipantProperty: ThunkActionCreator = (participantType: ParticipantType, property: ParticipantAVProperty): Thunk =>
   async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
     const participant = R.path(['broadcast', 'participants', participantType], getState());
-    const { adminId, fanUrl } = R.path(['event'], getState().broadcast);
+    const { domainId, fanUrl } = R.path(['event'], getState().broadcast);
     const currentValue = R.prop(property, participant);
 
     const update: ParticipantAVPropertyUpdate = R.ifElse(
@@ -120,7 +120,7 @@ const toggleParticipantProperty: ThunkActionCreator = (participantType: Particip
         break;
       case 'volume':
         try {
-          const ref = firebase.database().ref(`activeBroadcasts/${adminId}/${fanUrl}/volume/${participantType}`);
+          const ref = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/volume/${participantType}`);
           ref.set(value);
         } catch (error) {
           console.log(error);
@@ -178,8 +178,8 @@ const updateParticipants: ThunkActionCreator = (participantType: ParticipantType
 const monitorVolume: ThunkActionCreator = (): Thunk =>
   (dispatch: Dispatch, getState: GetState) => {
     const event = R.prop('event', getState().broadcast);
-    const { adminId, fanUrl } = event;
-    const ref = firebase.database().ref(`activeBroadcasts/${adminId}/${fanUrl}/volume`);
+    const { domainId, fanUrl } = event;
+    const ref = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/volume`);
     ref.on('value', (snapshot: firebase.database.DataSnapshot) => {
       const volumeMap = snapshot.val();
       const participants = R.prop('participants', getState().broadcast);
@@ -200,8 +200,8 @@ const monitorVolume: ThunkActionCreator = (): Thunk =>
 const startHeartBeat: ThunkActionCreator = (userType: UserType): Thunk =>
 (dispatch: Dispatch, getState: GetState) => {
   const event = R.prop('event', getState().broadcast);
-  const { adminId, fanUrl } = event;
-  const ref = firebase.database().ref(`activeBroadcasts/${adminId}/${fanUrl}/${userType}HeartBeat`);
+  const { domainId, fanUrl } = event;
+  const ref = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/${userType}HeartBeat`);
   const updateHeartbeat = (): void => ref.set(moment.utc().valueOf());
   heartBeatInterval = setInterval(() => {
     updateHeartbeat();

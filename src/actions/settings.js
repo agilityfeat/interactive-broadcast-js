@@ -5,19 +5,19 @@ import firebase from '../services/firebase';
 const listenSiteSettings: ThunkActionCreator = (): Thunk =>
   (dispatch: Dispatch) => {
     try {
-      firebase.auth().onAuthStateChanged(async (user): AsyncVoid => {
+      firebase.auth().onAuthStateChanged(async (user: User): AsyncVoid => {
         if (user) {
           const ref = firebase.database()
-                .ref('admins')
+                .ref('domains')
                 .orderByChild('domain')
-                .equalTo(window.location.hostname);
+                .equalTo(window.location.host);
 
           ref.on('value', (snapshot: firebase.database.DataSnapshot) => {
-            const admin = snapshot.val();
-            if (admin) {
+            const domain = snapshot.val();
+            if (domain) {
               const settings = R.pick(
                 ['id', 'siteColor', 'registrationEnabled', 'siteLogo', 'siteFavicon'],
-                admin[Object.keys(admin)[0]],
+                domain[Object.keys(domain)[0]],
               );
               dispatch({ type: 'SET_SITE_SETTINGS', settings });
             } else {

@@ -16,7 +16,7 @@ type BaseProps = {
   eventId: null | EventId
 };
 type DispatchProps = {
-  loadEvents: UserId => void
+  loadEvents: (string, boolean) => void
 };
 type Props = InitialProps & BaseProps & DispatchProps;
 /* beautify preserve:end */
@@ -26,7 +26,8 @@ class UpdateEvent extends Component {
 
   componentDidMount() {
     if (!this.props.events) {
-      this.props.loadEvents(R.path(['user', 'id'], this.props));
+      const { user, domainId } = this.props;
+      this.props.loadEvents(domainId, user.superAdmin);
     }
   }
   render(): ReactComponent {
@@ -52,13 +53,14 @@ class UpdateEvent extends Component {
 const mapStateToProps = (state: State, ownProps: InitialProps): BaseProps => ({
   eventId: R.pathOr(null, ['params', 'id'], ownProps),
   events: R.path(['events', 'map'], state),
+  domainId: R.path(['settings', 'id'], state),
   user: state.currentUser,
   state,
 });
 
 const mapDispatchToProps: MapDispatchToProps<DispatchProps> = (dispatch: Dispatch): DispatchProps => ({
-  loadEvents: (userId: UserId) => {
-    dispatch(getBroadcastEvents(userId));
+  loadEvents: (domainId: string, superAdmin: boolean = false) => {
+    dispatch(getBroadcastEvents(domainId, superAdmin));
   },
 });
 

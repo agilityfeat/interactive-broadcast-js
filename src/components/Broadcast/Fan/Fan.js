@@ -18,9 +18,9 @@ import { disconnect } from '../../../services/opentok';
 import './Fan.css';
 
 /* beautify preserve:start */
-type InitialProps = { params: { fanUrl: string, adminId: string } };
+type InitialProps = { params: { fanUrl: string, domainId: string } };
 type BaseProps = {
-  adminId: string,
+  domainId: string,
   userType: 'host' | 'celeb',
   userUrl: string,
   event: null | BroadcastEvent,
@@ -59,10 +59,10 @@ class Fan extends Component {
   changeEventStatus: Unit;
 
   componentDidMount() {
-    const { settings, adminId, userType, user, userUrl, init, fitMode } = this.props;
+    const { settings, domainId, userType, user, userUrl, init, fitMode } = this.props;
     if (!settings.registrationEnabled || user) {
       const options = {
-        adminId,
+        domainId,
         userType,
         userUrl,
         fitMode,
@@ -82,7 +82,7 @@ class Fan extends Component {
       status,
       participants,
       userUrl,
-      adminId,
+      domainId,
       inPrivateCall,
       broadcast,
       joinLine,
@@ -103,7 +103,7 @@ class Fan extends Component {
       settings: { registrationEnabled },
     } = this.props;
 
-    if (!user && registrationEnabled) return <RegisterViewer adminId={adminId} userUrl={userUrl} event={event} />;
+    if (!user && registrationEnabled) return <RegisterViewer domainId={domainId} userUrl={userUrl} event={event} />;
     else if (!event) return <NoEvents />;
 
     const participantIsConnected = (type: ParticipantType): boolean => R.path([type, 'connected'], participants || {});
@@ -163,7 +163,7 @@ const mapStateToProps = (state: State, ownProps: InitialProps): BaseProps => {
   return {
     user: state.currentUser,
     fitMode: R.path(['location', 'query', 'fitMode'], ownProps),
-    adminId: R.path(['params', 'adminId'], ownProps),
+    domainId: R.path(['params', 'domainId'], ownProps),
     userType: R.path(['route', 'userType'], ownProps),
     isEmbed: R.path(['route', 'embed'], ownProps),
     postProduction: R.path(['fan', 'postProduction'], state),
