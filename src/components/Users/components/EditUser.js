@@ -17,7 +17,6 @@ import {
   uploadImageCancel,
 } from '../../../actions/users';
 import { getDomains } from '../../../actions/domains';
-import ColorPicker from '../../Common/ColorPicker';
 
 
 const emptyUser: UserFormData = {
@@ -82,7 +81,6 @@ class EditUser extends Component {
   };
   renderDomains: () => ReactComponent;
   handleChange: (string, SyntheticInputEvent) => void;
-  handleColorChange: (string) => void;
   hasErrors: () => boolean;
   toggleCredentials: () => void;
   handleSubmit: Unit;
@@ -98,7 +96,6 @@ class EditUser extends Component {
     props.getDomains();
     this.uploadFile = this.uploadFile.bind(this);
     this.handleChange = this.handleChange.bind(this);
-    this.handleColorChange = this.handleColorChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.hasErrors = this.hasErrors.bind(this);
     this.toggleCredentials = this.toggleCredentials.bind(this);
@@ -205,10 +202,6 @@ class EditUser extends Component {
     this.state.submissionAttemped && this.hasErrors();
   }
 
-  handleColorChange(hex: string) {
-    this.setState({ fields: R.assoc('siteColor', hex, this.state.fields) });
-  }
-
   render(): ReactComponent {
     const { errors, fields, showCredentials } = this.state;
     const {
@@ -216,16 +209,16 @@ class EditUser extends Component {
       displayName,
       otApiKey,
       otSecret,
-      hls,
-      httpSupport,
-      audioOnlyEnabled,
-      embedEnabled,
-      registrationEnabled,
-      fileSharingEnabled,
-      siteColor,
+      // hls,
+      // httpSupport,
+      // audioOnlyEnabled,
+      // embedEnabled,
+      // registrationEnabled,
+      // fileSharingEnabled,
+      // siteColor,
     } = fields;
     const { toggleEditPanel, newUser } = this.props;
-    const { handleSubmit, handleChange, handleColorChange } = this;
+    const { handleSubmit, handleChange } = this;
     const errorFields = R.propOr({}, 'fields', errors);
     const shouldShowCredentials = newUser || showCredentials;
 
@@ -288,51 +281,8 @@ class EditUser extends Component {
           </div>
           <hr />
           <div className="edit-user-options">
-            <div className="edit-user-bottom">
-              <div className="input-container">
-                <input type="checkbox" name="hls" checked={!!hls} onChange={handleChange} />
-                <span className="label">Broadcast Support Enabled</span>
-              </div>
-              <div className="input-container">
-                <input type="checkbox" name="httpSupport" checked={!!httpSupport} onChange={handleChange} />
-                <span className="label">HTTP Support Enabled</span>
-              </div>
-              <div className="input-container">
-                <input type="checkbox" name="audioOnlyEnabled" checked={!!audioOnlyEnabled} onChange={handleChange} />
-                <span className="label">Share audio only URL Enabled</span>
-              </div>
-              <div className="input-container">
-                <input type="checkbox" name="embedEnabled" checked={!!embedEnabled} onChange={handleChange} />
-                <span className="label">Enable Embed</span>
-              </div>
-              <div className="input-container">
-                <input type="checkbox" name="registrationEnabled" checked={!!registrationEnabled} onChange={handleChange} />
-                <span className="label">Enable Registration</span>
-              </div>
-              <div className="input-container">
-                <input type="checkbox" name="fileSharingEnabled" checked={!!fileSharingEnabled} onChange={handleChange} />
-                <span className="label">Enable File Sharing</span>
-              </div>
-            </div>
-            <hr />
             <div className="edit-user-other-settings">
               {this.renderDomains()}
-              <div className="input-container">
-                <span className="label">Choose Admin Color:</span>
-                <ColorPicker value={siteColor} onChange={handleColorChange} />
-              </div>
-              <div className="input-container">
-                <div className="label">Site logo:</div>
-                <Icon className="icon" name="image" style={{ color: 'darkgrey', left: '74px' }} />
-                <input type="file" name="siteLogo" onChange={this.uploadFile('Site Logo Upload')} />
-              </div>
-            </div>
-            <div className="edit-user-other-settings">
-              <div className="input-container">
-                <div className="label">Site favicon:</div>
-                <Icon className="icon" name="image" style={{ color: 'darkgrey', left: '90px' }} />
-                <input type="file" name="siteFavicon" onChange={this.uploadFile('Site Favicon Upload')} />
-              </div>
             </div>
             <hr />
             <div className="edit-user-buttons">
