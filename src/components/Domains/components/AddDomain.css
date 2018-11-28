@@ -1,0 +1,19 @@
+.AddDomain {
+    position: relative;
+    justify-content: flex-start !important;
+}
+
+.AddDomain .header-container {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    right: 20px;
+    color: #607d8b;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.AddDomain .header-container h4 {
+    margin: 10px 0 0;
+}

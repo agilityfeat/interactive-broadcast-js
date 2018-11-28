@@ -1,0 +1,33 @@
+.DomainList-item {
+  /*position: relative;*/
+}
+
+.DomainList-item .domain-info {
+  display: flex;
+  align-items: center;
+  color: #58666e;
+  font-size: 14px;
+}
+
+.DomainList-item .domain-info span {
+  line-height: 20px;
+}
+
+.DomainList-item .domain-info .name {
+  margin-right: 5px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+}
+
+.DomainList-item .domain-info .email {
+  font-weight: 300;
+}
+
+.EditDomain-warning {
+    text-align: left;
+    color: #EF4836;
+}
+
+.EditDomain-warning i {
+    padding-right: 5px;
+}
