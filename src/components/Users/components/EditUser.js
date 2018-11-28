@@ -16,6 +16,7 @@ import {
   uploadImageSuccess,
   uploadImageCancel,
 } from '../../../actions/users';
+import { getDomains } from '../../../actions/domains';
 import ColorPicker from '../../Common/ColorPicker';
 
 
@@ -31,7 +32,7 @@ const emptyUser: UserFormData = {
   registrationEnabled: false,
   fileSharingEnabled: false,
   siteColor: null,
-  domain: window.location.hostname,
+  domainId: '',
 };
 
 const formFields = [
@@ -46,23 +47,30 @@ const formFields = [
   'siteColor',
   'siteLogo',
   'siteFavicon',
-  'domain',
+  'domainId',
 ];
 
 type BaseProps = {
+  domains: DomainMap,
+  settings: Settings
+};
+
+type InitialProps = {
   user: null | User,
   toggleEditPanel: Unit,
   newUser: boolean,
   errors: FormErrors
 };
+
 type DispatchProps = {
   updateUser: UserFormData => void,
   updateCurrentUser: UserFormData => void,
   createUser: UserFormData => Promise<void>,
   uploadImage: string => void,
-  uploadImageSuccess: string => void
+  uploadImageSuccess: string => void,
+  getDomains: Unit
 };
-type Props = BaseProps & DispatchProps;
+type Props = InitialProps & BaseProps & DispatchProps;
 class EditUser extends Component {
 
   props: Props;
@@ -72,6 +80,7 @@ class EditUser extends Component {
     submissionAttemped: boolean,
     showCredentials: boolean
   };
+  renderDomains: () => ReactComponent;
   handleChange: (string, SyntheticInputEvent) => void;
   handleColorChange: (string) => void;
   hasErrors: () => boolean;
@@ -86,12 +95,38 @@ class EditUser extends Component {
       submissionAttemped: false,
       showCredentials: false,
     };
+    props.getDomains();
     this.uploadFile = this.uploadFile.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleColorChange = this.handleColorChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.hasErrors = this.hasErrors.bind(this);
     this.toggleCredentials = this.toggleCredentials.bind(this);
+    this.renderDomains = this.renderDomains.bind(this);
+  }
+
+  renderDomains(): ReactComponent {
+    const errorFields = R.propOr({}, 'fields', this.state.errors);
+    const { domains, settings } = this.props;
+    const { domainId } = this.state.fields;
+
+    return (
+      <div className="input-container">
+        <span className="label">Select a Domain:</span>&nbsp;
+        <select
+          className={classNames({ error: errorFields.otApiKey })}
+          name="domainId"
+          placeholder="Domain"
+          value={domainId || settings.id}
+          onChange={this.handleChange}
+        >
+          {
+            Object.keys(domains).map((k: string): [ReactComponent] =>
+              <option key={k} value={k}>{domains[k].domain}</option>)
+          }
+        </select>
+      </div>
+    );
   }
 
   hasErrors(): boolean {
@@ -188,12 +223,12 @@ class EditUser extends Component {
       registrationEnabled,
       fileSharingEnabled,
       siteColor,
-      domain,
     } = fields;
     const { toggleEditPanel, newUser } = this.props;
     const { handleSubmit, handleChange, handleColorChange } = this;
     const errorFields = R.propOr({}, 'fields', errors);
     const shouldShowCredentials = newUser || showCredentials;
+
     return (
       <div className="EditUser">
         <form className="EditUser-form" onSubmit={handleSubmit}>
@@ -281,17 +316,7 @@ class EditUser extends Component {
             </div>
             <hr />
             <div className="edit-user-other-settings">
-              <div className="input-container">
-                <Icon className="icon" name="location-arrow" style={{ color: 'darkgrey' }} />
-                <input
-                  className={classNames({ error: errorFields.otApiKey })}
-                  type="text"
-                  name="domain"
-                  value={domain}
-                  placeholder="Domain"
-                  onChange={handleChange}
-                />
-              </div>
+              {this.renderDomains()}
               <div className="input-container">
                 <span className="label">Choose Admin Color:</span>
                 <ColorPicker value={siteColor} onChange={handleColorChange} />
@@ -320,15 +345,22 @@ class EditUser extends Component {
     );
   }
 }
+
+const mapStateToProps: MapStateToProps<BaseProps> = (state: State): BaseProps => ({
+  domains: state.domains,
+  settings: state.settings,
+});
+
 const mapDispatchToProps: MapDispatchToProps<DispatchProps> = (dispatch: Dispatch): DispatchProps =>
   ({
     updateUser: (userData: UserFormData) => {
       dispatch(updateUserRecord(userData));
     },
+    getDomains: async (): AsyncVoid => dispatch(getDomains()),
     createUser: async (userData: UserFormData): AsyncVoid => dispatch(createNewUser(userData)),
     uploadImage: (title: string): void => dispatch(uploadImage(title)),
     uploadImageSuccess: (title: string): void => dispatch(uploadImageSuccess(title)),
     uploadImageCancel: (): void => dispatch(uploadImageCancel()),
   });
 
-export default withRouter(connect(null, mapDispatchToProps)(EditUser));
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(EditUser));
