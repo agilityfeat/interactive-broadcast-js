@@ -11,7 +11,7 @@ import CopyToClipboard from '../../Common/CopyToClipboard';
 import Label from '../../Common/Label';
 import DatePicker from '../../Common/DatePicker';
 import firebase from '../../../services/firebase';
-import createUrls from '../../../services/eventUrls';
+import { createUrls } from '../../../services/eventUrls';
 import { uploadEventImage, uploadEventImageSuccess, uploadEventImageCancel } from '../../../actions/events';
 import './EventForm.css';
 
@@ -149,9 +149,10 @@ class EventForm extends Component {
     }
   }
 
-  updateURLs() {
+  async updateURLs(): AsyncVoid {
     const { fields } = this.state;
-    const update = createUrls({ name: R.prop('name', fields), adminId: this.props.user.id });
+    const { domainId } = this.props;
+    const update = createUrls({ name: R.prop('name', fields), domainId });
     this.setState({ fields: R.merge(fields, update) });
   }
 
@@ -291,7 +292,7 @@ class EventForm extends Component {
 
         { hasAPIKey &&
           <div className="input-container submit">
-            <button className="btn action green" disabled={R.isEmpty(fields.name) || this.state.submitting }>Save Event</button>
+            <button className="btn action green" disabled={R.isEmpty(fields.name) || this.state.submitting}>Save Event</button>
           </div>
         }
       </form>
@@ -300,6 +301,8 @@ class EventForm extends Component {
 }
 const mapStateToProps = (state: State) => ({
   submitting: R.path(['events', 'submitting'], state),
+  domainId: R.path(['settings', 'id'], state),
+  user: state.currentUser,
 });
 
 const mapDispatchToProps: MapDispatchToProps<DispatchProps> = (dispatch: Dispatch): DispatchProps =>
