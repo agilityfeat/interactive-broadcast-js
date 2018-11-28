@@ -37,6 +37,7 @@ const routes = (
       <Route component={AdminRoutes}>
         <Route path="admin" component={Dashboard} />
         <Route path="users" component={Users} />
+        <Route path="domains" component={Domains} />
         <Route path="users/:adminId" component={Users} />
         <Route path="events/new" component={UpdateEvent} />
         <Route path="events/:id/edit" component={UpdateEvent} />
