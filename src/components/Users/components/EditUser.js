@@ -58,7 +58,7 @@ class EditUser extends Component {
   state: {
     fields: UserFormData,
     errors: FormErrors,
-    submissionAttemped: boolean,
+    submissionAttemped: boolean
   };
   renderDomains: () => ReactComponent;
   handleChange: (string, SyntheticInputEvent) => void;
@@ -149,9 +149,10 @@ class EditUser extends Component {
     this.setState({ submissionAttemped: true });
     if (this.hasErrors()) { return; }
     let userData = R.prop('fields', this.state);
-    const { newUser, toggleEditPanel, createUser, updateUser } = this.props;
+    const { newUser, toggleEditPanel, createUser, settings, updateUser } = this.props;
     const user = R.defaultTo({}, this.props.user);
     const initial = R.pick(formFields, user);
+    userData.domainId = userData.domainId || settings.id;
 
     if (!R.equals(initial, userData)) {
       if (newUser) {
@@ -190,7 +191,7 @@ class EditUser extends Component {
       // fileSharingEnabled,
       // siteColor,
     } = fields;
-    const { toggleEditPanel, newUser } = this.props;
+    const { toggleEditPanel, newUser, currentUser } = this.props;
     const { handleSubmit, handleChange } = this;
     const errorFields = R.propOr({}, 'fields', errors);
 
@@ -223,15 +224,17 @@ class EditUser extends Component {
             </div>
           </div>
           <hr />
-          <div className="edit-user-options">
-            <div className="edit-user-other-settings">
-              {this.renderDomains()}
+          {currentUser.superAdmin &&
+            <div className="edit-user-options">
+              <div className="edit-user-other-settings">
+                {this.renderDomains()}
+              </div>
+              <hr />
             </div>
-            <hr />
-            <div className="edit-user-buttons">
-              <input type="submit" className="btn action green" value={newUser ? 'Create User' : 'Save'} />
-              { !newUser && <button className="btn action green" onClick={toggleEditPanel}>Cancel</button> }
-            </div>
+          }
+          <div className="edit-user-buttons">
+            <input type="submit" className="btn action green" value={newUser ? 'Create User' : 'Save'} />
+            { !newUser && <button className="btn action green" onClick={toggleEditPanel}>Cancel</button> }
           </div>
         </form>
       </div>
@@ -242,6 +245,7 @@ class EditUser extends Component {
 const mapStateToProps: MapStateToProps<BaseProps> = (state: State): BaseProps => ({
   domains: state.domains,
   settings: state.settings,
+  currentUser: state.currentUser,
 });
 
 const mapDispatchToProps: MapDispatchToProps<DispatchProps> = (dispatch: Dispatch): DispatchProps =>

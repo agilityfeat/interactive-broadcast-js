@@ -9,7 +9,7 @@ import AddUser from './AddUser';
 import { deleteUser } from '../../../actions/users';
 import './UserList.css';
 
-type ListItemProps = { user: User, adminId: string };
+type ListItemProps = { user: User };
 class UserListItem extends Component {
   props: ListItemProps;
   state: { editingUser: false };
@@ -26,16 +26,11 @@ class UserListItem extends Component {
   }
 
   render(): ReactComponent {
-    const { user, adminId } = this.props;
+    const { user } = this.props;
     const { editingUser } = this.state;
     const { toggleEditPanel } = this;
-    const hasAPIKey = (user && user.otApiKey);
     return (
       <div>
-        { !hasAPIKey && adminId && <div className="EditUser-warning">
-          <i className="fa fa-warning" />Please complete your APIKey and Secret
-        </div>
-        }
         <div className="UserList-item admin-page-list-item" key={user.id}>
           { !editingUser &&
             <div className="user-info">

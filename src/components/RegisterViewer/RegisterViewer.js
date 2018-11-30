@@ -46,8 +46,9 @@ class RegisterViewer extends React.Component {
       noEvent: false,
     };
 
-    // use the URL domainId instead of settings.id
-    getEventByKey(props.domainId, props.userUrl)
+    // avoid loading other domains events domain and Id must match
+    const domainId = props.domainId === props.settings.id ? props.domainId : null;
+    getEventByKey(domainId, props.userUrl)
       .then((event?: BroadcastEvent): void => this.setState({ event }))
       .catch((): void => this.setState({ noEvent: true }));
 
