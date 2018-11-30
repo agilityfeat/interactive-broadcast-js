@@ -17,8 +17,8 @@ class Dashboard extends Component {
   props: Props;
 
   componentDidMount() {
-    const { currentUser, loadEvents, settings } = this.props;
-    loadEvents(settings.id, currentUser.superAdmin);
+    const { loadEvents, settings } = this.props;
+    loadEvents(settings.id);
   }
 
   render(): ReactComponent {
