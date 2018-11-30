@@ -10,7 +10,9 @@ declare type Settings = {
   siteFavicon: {
     id: string | null,
     url: string | null
-  } | null
+  } | null,
+  otApiKey: string | null,
+  otSecret: string | null
 };
 
 declare type SettingsAction =

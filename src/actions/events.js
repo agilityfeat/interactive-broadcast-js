@@ -175,7 +175,7 @@ const displayNoApiKeyAlert: ThunkActionCreator = (): Thunk =>
       title: 'Missing information',
       text: 'For creating events you need to set your Opentok APIKey and Secret',
       onConfirm: () => {
-        browserHistory.push(['/users/', currentUser.id].join(''));
+        browserHistory.push(['/domains/', currentUser.id].join(''));
         dispatch(resetAlert());
       },
       showCancelButton: false,

@@ -170,7 +170,6 @@ class EventForm extends Component {
     const errorFields = R.propOr({}, 'fields', errors);
     const { fields } = this.state;
     const { startImage, endImage } = fields;
-    const hasAPIKey = this.props.user.otApiKey;
     const { audioOnlyEnabled } = this.props.user;
     return (
       <form className="EventForm" onSubmit={handleSubmit}>
@@ -290,7 +289,7 @@ class EventForm extends Component {
         </div>
         */}
 
-        { hasAPIKey &&
+        { this.props.otApiKey &&
           <div className="input-container submit">
             <button className="btn action green" disabled={R.isEmpty(fields.name) || this.state.submitting}>Save Event</button>
           </div>
@@ -302,6 +301,7 @@ class EventForm extends Component {
 const mapStateToProps = (state: State) => ({
   submitting: R.path(['events', 'submitting'], state),
   domainId: R.path(['settings', 'id'], state),
+  otApiKey: R.path(['settings', 'otApiKey'], state),
   user: state.currentUser,
 });
 

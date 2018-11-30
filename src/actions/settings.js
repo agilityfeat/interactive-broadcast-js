@@ -16,7 +16,7 @@ const listenSiteSettings: ThunkActionCreator = (): Thunk =>
             const domain = snapshot.val();
             if (domain) {
               const settings = R.pick(
-                ['id', 'siteColor', 'registrationEnabled', 'siteLogo', 'siteFavicon'],
+                ['id', 'otApiKey', 'otSecret', 'siteColor', 'registrationEnabled', 'siteLogo', 'siteFavicon'],
                 domain[Object.keys(domain)[0]],
               );
               dispatch({ type: 'SET_SITE_SETTINGS', settings });

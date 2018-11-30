@@ -7,6 +7,8 @@ const initialState: Settings = {
   siteColor: null,
   siteLogo: null,
   siteFavIcon: null,
+  otApiKey: null,
+  otSecret: null,
 };
 
 const settings = (state: Settings = initialState, action: UserAction): SettingsState => {
