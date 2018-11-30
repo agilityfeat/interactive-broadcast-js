@@ -61,7 +61,7 @@ class RegisterViewerForm extends Component {
     const viewerData = { ...this.state.fields, domainId: settings.id, userUrl };
 
     try {
-      await createViewer(settings.id, viewerData);
+      await createViewer(viewerData);
       onSuccess({ text: 'User created successfully' });
       await authenticateUser(viewerData);
       this.setState({
@@ -87,9 +87,9 @@ class RegisterViewerForm extends Component {
   componentDidUpdate(prevProps: Props) {
     const { settings, userUrl } = this.props;
 
-    if (!prevProps.auth.token && this.props.auth.authToken) {
+    if (!prevProps.auth.authToken && this.props.auth.authToken) {
       this.props.init({
-        adminId: settings.id,
+        domainId: settings.id,
         userType: 'fan',
         userUrl,
       });
