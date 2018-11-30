@@ -10,6 +10,7 @@ import { initializeBroadcast, getInLine, leaveTheLine, setPublisherMinimized } f
 import FanHeader from './components/FanHeader';
 import FanBody from './components/FanBody';
 import FanStatusBar from './components/FanStatusBar';
+import Loading from '../../../components/Common/Loading';
 import NoEvents from '../../Common/NoEvents';
 import RegisterViewer from '../../../components/RegisterViewer/RegisterViewer';
 import Chat from '../../../components/Common/Chat';
@@ -62,7 +63,7 @@ class Fan extends Component {
     const { settings, domainId, userType, user, userUrl, init, fitMode } = this.props;
     if (!settings.registrationEnabled || user) {
       const options = {
-        domainId,
+        domainId: domainId === settings.id ? domainId : null,
         userType,
         userUrl,
         fitMode,
@@ -80,6 +81,7 @@ class Fan extends Component {
     const { // $FlowFixMe
       event,
       status,
+      authError,
       participants,
       userUrl,
       domainId,
@@ -104,7 +106,8 @@ class Fan extends Component {
     } = this.props;
 
     if (!user && registrationEnabled) return <RegisterViewer domainId={domainId} userUrl={userUrl} event={event} />;
-    else if (!event) return <NoEvents />;
+    if (authError) return <NoEvents />;
+    if (!event) return <Loading />;
 
     const participantIsConnected = (type: ParticipantType): boolean => R.path([type, 'connected'], participants || {});
     const hasStreams = R.any(participantIsConnected)(['host', 'celebrity', 'fan']);
