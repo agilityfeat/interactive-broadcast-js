@@ -55,7 +55,7 @@ class LoginViewerForm extends Component {
   async handleSubmit(e: SyntheticInputEvent): void {
     e.preventDefault();
     const { auth, settings, sendResetEmail, authenticateUser, userUrl } = this.props;
-    const viewerData = { ...this.state.fields, adminId: settings.id, userUrl };
+    const viewerData = { ...this.state.fields, domainId: settings.id, userUrl };
     try {
       auth.forgotPassword ? await sendResetEmail(viewerData) : await authenticateUser(viewerData);
     } catch (error) {
@@ -68,7 +68,7 @@ class LoginViewerForm extends Component {
 
     if (!prevProps.auth.token && this.props.auth.authToken) {
       this.props.init({
-        adminId: settings.id,
+        domainId: settings.id,
         userType: 'fan',
         userUrl,
       });

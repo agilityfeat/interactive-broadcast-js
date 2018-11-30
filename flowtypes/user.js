@@ -17,7 +17,7 @@ declare type User = {
   registrationEnabled: boolean,
   fileSharingEnabled: boolean,
   siteColor: string,
-  domain: string
+  domainId: string
  };
 
 declare type HostCelebCredentials = {

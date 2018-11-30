@@ -33,6 +33,7 @@ declare type BroadcastEvent = {
   showStartedAt: string,
   showEndedAt: string,
   adminId: string,
+  domainId: string,
   createdAt: string,
   updatedAt: string
 }

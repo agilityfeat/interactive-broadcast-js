@@ -15,7 +15,7 @@ import '../Header/Header.css';
 
 type BaseProps = {
   userUrl: string,
-  adminId: string,
+  domainId: string,
   settings: Settings,
   event: BroadcastEvent
 };
@@ -46,8 +46,8 @@ class RegisterViewer extends React.Component {
       noEvent: false,
     };
 
-    // use the URL adminId instead of settings.id
-    getEventByKey(props.adminId, props.userUrl)
+    // use the URL domainId instead of settings.id
+    getEventByKey(props.domainId, props.userUrl)
       .then((event?: BroadcastEvent): void => this.setState({ event }))
       .catch((): void => this.setState({ noEvent: true }));
 

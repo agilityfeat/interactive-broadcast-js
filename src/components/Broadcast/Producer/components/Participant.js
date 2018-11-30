@@ -5,7 +5,7 @@ import R from 'ramda';
 import classNames from 'classnames';
 import Icon from 'react-fontawesome';
 import CopyToClipboard from '../../../Common/CopyToClipboard';
-import createUrls from '../../../../services/eventUrls';
+import { loadUrls } from '../../../../services/eventUrls';
 import { isFan, translateRole } from '../../../../services/util';
 import ControlIcon from './ControlIcon';
 import { toggleParticipantProperty } from '../../../../actions/broadcast';
@@ -38,83 +38,109 @@ type DispatchProps = {
 
 type Props = OwnProps & BaseProps & DispatchProps;
 
-const Participant = (props: Props): ReactComponent => {
-  const { type, toggleAudio, toggleVideo, toggleVolume, privateCall, chat, kickFan, broadcast, sendFanToStage, fanRecord } = props;
-  const fanId = R.prop('id', fanRecord || {});
-  const url = R.prop(`${type}Url`, createUrls(broadcast.event || {}));
-  const me = R.prop(type, broadcast.participants) || {};
-  const stageCountdown = broadcast.stageCountdown;
-  const inPrivateCall = R.pathEq(['privateCall', 'isWith'], type, broadcast);
-  const availableForPrivateCall = (): boolean => {
-    const inPreshow = R.pathEq(['event', 'status'], 'preshow', broadcast);
-    return (me.connected && (inPreshow || isBackstageFan(type)));
-  };
-  const statusIconClass = classNames('icon', { green: me.connected });
-  const controlIconClass = classNames('icon', { active: me.connected });
-  const volumeIconDisabled = (!inPrivateCall && isBackstageFan(type)) || !me.connected;
-  const volumeIconClass = classNames('icon', { active: !volumeIconDisabled });
-  const privateCallIconClass = classNames('icon', { active: me.connected && availableForPrivateCall() });
-  const status = me.connected ? 'Online' : 'Offline';
-  return (
-    <div className="Participant">
-      <div className="Participant-header">
-        <span className="label" >{ getHeaderLabel(type) } </span>
-        <span><Icon className={statusIconClass} name="circle" />{status}</span>
-      </div>
-      <div className="Participant-video" id={`video${type}`}>
-        { !me.audio && me.connected && <div className="Participant-muted">MUTED</div> }
-        { isOnStageFan(type) && stageCountdown >= 0 &&
-          <div className="countdown-overlay">
-            <span className="countdown-text">{stageCountdown}</span>
-          </div>
-        }
-      </div>
-      { isBackstageFan(type) ?
-        <div className="Participant-move-fan">
-          <button className="move btn transparent" onClick={sendFanToStage}>Move to {translateRole('fan')} feed</button>
-        </div> :
-        <div className="Participant-url">
-          <span className="url">{ url }</span>
-          <CopyToClipboard text={url} onCopyText="URL">
-            <button className="btn white">COPY</button>
-          </CopyToClipboard >
+class Participant extends React.Component {
+  constructor(props: Props) {
+    super(props);
+    this.state = { url: null };
+  }
+
+  async componentDidUpdate(prevProps: Props): void {
+    if (!prevProps.broadcast.event && this.props.broadcast.event) {
+      const { broadcast, type } = this.props;
+      const urls = await loadUrls(broadcast.event || {});
+      // eslint-disable-next-line
+      this.setState({ url: R.prop(`${type}Url`, urls) });
+    }
+  }
+
+  render(): ReactComponent {
+    const {
+      type,
+      toggleAudio,
+      toggleVideo,
+      toggleVolume,
+      privateCall,
+      chat,
+      kickFan,
+      broadcast,
+      sendFanToStage,
+      fanRecord,
+    } = this.props;
+    const fanId = R.prop('id', fanRecord || {});
+    const me = R.prop(type, broadcast.participants) || {};
+    const stageCountdown = broadcast.stageCountdown;
+    const inPrivateCall = R.pathEq(['privateCall', 'isWith'], type, broadcast);
+    const availableForPrivateCall = (): boolean => {
+      const inPreshow = R.pathEq(['event', 'status'], 'preshow', broadcast);
+      return (me.connected && (inPreshow || isBackstageFan(type)));
+    };
+    const statusIconClass = classNames('icon', { green: me.connected });
+    const controlIconClass = classNames('icon', { active: me.connected });
+    const volumeIconDisabled = (!inPrivateCall && isBackstageFan(type)) || !me.connected;
+    const volumeIconClass = classNames('icon', { active: !volumeIconDisabled });
+    const privateCallIconClass = classNames('icon', { active: me.connected && availableForPrivateCall() });
+    const status = me.connected ? 'Online' : 'Offline';
+    return (
+      <div className="Participant">
+        <div className="Participant-header">
+          <span className="label" >{ getHeaderLabel(type) } </span>
+          <span><Icon className={statusIconClass} name="circle" />{status}</span>
         </div>
-      }
-      <div className="Participant-feed-controls">
-        <span className="label">Alter Feed</span>
-        <div className="controls">
-          <ControlIcon
-            name={me.volume === 100 ? 'volume-up' : 'volume-down'}
-            className={volumeIconClass}
-            disabled={volumeIconDisabled}
-            onClick={toggleVolume}
-          />
-          <ControlIcon
-            name={inPrivateCall ? 'phone-square' : 'phone'}
-            className={privateCallIconClass}
-            disabled={!availableForPrivateCall()}
-            onClick={R.partial(privateCall, [fanId])}
-          />
-          <ControlIcon
-            name={me.audio ? 'microphone' : 'microphone-slash'}
-            disabled={!me.connected}
-            className={controlIconClass}
-            onClick={toggleAudio}
-          />
-          <ControlIcon
-            name="video-camera"
-            className={controlIconClass}
-            onClick={toggleVideo}
-            disabled={!me.connected}
-          />
-          { R.contains('fan', R.toLower(type)) ?
-            <ControlIcon name="ban" className={controlIconClass} onClick={kickFan} disabled={!me.connected} /> :
-            <ControlIcon name="comment" onClick={chat} className={controlIconClass} disabled={!me.connected} />
+        <div className="Participant-video" id={`video${type}`}>
+          { !me.audio && me.connected && <div className="Participant-muted">MUTED</div> }
+          { isOnStageFan(type) && stageCountdown >= 0 &&
+            <div className="countdown-overlay">
+              <span className="countdown-text">{stageCountdown}</span>
+            </div>
           }
         </div>
+        { isBackstageFan(type) ?
+          <div className="Participant-move-fan">
+            <button className="move btn transparent" onClick={sendFanToStage}>Move to {translateRole('fan')} feed</button>
+          </div> :
+          <div className="Participant-url">
+            <span className="url">{ this.state.url }</span>
+            <CopyToClipboard text={this.state.url || ''} onCopyText="URL">
+              <button className="btn white">COPY</button>
+            </CopyToClipboard >
+          </div>
+        }
+        <div className="Participant-feed-controls">
+          <span className="label">Alter Feed</span>
+          <div className="controls">
+            <ControlIcon
+              name={me.volume === 100 ? 'volume-up' : 'volume-down'}
+              className={volumeIconClass}
+              disabled={volumeIconDisabled}
+              onClick={toggleVolume}
+            />
+            <ControlIcon
+              name={inPrivateCall ? 'phone-square' : 'phone'}
+              className={privateCallIconClass}
+              disabled={!availableForPrivateCall()}
+              onClick={R.partial(privateCall, [fanId])}
+            />
+            <ControlIcon
+              name={me.audio ? 'microphone' : 'microphone-slash'}
+              disabled={!me.connected}
+              className={controlIconClass}
+              onClick={toggleAudio}
+            />
+            <ControlIcon
+              name="video-camera"
+              className={controlIconClass}
+              onClick={toggleVideo}
+              disabled={!me.connected}
+            />
+            { R.contains('fan', R.toLower(type)) ?
+              <ControlIcon name="ban" className={controlIconClass} onClick={kickFan} disabled={!me.connected} /> :
+              <ControlIcon name="comment" onClick={chat} className={controlIconClass} disabled={!me.connected} />
+            }
+          </div>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 };
 
 const mapStateToProps = (state: State, ownProps: OwnProps): BaseProps => ({

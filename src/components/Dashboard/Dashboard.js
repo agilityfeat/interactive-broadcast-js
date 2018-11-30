@@ -8,7 +8,7 @@ import DashboardEvents from './components/DashboardEvents';
 import './Dashboard.css';
 
 /* beautify preserve:start */
-type BaseProps = { currentUser: User, events: EventsState };
+type BaseProps = { currentUser: User, events: EventsState, settings: Settings };
 type DispatchProps = { loadEvents: UserId => void };
 type Props = BaseProps & DispatchProps;
 /* beautify preserve:end */
@@ -17,8 +17,8 @@ class Dashboard extends Component {
   props: Props;
 
   componentDidMount() {
-    const { currentUser, loadEvents } = this.props;
-    loadEvents(currentUser.id);
+    const { currentUser, loadEvents, settings } = this.props;
+    loadEvents(settings.id, currentUser.superAdmin);
   }
 
   render(): ReactComponent {
@@ -32,11 +32,11 @@ class Dashboard extends Component {
 }
 
 
-const mapStateToProps = (state: State): BaseProps => R.pick(['currentUser', 'events'], state);
+const mapStateToProps = (state: State): BaseProps => R.pick(['currentUser', 'events', 'settings'], state);
 const mapDispatchToProps: MapDispatchToProps<DispatchProps> = (dispatch: Dispatch): DispatchProps =>
   ({
-    loadEvents: (userId: string) => {
-      dispatch(getBroadcastEvents(userId, '/admin'));
+    loadEvents: (domainId: string, superAdmin: boolean = false) => {
+      dispatch(getBroadcastEvents(domainId, superAdmin));
     },
   });
 export default connect(mapStateToProps, mapDispatchToProps)(Dashboard);

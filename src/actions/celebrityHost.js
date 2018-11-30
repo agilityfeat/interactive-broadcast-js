@@ -190,8 +190,8 @@ const monitorPrivateCall: ThunkActionCreator = (userType: HostCeleb): Thunk =>
   (dispatch: Dispatch, getState: GetState) => {
 
     const event = R.prop('event', getState().broadcast);
-    const { adminId, fanUrl } = event;
-    const ref = firebase.database().ref(`activeBroadcasts/${adminId}/${fanUrl}/privateCall`);
+    const { domainId, fanUrl } = event;
+    const ref = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/privateCall`);
     ref.on('value', (snapshot: firebase.database.DataSnapshot) => {
       const { broadcast } = getState();
       const update: PrivateCallState = snapshot.val();
@@ -275,10 +275,11 @@ const connectToInteractive: ThunkActionCreator =
     }
   };
 
-const setBroadcastEventWithCredentials: ThunkActionCreator = (adminId: string, userType: string, slug: string): Thunk =>
+const setBroadcastEventWithCredentials: ThunkActionCreator = (userType: string, slug: string): Thunk =>
   async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
     try {
-      const data = R.assoc(`${userType}Url`, slug, { adminId, userType });
+      const domainId = getState().settings.id;
+      const data = R.assoc(`${userType}Url`, slug, { domainId, userType });
       const eventData: HostCelebEventData = slug ?
         await getEventWithCredentials(data, R.prop('authToken', getState().auth)) :
         await getEmbedEventWithCredentials(data, R.prop('authToken', getState().auth));
@@ -290,22 +291,23 @@ const setBroadcastEventWithCredentials: ThunkActionCreator = (adminId: string, u
   };
 
 
-const initializeBroadcast: ThunkActionCreator = ({ adminId, userType, userUrl }: CelebHostInitOptions): Thunk =>
+const initializeBroadcast: ThunkActionCreator = ({ userType, userUrl }: CelebHostInitOptions): Thunk =>
   async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
     try {
       // Get/set an Auth Token
       await dispatch(validateUser(userType, userUrl));
 
       // Get the event data + OT credentials
-      await dispatch(setBroadcastEventWithCredentials(adminId, userType, userUrl));
+      await dispatch(setBroadcastEventWithCredentials(userType, userUrl));
 
       // Get the eventData
       const eventData = R.path(['broadcast', 'event'], getState());
+      const domainId = R.path(['settings', 'id'], getState());
 
       // Register the celebrity/host in firebase
       firebase.auth().onAuthStateChanged(async (user: InteractiveFan): AsyncVoid => {
         if (user) {
-          const base = `activeBroadcasts/${adminId}/${eventData.fanUrl}`;
+          const base = `activeBroadcasts/${domainId}/${eventData.fanUrl}`;
           const userActiveQuery = await firebase.database().ref(`${base}/${userType}Active`).once('value');
           const userHeartBeatQuery = await firebase.database().ref(`${base}/${userType}HeartBeat`).once('value');
           const userActive = userActiveQuery.val();
