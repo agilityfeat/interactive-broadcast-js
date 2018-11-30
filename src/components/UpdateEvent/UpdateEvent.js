@@ -45,13 +45,13 @@ class UpdateEvent extends Component {
   }
 
   componentDidMount() {
-    const { domainId, user, events } = this.props;
+    const { settings, domainId, user, events } = this.props;
 
     if (!events) {
       this.props.loadEvents(domainId, user.superAdmin);
     }
 
-    if (!user.otApiKey) {
+    if (!settings.otApiKey) {
       this.props.noApiKeyAlert();
     }
   }
@@ -149,6 +149,7 @@ const mapStateToProps = (state: State, ownProps: InitialProps): BaseProps => ({
   eventId: R.pathOr(null, ['params', 'id'], ownProps),
   events: R.path(['events', 'map'], state),
   user: state.currentUser,
+  settings: state.settings,
   domainId: R.path(['settings', 'id'], state),
 });
 
