@@ -31,5 +31,7 @@ declare type DomainFormData = {
   registrationEnabled: boolean,
   fileSharingEnabled: boolean,
   siteColor: string,
-  domain: string
+  domain: string,
+  otApiKey: string,
+  otSecret: string
 };

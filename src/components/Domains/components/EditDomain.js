@@ -26,6 +26,8 @@ const emptyDomain: DomainFormData = {
   registrationEnabled: false,
   fileSharingEnabled: false,
   siteColor: null,
+  otApiKey: '',
+  otSecret: '',
   domain: window.location.host,
 };
 
@@ -61,7 +63,8 @@ class EditDomain extends Component {
   state: {
     fields: DomainFormData,
     errors: FormErrors,
-    submissionAttemped: boolean
+    submissionAttemped: boolean,
+    showCredentials: boolean
   };
   handleChange: (string, SyntheticInputEvent) => void;
   handleColorChange: (string) => void;
@@ -75,6 +78,7 @@ class EditDomain extends Component {
       fields: props.domain ? R.pick(formFields, props.domain) : emptyDomain,
       errors: null,
       submissionAttemped: false,
+      showCredentials: false,
     };
     this.uploadFile = this.uploadFile.bind(this);
     this.handleChange = this.handleChange.bind(this);
@@ -139,6 +143,7 @@ class EditDomain extends Component {
         this.setState({ fields: emptyDomain });
       } else {
         domainData = R.assoc('id', domain.id, domainData);
+        domainData = !domainData.otApiKey && !domainData.otSecret ? R.omit(['otApiKKey', 'otSecret'], domainData) : domainData;
         await updateDomain(domainData);
         toggleEditPanel();
       }
@@ -174,10 +179,14 @@ class EditDomain extends Component {
       fileSharingEnabled,
       siteColor,
       domain,
+      otApiKey,
+      otSecret,
     } = fields;
     const { toggleEditPanel, newDomain } = this.props;
     const { handleSubmit, handleChange, handleColorChange } = this;
     const errorFields = R.propOr({}, 'fields', errors);
+    const shouldShowCredentials = newDomain || this.state.showCredentials;
+
     return (
       <div className="EditDomain">
         <form className="EditDomain-form" onSubmit={handleSubmit}>
@@ -211,7 +220,8 @@ class EditDomain extends Component {
             <hr />
             <div className="edit-domain-other-settings">
               <div className="input-container">
-                <Icon className="icon" name="location-arrow" style={{ color: 'darkgrey' }} />
+                <div className="label">Site domain:</div>
+                <Icon className="icon" name="location-arrow" style={{ color: 'darkgrey', left: '95px' }} />
                 <input
                   className={classNames({ error: errorFields.otApiKey })}
                   type="text"
@@ -237,6 +247,38 @@ class EditDomain extends Component {
                 <Icon className="icon" name="image" style={{ color: 'darkgrey', left: '90px' }} />
                 <input type="file" name="siteFavicon" onChange={this.uploadFile('Site Favicon Upload')} />
               </div>
+            </div>
+            <hr />
+            <div className="edit-domain-other-settings">
+              { !shouldShowCredentials && <button className="btn action orange" onClick={this.toggleCredentials}>Change OT credentials</button> }
+              { shouldShowCredentials &&
+                <div className="input-container">
+                  <Icon className="icon" name="key" style={{ color: 'darkgrey' }} />
+                  <input
+                    className={classNames({ error: errorFields.otApiKey })}
+                    type="text"
+                    name="otApiKey"
+                    value={otApiKey}
+                    placeholder="OT API Key (optional)"
+                    onChange={handleChange}
+                  />
+                </div>
+              }
+              { shouldShowCredentials &&
+                <div className="input-container">
+                  <Icon className="icon" name="user-secret" style={{ color: 'darkgrey' }} />
+                  <input
+                    className={classNames({ error: errorFields.otSecret })}
+                    type="password"
+                    name="otSecret"
+                    value={otSecret}
+                    placeholder="OT API Secret (optional)"
+                    onChange={handleChange}
+                    autoComplete="new-password"
+                    size={42}
+                  />
+                </div>
+              }
             </div>
             <hr />
             <div className="edit-domain-buttons">
