@@ -82,6 +82,8 @@ const del = (route: string, requiresAuth: boolean = true): Promise<*> => execute
 const getAuthTokenUser = (domainId: string, userType: string, userUrl: string, idToken?: string): Promise<{token: AuthToken}> =>
   post(`auth/token-${userType}`, R.assoc(`${userType}Url`, userUrl, { domainId, idToken }), false);
 const getAuthToken = (idToken: string): Promise<{ token: AuthToken }> => post('auth/token', { idToken }, false);
+const getAuthTokenViewer = (domainId: string, email: string, password: string, fanUrl: string): Promise<{token: AuthToken}> =>
+  post('auth/token-fan', { domainId, email, password, fanUrl });
 
 /** User */
 const getUser = (userId: string): Promise<User> => get(`admin/${userId}`);
@@ -131,6 +133,7 @@ module.exports = {
   getAllUsers,
   getAuthToken,
   getAuthTokenUser,
+  getAuthTokenViewer,
   getDomain,
   getEmbedEventWithCredentials,
   getEvent,
