@@ -677,7 +677,8 @@ const initializeBroadcast: ThunkActionCreator = ({ userUrl, fitMode }: FanInitOp
       // Connect to firebase and check the number of viewers
       firebase.auth().onAuthStateChanged(async (user: InteractiveFan): AsyncVoid => {
         if (user) {
-          if ((registrationEnabled && !user.isAnonymous) || !registrationEnabled) {
+          const { currentUser } = getState();
+          if ((registrationEnabled && currentUser) || !registrationEnabled) {
             dispatch(connectToPresence(domainId, eventData.fanUrl));
           }
         } else {
