@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import Favicon from 'react-favicon';
 import App from './components/App/App';
 import Login from './components/Login/Login';
+import ResetPassword from './components/ResetPassword/ResetPassword';
 import Loading from './components/Common/Loading';
 import Dashboard from './components/Dashboard/Dashboard';
 import Users from './components/Users/Users';
