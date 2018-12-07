@@ -95,6 +95,9 @@ const deleteUserRecord = (userId: string): Promise<boolean> => del(`admin/${user
 /** Viewer */
 const getViewer = (domainId: string, userId: string, authToken?: string): Promise<User> => get(`viewer/${domainId}/${userId}`, true, authToken);
 const createViewer = (viewerData: ViewerFormData): Promise<*> => post('viewer', viewerData, false);
+const sendViewerResetEmail = (userUrl: string, domainId: string, email: string): Promise<*> =>
+  post('viewer/send-reset-password', { userUrl, domainId, email }, false);
+const resetViewerPassword = (token: string, password: string): Promise<*> => post('viewer/reset-password', { token, password }, false);
 
 /** Events */
 const getEventsByDomain = (domainId: string): Promise<BroadcastEventMap> => get(`event/get-by-domain?domainId=${domainId}`);
@@ -144,6 +147,8 @@ module.exports = {
   getMostRecentEvent,
   getUser,
   getViewer,
+  sendViewerResetEmail,
+  resetViewerPassword,
   updateDomain,
   updateEvent,
   updateEventStatus,
