@@ -27,6 +27,7 @@ const routes = (
     <Route path="/" component={App} >
       <IndexRedirect to="login" />
       <Route path="login" component={Login} />
+      <Route path="resetPassword" hideHeader component={ResetPassword} />
       <Route path="/show/:domainId/:fanUrl" component={Fan} hideHeader userType={'fan'} />
       <Route path="/post-production/:adminId/:fanUrl" component={Fan} hideHeader userType={'fan'} />
       <Route path="/show-host/:domainId/:hostUrl" component={CelebrityHost} hideHeader userType={'host'} />
