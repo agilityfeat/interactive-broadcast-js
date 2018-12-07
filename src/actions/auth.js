@@ -1,7 +1,13 @@
 // @flow
 import R from 'ramda';
 import firebase from '../services/firebase';
-import { getAuthToken, getAuthTokenUser, getAuthTokenViewer } from '../services/api';
+import {
+  getAuthToken,
+  getAuthTokenUser,
+  getAuthTokenViewer,
+  sendViewerResetEmail,
+  resetViewerPassword,
+} from '../services/api';
 import { saveAuthToken, saveState } from '../services/localStorage';
 import { logIn, setCurrentUser, logOut } from './currentUser';
 import { setSuccess, resetAlert, setInfo } from './alert';
@@ -77,10 +83,30 @@ const signOut: ThunkActionCreator = (redirect: boolean = true): Thunk =>
     });
   };
 
-const resetPassword: ThunkActionCreator = ({ email }: AuthCredentials): Thunk =>
+
+const viewerResetPassword: ThunkActionCreator = ({ token, password }: ResetCredentials): Thunk =>
+  async (dispatch: Dispatch): Promise<*> => {
+    try {
+      const data = await resetViewerPassword(token, password);
+      const options: AlertPartialOptions = {
+        title: 'Password Reset',
+        text: 'Your password has been successfully reset',
+        onConfirm: (): void => R.forEach(dispatch, [resetAlert()]),
+      };
+      dispatch(setSuccess(options));
+
+      return data;
+    } catch (error) {
+      dispatch(setInfo({ title: 'Password Reset', text: 'There was a problem resetting your password' }));
+    }
+  };
+
+const resetPassword: ThunkActionCreator = ({ userUrl, domainId, email }: AuthCredentials, isViewer: boolean=false): Thunk =>
   async (dispatch: Dispatch): AsyncVoid => {
     try {
-      await firebase.auth().sendPasswordResetEmail(email);
+      if (isViewer) await sendViewerResetEmail(userUrl, domainId, email);
+      else await firebase.auth().sendPasswordResetEmail(email);
+
       const options: AlertPartialOptions = {
         title: 'Password Reset',
         text: 'Please check your inbox for password reset instructions',
@@ -99,4 +125,5 @@ module.exports = {
   signOut,
   userForgotPassword,
   resetPassword,
+  viewerResetPassword,
 };
