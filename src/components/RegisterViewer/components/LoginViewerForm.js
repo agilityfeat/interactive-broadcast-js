@@ -133,7 +133,7 @@ const mapDispatchToProps: MapDispatchToProps<DispatchProps> = (dispatch: Dispatc
       dispatch(userForgotPassword(forgot));
     },
     sendResetEmail: (credentials: AuthCredentials) => {
-      dispatch(resetPassword(credentials));
+      dispatch(resetPassword(credentials, true));
     },
   });
 
