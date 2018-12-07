@@ -10,7 +10,8 @@ declare type AuthState = {
   authToken: null | AuthToken
  };
 
-declare type AuthCredentials = { email: string, password?: string };
+declare type ResetCredentials = { token: string, password: string };
+declare type AuthCredentials = { userUrl?: string, email: string, password?: string };
 declare type ViewerAuthCredentials = { email: string, password?: string, adminId?: string, fanUrl?: string };
 declare type AuthAction =
   { type: 'AUTHENTICATE_USER', credentials: AuthCredentials } |
