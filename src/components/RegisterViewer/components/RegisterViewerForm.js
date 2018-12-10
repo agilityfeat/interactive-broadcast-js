@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import R from 'ramda';
 import Icon from 'react-fontawesome';
 import classNames from 'classnames';
+import shortid from 'shortid';
 import { connect } from 'react-redux';
 import { createViewer } from '../../../services/api';
 import { signInViewer } from '../../../actions/auth';
@@ -61,7 +62,7 @@ class RegisterViewerForm extends Component {
     const viewerData = { ...this.state.fields, domainId: settings.id, userUrl };
 
     try {
-      await createViewer(viewerData);
+      await createViewer(R.assoc('id', shortid.generate(), viewerData));
       onSuccess({ text: 'User created successfully' });
       await authenticateUser(viewerData);
       this.setState({

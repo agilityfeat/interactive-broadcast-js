@@ -1,9 +1,15 @@
 // @flow
 import R from 'ramda';
 import firebase from '../services/firebase';
-import { getAuthToken, getAuthTokenUser } from '../services/api';
+import {
+  getAuthToken,
+  getAuthTokenUser,
+  getAuthTokenViewer,
+  sendViewerResetEmail,
+  resetViewerPassword,
+} from '../services/api';
 import { saveAuthToken, saveState } from '../services/localStorage';
-import { logIn, logInViewer, logOut } from './currentUser';
+import { logIn, setCurrentUser, logOut } from './currentUser';
 import { setSuccess, resetAlert, setInfo } from './alert';
 
 const authError: ActionCreator = (error: null | Error): AuthAction => ({
@@ -28,32 +34,32 @@ const validate: ThunkActionCreator = (uid: string, idToken: string): Thunk =>
     }
   };
 
-const validateUser: ThunkActionCreator = (userType: UserRole, userUrl: string, idToken?: string, uid?: string): Thunk =>
+const validateUser: ThunkActionCreator = (userType: UserRole, userUrl: string, idToken?: string): Thunk =>
   async (dispatch: Dispatch, getState: () => State): AsyncVoid => {
     try {
       const { settings } = getState();
       const { token } = await getAuthTokenUser(settings.id, userType, userUrl, idToken);
       dispatch({ type: 'SET_AUTH_TOKEN', token });
       saveAuthToken(token);
-
-      if (settings.registrationEnabled && userType === 'fan') {
-        await dispatch(logInViewer(uid));
-      }
     } catch (error) {
       await dispatch(authError(error));
     }
   };
 
 const signInViewer: ThunkActionCreator = ({ email, password, userUrl }: ViewerAuthCredentials): Thunk =>
-  async (dispatch: Dispatch): AsyncVoid => {
+  async (dispatch: Dispatch, getState: () => State): AsyncVoid => {
     try {
-      const user = await firebase.auth().signInWithEmailAndPassword(email, password);
-      const idToken = await user.getIdToken(true);
-      await dispatch(validateUser('fan', userUrl, idToken, user.uid));
+      const { settings } = getState();
+      const { token, user } = await getAuthTokenViewer(settings.id, email, password, userUrl);
+
+      dispatch({ type: 'SET_AUTH_TOKEN', token });
+      saveAuthToken(token);
+      await dispatch(setCurrentUser({ ...user, uid: user.id }));
     } catch (error) {
       await dispatch(authError(error));
     }
   };
+
 
 const signIn: ThunkActionCreator = ({ email, password }: AuthCredentials): Thunk =>
   async (dispatch: Dispatch): AsyncVoid => {
@@ -68,18 +74,39 @@ const signIn: ThunkActionCreator = ({ email, password }: AuthCredentials): Thunk
 
 const signOut: ThunkActionCreator = (redirect: boolean = true): Thunk =>
   (dispatch: Dispatch) => {
-    dispatch(logOut());
     // We need to ensure the localstorage is updated ASAP
+    dispatch(logOut());
     saveState({ currentUser: null });
+
     firebase.auth().signOut().then(() => {
       if (redirect) window.location.href = '/';
     });
   };
 
-const resetPassword: ThunkActionCreator = ({ email }: AuthCredentials): Thunk =>
+
+const viewerResetPassword: ThunkActionCreator = ({ token, password }: ResetCredentials): Thunk =>
+  async (dispatch: Dispatch): Promise<*> => {
+    try {
+      const data = await resetViewerPassword(token, password);
+      const options: AlertPartialOptions = {
+        title: 'Password Reset',
+        text: 'Your password has been successfully reset',
+        onConfirm: (): void => R.forEach(dispatch, [resetAlert()]),
+      };
+      dispatch(setSuccess(options));
+
+      return data;
+    } catch (error) {
+      dispatch(setInfo({ title: 'Password Reset', text: 'There was a problem resetting your password' }));
+    }
+  };
+
+const resetPassword: ThunkActionCreator = ({ userUrl, domainId, email }: AuthCredentials, isViewer: boolean=false): Thunk =>
   async (dispatch: Dispatch): AsyncVoid => {
     try {
-      await firebase.auth().sendPasswordResetEmail(email);
+      if (isViewer) await sendViewerResetEmail(userUrl, domainId, email);
+      else await firebase.auth().sendPasswordResetEmail(email);
+
       const options: AlertPartialOptions = {
         title: 'Password Reset',
         text: 'Please check your inbox for password reset instructions',
@@ -92,10 +119,11 @@ const resetPassword: ThunkActionCreator = ({ email }: AuthCredentials): Thunk =>
   };
 
 module.exports = {
+  validateUser,
   signIn,
   signInViewer,
   signOut,
   userForgotPassword,
   resetPassword,
-  validateUser,
+  viewerResetPassword,
 };

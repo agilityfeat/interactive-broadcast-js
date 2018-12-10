@@ -82,6 +82,8 @@ const del = (route: string, requiresAuth: boolean = true): Promise<*> => execute
 const getAuthTokenUser = (domainId: string, userType: string, userUrl: string, idToken?: string): Promise<{token: AuthToken}> =>
   post(`auth/token-${userType}`, R.assoc(`${userType}Url`, userUrl, { domainId, idToken }), false);
 const getAuthToken = (idToken: string): Promise<{ token: AuthToken }> => post('auth/token', { idToken }, false);
+const getAuthTokenViewer = (domainId: string, email: string, password: string, fanUrl: string): Promise<{token: AuthToken}> =>
+  post('auth/token-fan', { domainId, email, password, fanUrl });
 
 /** User */
 const getUser = (userId: string): Promise<User> => get(`admin/${userId}`);
@@ -93,6 +95,9 @@ const deleteUserRecord = (userId: string): Promise<boolean> => del(`admin/${user
 /** Viewer */
 const getViewer = (domainId: string, userId: string, authToken?: string): Promise<User> => get(`viewer/${domainId}/${userId}`, true, authToken);
 const createViewer = (viewerData: ViewerFormData): Promise<*> => post('viewer', viewerData, false);
+const sendViewerResetEmail = (userUrl: string, domainId: string, email: string): Promise<*> =>
+  post('viewer/send-reset-password', { userUrl, domainId, email }, false);
+const resetViewerPassword = (token: string, password: string): Promise<*> => post('viewer/reset-password', { token, password }, false);
 
 /** Events */
 const getEventsByDomain = (domainId: string): Promise<BroadcastEventMap> => get(`event/get-by-domain?domainId=${domainId}`);
@@ -131,6 +136,7 @@ module.exports = {
   getAllUsers,
   getAuthToken,
   getAuthTokenUser,
+  getAuthTokenViewer,
   getDomain,
   getEmbedEventWithCredentials,
   getEvent,
@@ -141,6 +147,8 @@ module.exports = {
   getMostRecentEvent,
   getUser,
   getViewer,
+  sendViewerResetEmail,
+  resetViewerPassword,
   updateDomain,
   updateEvent,
   updateEventStatus,

@@ -102,8 +102,8 @@
 }
 
 .FanBody .imageHolder img.default {
-  margin: 100px;
-  width: auto;
+  padding: 100px;
+  width: 100%;
 }
 
 .FanBody .producerContainer {

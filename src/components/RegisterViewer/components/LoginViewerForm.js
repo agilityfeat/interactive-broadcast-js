@@ -66,7 +66,7 @@ class LoginViewerForm extends Component {
   componentDidUpdate(prevProps: Props) {
     const { settings, userUrl } = this.props;
 
-    if (!prevProps.auth.token && this.props.auth.authToken) {
+    if (!prevProps.auth.authToken && this.props.auth.authToken) {
       this.props.init({
         domainId: settings.id,
         userType: 'fan',
@@ -133,7 +133,7 @@ const mapDispatchToProps: MapDispatchToProps<DispatchProps> = (dispatch: Dispatc
       dispatch(userForgotPassword(forgot));
     },
     sendResetEmail: (credentials: AuthCredentials) => {
-      dispatch(resetPassword(credentials));
+      dispatch(resetPassword(credentials, true));
     },
   });
 

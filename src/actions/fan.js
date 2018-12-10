@@ -176,7 +176,7 @@ const receivedChatMessage: ThunkActionCreator = (connection: Connection, message
 /**
  * Remove the fan's record from firebase
  */
-const removeActiveFanRecord: ThunkActionCreator = (event: BroadcastEvent): Thunk =>
+const removeActiveFanRecord: ThunkActionCreator = (event: BroadcastEvent, remove: boolean=false): Thunk =>
   async (): AsyncVoid => {
     const fanId = fanUid();
     const { fanUrl, domainId } = event;
@@ -185,7 +185,8 @@ const removeActiveFanRecord: ThunkActionCreator = (event: BroadcastEvent): Thunk
     };
     const ref = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/activeFans/${fanId}`);
     try {
-      ref.set(record);
+      if (!remove) ref.set(record);
+      else ref.remove((error: Error): void => error && console.log(error));
     } catch (error) {
       console.log('Failed to remove active fan record: ', error);
     }
@@ -676,7 +677,8 @@ const initializeBroadcast: ThunkActionCreator = ({ userUrl, fitMode }: FanInitOp
       // Connect to firebase and check the number of viewers
       firebase.auth().onAuthStateChanged(async (user: InteractiveFan): AsyncVoid => {
         if (user) {
-          if ((registrationEnabled && !user.isAnonymous) || !registrationEnabled) {
+          const { currentUser } = getState();
+          if ((registrationEnabled && currentUser) || !registrationEnabled) {
             dispatch(connectToPresence(domainId, eventData.fanUrl));
           }
         } else {
@@ -754,6 +756,7 @@ const getInLine: ThunkActionCreator = (): Thunk =>
   };
 
 module.exports = {
+  removeActiveFanRecord,
   initializeBroadcast,
   getInLine,
   leaveTheLine,
