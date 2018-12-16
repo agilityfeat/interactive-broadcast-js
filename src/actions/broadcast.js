@@ -111,7 +111,7 @@ const toggleParticipantProperty: ThunkActionCreator = (participantType: Particip
     const update: ParticipantAVPropertyUpdate = R.ifElse(
       R.equals('volume'), // $FlowFixMe
       (): { property: 'volume', value: number } => ({ property, value: currentValue === 100 ? 25 : 100 }), // $FlowFixMe
-      (): { property: 'audio' | 'video', value: boolean } => ({ property, value: !currentValue }) // eslint-disable-line comma-dangle
+      (): { property: 'audio' | 'video', value: boolean } => ({ property, value: !currentValue }),
     )(property);
     const { value } = update;
 
