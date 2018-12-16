@@ -20,7 +20,7 @@ import {
   heartBeatTime,
 } from './broadcast';
 import { getEventWithCredentials, getEmbedEventWithCredentials } from '../services/api';
-import { isUserOnStage } from '../services/util';
+import { isUserOnStage, alterCameraElement } from '../services/util';
 import { setInfo, setCameraError, setExtensionError } from './alert';
 import firebase from '../services/firebase';
 import {
@@ -48,16 +48,6 @@ const receivedChatMessage: ThunkActionCreator = (connection: Connection, message
     R.forEach(dispatch, existingChat ? R.tail(actions) : actions);
   };
 
-/**
- * shows or hides participant video feed
- */
-const alterCameraElement = (getState: GetState, userType: UserType, action: 'hide' | 'show') => {
-  const streamMap = R.path(['broadcast', 'streamMap'], getState());
-  const camStream = R.path(['broadcast', 'participants', userType, 'stream'], getState());
-  const camElement = camStream && document.getElementById(streamMap[camStream.id]);
-
-  if (camElement) camElement.style.display = action === 'hide' ? 'none' : 'block';
-};
 
 const onSignal = (dispatch: Dispatch, userType: HostCeleb, getState: GetState): SignalListener =>
   async ({ type, data, from }: Signal): AsyncVoid => {
@@ -82,14 +72,15 @@ const onSignal = (dispatch: Dispatch, userType: HostCeleb, getState: GetState): 
         break;
       case 'startScreenShare': {
         if (fromProducer) {
-          const producer = R.path(['broadcast', 'participants', 'producer'], getState());
+          const broadcast = R.path(['broadcast'], getState());
+          const producer = R.path(['participants', 'producer'], broadcast);
           const to = R.path(['stream', 'connection'], producer);
 
           opentok.startScreenShare('stage')
-            .then((): void => alterCameraElement(getState, userType, 'hide'))
+            .then((): void => alterCameraElement(broadcast, userType, 'hide'))
             .catch(() => {
               opentok.signal('stage', { type: 'errorScreenShareExtension', to });
-              alterCameraElement(getState, userType, 'show');
+              alterCameraElement(broadcast, userType, 'show');
               dispatch(setExtensionError());
             });
         }
@@ -186,7 +177,7 @@ const opentokConfig = (dispatch: Dispatch, { userCredentials, userType }: UserDa
         const started = type === 'start';
         const update = { property: 'screen', value: started };
         const action = started ? 'hide' : 'show';
-        alterCameraElement(getState, userType, action);
+        alterCameraElement(getState().broadcast, userType, action);
 
         dispatch({
           type: 'PARTICIPANT_AV_PROPERTY_CHANGED',
@@ -201,11 +192,11 @@ const opentokConfig = (dispatch: Dispatch, { userCredentials, userType }: UserDa
     // assign screensharing listeners
     instance.on('startScreenSharing', handleScreenShareEvent('start'));
     instance.on('endScreenSharing', handleScreenShareEvent('end'));
-    instance.on('screenSharingError', (error) => {
+    instance.on('screenSharingError', (error: Error) => {
       if (error.code === 1500) {
         const producer = R.path(['broadcast', 'participants', 'producer'], getState());
         const to = R.path(['stream', 'connection'], producer);
-        alterCameraElement(getState, userType, 'show');
+        alterCameraElement(getState().broadcast, userType, 'show');
 
         opentok.signal('stage', { type: 'errorScreenShare', to });
       }
