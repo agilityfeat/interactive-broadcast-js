@@ -9,7 +9,7 @@ import { isUserOnStage } from '../services/util';
 // Presence heartbeat time in seconds.
 const heartBeatTime = 10;
 let heartBeatInterval;
-const avPropertyChanged: ActionCreator = (participantType: UserRole, update: ParticipantAVPropertyUpdate): BroadcastAction => ({ 
+const avPropertyChanged: ActionCreator = (participantType: UserRole, update: ParticipantAVPropertyUpdate): BroadcastAction => ({
   type: 'PARTICIPANT_AV_PROPERTY_CHANGED',
   participantType,
   update,
@@ -85,6 +85,18 @@ const endPrivateCall: ThunkActionCreator = (participant: ParticipantType, userIn
       opentok.unsubscribeFromAudio(instance, opentok.getStreamByUserType(instance, 'producer'));
     }
     dispatch({ type: 'SET_PRIVATE_CALL_STATE', privateCall: null });
+  };
+
+/**
+ * Request a participants screen
+ */
+const screenShareAction: ThunkActionCreator = (action: string, participantType: ParticipantType): Thunk =>
+  async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
+    const participant = R.path(['broadcast', 'participants', participantType], getState());
+    const instance = R.equals('backstageFan', participantType) ? 'backstage' : 'stage'; // For moving to OT2
+    const to = R.path(['stream', 'connection'], participant);
+
+    opentok.signal(instance, { type: `${action}ScreenShare`, to });
   };
 
 /**
@@ -336,6 +348,7 @@ module.exports = {
   startElapsedTime,
   forceFanToDisconnect,
   startFanTransition,
+  screenShareAction,
   stopFanTransition,
   startHeartBeat,
   stopHeartBeat,
