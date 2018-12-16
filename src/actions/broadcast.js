@@ -4,7 +4,7 @@ import moment from 'moment';
 import { setInfo, resetAlert } from './alert';
 import opentok from '../services/opentok';
 import firebase from '../services/firebase';
-import { isUserOnStage } from '../services/util';
+import { isUserOnStage, alterCameraElement } from '../services/util';
 
 // Presence heartbeat time in seconds.
 const heartBeatTime = 10;
@@ -167,14 +167,12 @@ const updateParticipants: ThunkActionCreator = (participantType: ParticipantType
       }
       case 'streamCreated': {
         if (stream.videoType === 'screen') {
-          const participants = R.path(['broadcast', 'participants'], getState());
-          const camStream = R.path(['broadcast', 'participants', participantType, 'stream'], getState());
-          const streamMap = R.path(['broadcast', 'streamMap'], getState());
+          const broadcast = R.path(['broadcast'], getState());
+          const participants = R.path(['participants'], broadcast);
 
-          const camElement = camStream && document.getElementById(streamMap[camStream.id]);
-          if (camElement) camElement.style.display = 'none';
-
+          alterCameraElement(broadcast, participantType, 'hide');
           dispatch(avPropertyChanged(participantType, { property: 'screen', value: true }));
+
           Object.keys(participants).forEach((k: ParticipantType) => {
             const p = participants[k];
             p.video && dispatch(toggleParticipantProperty(k, 'video'));
@@ -186,12 +184,9 @@ const updateParticipants: ThunkActionCreator = (participantType: ParticipantType
       }
       case 'streamDestroyed': {
         if (stream.videoType === 'screen') {
-          const camStream = R.path(['broadcast', 'participants', participantType, 'stream'], getState());
-          const streamMap = R.path(['broadcast', 'streamMap'], getState());
+          const broadcast = R.path(['broadcast'], getState());
 
-          const camElement = camStream && document.getElementById(streamMap[camStream.id]);
-          if (camElement) camElement.style.display = 'block';
-
+          alterCameraElement(broadcast, participantType, 'show');
           dispatch(avPropertyChanged(participantType, { property: 'screen', value: false }));
         } else {
           const inPrivateCall = R.equals(participantType, R.path(['broadcast', 'privateCall', 'isWith'], getState()));
