@@ -3,7 +3,13 @@ import R from 'ramda';
 import moment from 'moment';
 import { browserHistory } from 'react-router';
 import { updateStatus } from './events';
-import { setInfo, setBlockUserAlert, setCameraError, resetAlert } from './alert';
+import {
+  setInfo,
+  setBlockUserAlert,
+  setCameraError,
+  setError,
+  resetAlert,
+} from './alert';
 import { getEvent, getAdminCredentials, getEventWithCredentials } from '../services/api';
 import firebase from '../services/firebase';
 import {
