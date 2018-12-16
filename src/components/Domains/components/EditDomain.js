@@ -26,7 +26,7 @@ const emptyDomain: DomainFormData = {
   registrationEnabled: false,
   fileSharingEnabled: false,
   screenSharingEnabled: false,
-  siteColor: null,
+  siteColor: '#000000',
   otApiKey: '',
   otSecret: '',
   domain: window.location.host,
