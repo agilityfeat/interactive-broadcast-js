@@ -48,7 +48,18 @@ const receivedChatMessage: ThunkActionCreator = (connection: Connection, message
     R.forEach(dispatch, existingChat ? R.tail(actions) : actions);
   };
 
-const onSignal = (dispatch: Dispatch, userType: HostCeleb): SignalListener =>
+/**
+ * shows or hides participant video feed
+ */
+const alterCameraElement = (getState: GetState, userType: UserType, action: 'hide' | 'show') => {
+  const streamMap = R.path(['broadcast', 'streamMap'], getState());
+  const camStream = R.path(['broadcast', 'participants', userType, 'stream'], getState());
+  const camElement = camStream && document.getElementById(streamMap[camStream.id]);
+
+  if (camElement) camElement.style.display = action === 'hide' ? 'none' : 'block';
+};
+
+const onSignal = (dispatch: Dispatch, userType: HostCeleb, getState: GetState): SignalListener =>
   async ({ type, data, from }: Signal): AsyncVoid => {
     const signalData = data ? JSON.parse(data) : {};
     const signalType = R.last(R.split(':', type));
