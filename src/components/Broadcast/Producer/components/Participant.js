@@ -97,6 +97,7 @@ class Participant extends React.Component {
         </div>
         <div className="Participant-video" id={`video${type}`}>
           { !me.audio && me.connected && <div className="Participant-muted">MUTED</div> }
+          { me.screen && me.connected && <div className="Participant-muted">SCREENSHARING</div> }
           { isOnStageFan(type) && stageCountdown >= 0 &&
             <div className="countdown-overlay">
               <span className="countdown-text">{stageCountdown}</span>
