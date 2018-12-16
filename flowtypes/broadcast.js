@@ -19,6 +19,7 @@ declare type onSnapshotReady = Unit;
 declare type ParticipantAVPropertyUpdate =
 { property: 'volume', value: number } |
 { property: 'video', value: boolean } |
+{ property: 'screen', value: boolean } |
 { property: 'audio', value: boolean } ;
 
 declare type ParticipantState = {
@@ -27,6 +28,7 @@ declare type ParticipantState = {
   networkQuality: null | NetworkQuality,
   video: boolean,
   audio: boolean,
+  screen: boolean,
   volume: number
 }
 
