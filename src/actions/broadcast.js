@@ -165,17 +165,42 @@ const updateParticipants: ThunkActionCreator = (participantType: ParticipantType
         }
         break;
       }
-      case 'streamCreated':
-        dispatch({ type: 'BROADCAST_PARTICIPANT_JOINED', participantType, stream });
+      case 'streamCreated': {
+        if (stream.videoType === 'screen') {
+          const participants = R.path(['broadcast', 'participants'], getState());
+          const camStream = R.path(['broadcast', 'participants', participantType, 'stream'], getState());
+          const streamMap = R.path(['broadcast', 'streamMap'], getState());
+
+          const camElement = camStream && document.getElementById(streamMap[camStream.id]);
+          if (camElement) camElement.style.display = 'none';
+
+          dispatch(avPropertyChanged(participantType, { property: 'screen', value: true }));
+          Object.keys(participants).forEach((k: ParticipantType) => {
+            const p = participants[k];
+            p.video && dispatch(toggleParticipantProperty(k, 'video'));
+          });
+        } else {
+          dispatch({ type: 'BROADCAST_PARTICIPANT_JOINED', participantType, stream });
+        }
         break;
-      case 'streamDestroyed':
-        {
+      }
+      case 'streamDestroyed': {
+        if (stream.videoType === 'screen') {
+          const camStream = R.path(['broadcast', 'participants', participantType, 'stream'], getState());
+          const streamMap = R.path(['broadcast', 'streamMap'], getState());
+
+          const camElement = camStream && document.getElementById(streamMap[camStream.id]);
+          if (camElement) camElement.style.display = 'block';
+
+          dispatch(avPropertyChanged(participantType, { property: 'screen', value: false }));
+        } else {
           const inPrivateCall = R.equals(participantType, R.path(['broadcast', 'privateCall', 'isWith'], getState()));
           inPrivateCall && dispatch(endPrivateCall(participantType, true));
           dispatch({ type: 'REMOVE_CHAT', chatId: participantType });
           dispatch({ type: 'BROADCAST_PARTICIPANT_LEFT', participantType });
-          break;
         }
+        break;
+      }
       case 'startCall':
         dispatch({ type: 'BROADCAST_PARTICIPANT_JOINED', participantType, stream });
         break;
