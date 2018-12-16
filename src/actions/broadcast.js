@@ -167,8 +167,8 @@ const updateParticipants: ThunkActionCreator = (participantType: ParticipantType
       }
       case 'streamCreated': {
         if (stream.videoType === 'screen') {
-          const broadcast = R.path(['broadcast'], getState());
-          const participants = R.path(['participants'], broadcast);
+          const broadcast = R.prop('broadcast', getState());
+          const participants = R.prop('participants', broadcast);
 
           alterCameraElement(broadcast, participantType, 'hide');
           dispatch(avPropertyChanged(participantType, { property: 'screen', value: true }));
@@ -184,7 +184,7 @@ const updateParticipants: ThunkActionCreator = (participantType: ParticipantType
       }
       case 'streamDestroyed': {
         if (stream.videoType === 'screen') {
-          const broadcast = R.path(['broadcast'], getState());
+          const broadcast = R.prop('broadcast', getState());
 
           alterCameraElement(broadcast, participantType, 'show');
           dispatch(avPropertyChanged(participantType, { property: 'screen', value: false }));

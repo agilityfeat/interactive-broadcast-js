@@ -177,7 +177,7 @@ const opentokConfig = (dispatch: Dispatch, { userCredentials, userType }: UserDa
         const started = type === 'start';
         const update = { property: 'screen', value: started };
         const action = started ? 'hide' : 'show';
-        alterCameraElement(getState().broadcast, userType, action);
+        alterCameraElement(R.prop('broadcast', getState()), userType, action);
 
         dispatch({
           type: 'PARTICIPANT_AV_PROPERTY_CHANGED',
@@ -196,7 +196,7 @@ const opentokConfig = (dispatch: Dispatch, { userCredentials, userType }: UserDa
       if (error.code === 1500) {
         const producer = R.path(['broadcast', 'participants', 'producer'], getState());
         const to = R.path(['stream', 'connection'], producer);
-        alterCameraElement(getState().broadcast, userType, 'show');
+        alterCameraElement(R.prop('broadcast', getState()), userType, 'show');
 
         opentok.signal('stage', { type: 'errorScreenShare', to });
       }
@@ -247,7 +247,7 @@ const opentokConfig = (dispatch: Dispatch, { userCredentials, userType }: UserDa
 const monitorPrivateCall: ThunkActionCreator = (userType: HostCeleb): Thunk =>
   (dispatch: Dispatch, getState: GetState) => {
 
-    const event = R.prop('event', getState().broadcast);
+    const event = R.prop('event', R.prop('broadcast', getState()));
     const { domainId, fanUrl } = event;
     const ref = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/privateCall`);
     ref.on('value', (snapshot: firebase.database.DataSnapshot) => {
