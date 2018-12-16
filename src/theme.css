@@ -46,3 +46,7 @@ a, a:visited, a:hover, a:active {
 .DashboardEvents-controls .sort-events .btn.active {
   background-color: var(--main-btn-bg);
 }
+
+.ots-ss-modal {
+  display: none !important;
+}
