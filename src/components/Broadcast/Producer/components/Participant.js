@@ -73,6 +73,7 @@ class Participant extends React.Component {
       kickFan,
       broadcast,
       sendFanToStage,
+      screenSharingEnabled,
       fanRecord,
     } = this.props;
     const fanId = R.prop('id', fanRecord || {});
@@ -137,6 +138,7 @@ class Participant extends React.Component {
               onClick={toggleAudio}
             />
             { !R.contains('fan', R.toLower(type)) &&
+              screenSharingEnabled &&
               <ControlIcon
                 name="desktop"
                 className={controlIconClass}
@@ -162,6 +164,7 @@ class Participant extends React.Component {
 }
 
 const mapStateToProps = (state: State, ownProps: OwnProps): BaseProps => ({
+  screenSharingEnabled: R.path(['settings', 'screenSharingEnabled'], state),
   broadcast: R.prop('broadcast', state),
   fanRecord: isFan(ownProps.type) ? R.path(['broadcast', 'participants', ownProps.type, 'record'], state) : null,
 });
