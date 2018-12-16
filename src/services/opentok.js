@@ -3,9 +3,13 @@ import Core from 'opentok-accelerator-core';
 import R from 'ramda';
 import platform from 'platform';
 
+import screenSharing from '../config/screenSharing';
+
 const instances: {[name: string]: Core} = {};
 const listeners: {[name: string]: Core => void} = {};
 const options: {[name: string]: OpentokSessionOptions} = {};
+
+const state = (instance: SessionName): CoreState => instances[instance].state();
 
 const getStreamByUserType = (instance: SessionName, userType: UserRole): Stream => {
   const core = instances[instance];
@@ -20,6 +24,12 @@ const getConnectionByUserType = (instance: SessionName, userType: UserRole): Con
   const stream = getStreamByUserType(instance, userType);
   return stream && stream.connection;
 };
+
+const buildCoreOptions = (coreOptions: CoreInstanceOptions): CoreInstanceOptions => ({
+  ...coreOptions,
+  packages: ['screenSharing'],
+  screenSharing,
+});
 
 /**
  * Get a stream by its id
@@ -37,7 +47,7 @@ const getAllSubscribers = (instance: SessionName): Subscriber[] =>
     R.flatten, // Flatten into a single array
     R.values, // Get just the map values (i.e. subscriber objects)
     R.map(R.values), // "Unnest" the subscribers
-    R.pick(['camera', 'sip']), // Take only the camera and sip subscribers
+    R.pick(['screen', 'camera', 'sip']), // Take only the camera and sip subscribers
   )(R.prop(instance, instances).state().subscribers); // Get a map of all subscribers by type
 
 /**
@@ -45,7 +55,7 @@ const getAllSubscribers = (instance: SessionName): Subscriber[] =>
  */
 const init = (instancesToCreate: CoreInstanceOptions[]) => {
   const createCoreInstance = ({ name, coreOptions, eventListeners, opentokOptions = {} }: CoreInstanceOptions) => {
-    instances[name] = new Core(coreOptions);
+    instances[name] = new Core(buildCoreOptions(coreOptions));
     listeners[name] = eventListeners;
     options[name] = opentokOptions;
   };
@@ -87,15 +97,15 @@ const createEmptyPublisher = async (instance: SessionName): AsyncVoid => {
   }
 };
 
-const state = (instance: SessionName): CoreState => instances[instance].state();
 
 /**
  * get the first publisher in state
  */
-const getPublisher = (instance: SessionName): Publisher => R.head(R.values(state(instance).publishers.camera));
+const getPublisher = (instance: SessionName, type: 'camera' | 'screen'): Publisher =>
+  R.head(R.values(state(instance).publishers[type]));
 
 const publishAudio = async (instance: SessionName, shouldPublish: boolean): AsyncVoid => {
-  const publisher = getPublisher(instance);
+  const publisher = getPublisher(instance, 'screen') || getPublisher(instance, 'camera');
   if (shouldPublish) {
     if (publisher) {
       publisher.publishAudio(true);
@@ -154,6 +164,12 @@ const changeVolume = (instance: SessionName, userType: UserRole, volume: number)
   }
 };
 
+
+const endScreenShare = async (instance: SessionName): AsyncVoid => {
+  const core = instances[instance];
+  core.screenSharing.end();
+};
+
 /**
  * Send a signal specifying the core instance 'backstage' or 'stage'
  */
@@ -165,6 +181,14 @@ const signal = async (instance: SessionName, { type, data, to }: SignalParams): 
     console.log('signaling error', error);
   }
 };
+
+
+const startScreenShare = async (instance: SessionName): Promise<*> => {
+  const core = instances[instance];
+  return core.screenSharing.extensionAvailable()
+    .then((): void => core.screenSharing.start());
+};
+
 
 /**
  * Get a connection object using a stream id or user type
@@ -356,6 +380,8 @@ module.exports = {
   subscribeAll,
   toggleLocalAudio,
   toggleLocalVideo,
+  startScreenShare,
+  endScreenShare,
   unsubscribeAll,
   state,
   subscribe,
