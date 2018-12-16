@@ -26,7 +26,7 @@ declare class OTEvent {
 
 declare type StreamEventType = 'streamCreated' | 'streamDestroyed' | 'streamPropertyChanged';
 declare type ParticipantEventType = 'streamCreated' | 'streamDestroyed' | 'backstageFanLeft' | 'startCall';
-declare type SubscribeEventType = 'subscribeToCamera' | 'unsubscribeFromCamera';
+declare type SubscribeEventType = 'subscribeToCamera' | 'unsubscribeFromCamera' | 'subscribeToScreen' | 'unsubscribeFromScreen';
 declare type PubSubEventType = 'startCall' | 'subscribeToCamera' | 'unsubscribeFromCamera';
 type SessionEventType = 'sessionConnected' | 'sessionDisconnected' | 'sessionReconnected' | 'sessionReconnecting';
 type ConnectionEventType = 'connectionCreated' | 'connectionDestroyed';
