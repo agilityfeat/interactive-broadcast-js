@@ -1,6 +1,7 @@
 // @flow
 import R from 'ramda';
 import { browserHistory } from 'react-router';
+import screenSharing from '../config/screenSharing';
 
 const setAlert: ActionCreator = (options: AlertState): AlertAction => ({
   type: 'SET_ALERT',
@@ -23,6 +24,7 @@ const setWarning: ThunkActionCreator = (options: AlertPartialOptions): Thunk =>
     };
     dispatch(setAlert(R.merge(defaultOptions, options)));
   };
+
 const setSuccess: ThunkActionCreator = (options: AlertPartialOptions): Thunk =>
   (dispatch: Dispatch) => {
     const defaultOptions = {
@@ -44,6 +46,23 @@ const setError: ThunkActionCreator = (text: string): Thunk =>
       text,
       html: true,
       onConfirm: (): void => dispatch(resetAlert()),
+    };
+    dispatch(setAlert(options));
+  };
+
+const setExtensionError: ThunkActionCreator = (): Thunk =>
+  (dispatch: Dispatch) => {
+    const options = {
+      show: true,
+      type: 'error',
+      title: 'No Screensharing Extension',
+      text: 'Please install the screensharing extension',
+      html: true,
+      showCancelButton: true,
+      onConfirm: (): void => {
+        window.open(screenSharing.extensionURL, '_blank');
+        dispatch(resetAlert());
+      },
     };
     dispatch(setAlert(options));
   };
@@ -77,6 +96,7 @@ const setBlockUserAlert: ThunkActionCreator = (): Thunk =>
     dispatch(setAlert(options));
   };
 
+
 const setCameraError: ThunkActionCreator = (): Thunk =>
   (dispatch: Dispatch) => {
     const text = 'Please allow access to your camera and microphone to continue.' +
@@ -101,5 +121,6 @@ module.exports = {
   setWarning,
   resetAlert,
   setBlockUserAlert,
+  setExtensionError,
   setCameraError,
 };
