@@ -3,26 +3,28 @@ import { combineReducers } from 'redux';
 import { reducer as toastr } from 'react-redux-toastr';
 
 /** Reducers */
-import auth from './auth';
-import currentUser from './currentUser';
-import users from './users';
-import events from './events';
-import broadcast from './broadcast';
 import alert from './alert';
+import auth from './auth';
+import broadcast from './broadcast';
+import currentUser from './currentUser';
+import domains from './domains';
+import events from './events';
 import fan from './fan';
 import settings from './settings';
+import users from './users';
 
 /** Combine Reducers */
 const interactiveBroadcastApp = combineReducers({
-  auth,
-  currentUser,
-  users,
-  events,
-  broadcast,
   alert,
-  toastr,
+  auth,
+  broadcast,
+  currentUser,
+  domains,
+  events,
   fan,
   settings,
+  toastr,
+  users,
 });
 
 export default interactiveBroadcastApp;

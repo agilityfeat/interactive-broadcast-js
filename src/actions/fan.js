@@ -98,7 +98,7 @@ const createSnapshot = async (publisher: Publisher): ImgData => {
 /**
  * Start checking and reporting the network quality of the fan every 15 seconds
  */
-const setupNetworkTest: ThunkActionCreator = (fanId: UserId, adminId: UserId, fanUrl: string): Thunk =>
+const setupNetworkTest: ThunkActionCreator = (fanId: UserId, domainId: string, fanUrl: string): Thunk =>
   async (dispatch: Dispatch): AsyncVoid => {
     try {
       // Get an existing host or celebrity subscriber object
@@ -115,7 +115,7 @@ const setupNetworkTest: ThunkActionCreator = (fanId: UserId, adminId: UserId, fa
 
       let subscriber: TestSubscriber = await getSubscriber();
       const updateNetworkQuality = async (): AsyncVoid => {
-        const ref = firebase.database().ref(`activeBroadcasts/${adminId}/${fanUrl}/activeFans/${fanId}`);
+        const ref = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/activeFans/${fanId}`);
         const networkQuality: QualityRating => NetworkQuality = R.cond([
           [R.isNil, R.always(null)],
           [R.equals(5), R.always('great')],
@@ -139,7 +139,7 @@ const setupNetworkTest: ThunkActionCreator = (fanId: UserId, adminId: UserId, fa
       dispatch({ type: 'SET_NETWORK_TEST_INTERVAL', interval });
     } catch (error) {
       console.log('Failed to set up network test', error);
-      const timeout = setTimeout((): void => dispatch(setupNetworkTest(fanId, adminId, fanUrl)), 3000);
+      const timeout = setTimeout((): void => dispatch(setupNetworkTest(fanId, domainId, fanUrl)), 3000);
       dispatch({ type: 'SET_NETWORK_TEST_TIMEOUT', timeout });
     }
   };
@@ -176,16 +176,17 @@ const receivedChatMessage: ThunkActionCreator = (connection: Connection, message
 /**
  * Remove the fan's record from firebase
  */
-const removeActiveFanRecord: ThunkActionCreator = (event: BroadcastEvent): Thunk =>
+const removeActiveFanRecord: ThunkActionCreator = (event: BroadcastEvent, remove: boolean=false): Thunk =>
   async (): AsyncVoid => {
     const fanId = fanUid();
-    const { fanUrl, adminId } = event;
+    const { fanUrl, domainId } = event;
     const record = {
       id: fanId,
     };
-    const ref = firebase.database().ref(`activeBroadcasts/${adminId}/${fanUrl}/activeFans/${fanId}`);
+    const ref = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/activeFans/${fanId}`);
     try {
-      ref.set(record);
+      if (!remove) ref.set(record);
+      else ref.remove((error: Error): void => error && console.log(error));
     } catch (error) {
       console.log('Failed to remove active fan record: ', error);
     }
@@ -228,8 +229,8 @@ const updateStream: ThunkActionCreator = (streamId: string): Thunk =>
   (dispatch: Dispatch, getState: GetState) => {
     const fanId = fanUid();
     const event = R.prop('event', getState().broadcast);
-    const { fanUrl, adminId } = event;
-    const ref = firebase.database().ref(`activeBroadcasts/${adminId}/${fanUrl}/activeFans/${fanId}`);
+    const { fanUrl, domainId } = event;
+    const ref = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/activeFans/${fanId}`);
     try {
       ref.update({ streamId });
     } catch (error) {
@@ -332,7 +333,12 @@ const opentokConfig = (userCredentials: UserCredentials, dispatch: Dispatch, get
   const eventListeners: CoreInstanceListener = (instance: Core) => {
 
     // Assign listener for state changes
-    const subscribeEvents: SubscribeEventType[] = ['subscribeToCamera', 'unsubscribeFromCamera'];
+    const subscribeEvents: SubscribeEventType[] = [
+      'subscribeToScreen',
+      'subscribeToCamera',
+      'unsubscribeFromCamera',
+      'unsubscribeFromScreen',
+    ];
     const handleSubscribeEvent = (state: CoreState): void => dispatch(setBroadcastState(state));
     R.forEach((event: SubscribeEventType): void => instance.on(event, handleSubscribeEvent), subscribeEvents);
 
@@ -434,8 +440,8 @@ const opentokConfig = (userCredentials: UserCredentials, dispatch: Dispatch, get
 const monitorPrivateCall: ThunkActionCreator = (fanId: UserId): Thunk =>
   (dispatch: Dispatch, getState: GetState) => {
     const event = R.prop('event', getState().broadcast);
-    const { adminId, fanUrl } = event;
-    const ref = firebase.database().ref(`activeBroadcasts/${adminId}/${fanUrl}/privateCall`);
+    const { domainId, fanUrl } = event;
+    const ref = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/privateCall`);
     ref.on('value', (snapshot: firebase.database.DataSnapshot) => {
       const update: PrivateCallState = snapshot.val();
       const fan = getState().fan;
@@ -480,7 +486,7 @@ const monitorPrivateCall: ThunkActionCreator = (fanId: UserId): Thunk =>
           const producerStream = opentok.getStreamByUserType(instance, 'producer');
           producerStream && opentok.unsubscribeFromAudio(instance, producerStream);
           // Update our record in firebase
-          const activeFanRef = firebase.database().ref(`activeBroadcasts/${adminId}/${fanUrl}/activeFans/${fanId}`);
+          const activeFanRef = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/activeFans/${fanId}`);
           activeFanRef.update({ inPrivateCall: false });
         } else if (isUserOnStage(currentState.isWith) && onStage) {
           // $FlowFixMe - The user is on stage and cannot be a fan in line (activeFan)
@@ -496,8 +502,8 @@ const monitorPrivateCall: ThunkActionCreator = (fanId: UserId): Thunk =>
 const monitorProducer: ThunkActionCreator = (): Thunk =>
   (dispatch: Dispatch, getState: GetState) => {
     const event = R.prop('event', getState().broadcast);
-    const { adminId, fanUrl } = event;
-    const ref = firebase.database().ref(`activeBroadcasts/${adminId}/${fanUrl}/producerActive`);
+    const { domainId, fanUrl } = event;
+    const ref = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/producerActive`);
     ref.on('value', (snapshot: firebase.database.DataSnapshot) => {
       const fanOnBackstage = R.equals('backstage', R.path(['fan', 'status'], getState()));
       const producerActive: ProducerActiveState = snapshot.val();
@@ -507,7 +513,7 @@ const monitorProducer: ThunkActionCreator = (): Thunk =>
         // Reset all alerts
         dispatch(resetAlert());
         // Update our record in firebase
-        const activeFanRef = firebase.database().ref(`activeBroadcasts/${adminId}/${fanUrl}/activeFans/${fanUid()}`);
+        const activeFanRef = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/activeFans/${fanUid()}`);
         activeFanRef.update({ isBackstage: false, isOnStage: false });
       }
     });
@@ -537,13 +543,13 @@ const connectToInteractive: ThunkActionCreator = (userCredentials: UserCredentia
 /**
  * Create an active fan record in firebase
  */
-const createActiveFanRecord: ThunkActionCreator = (uid: UserId, adminId: string, fanUrl: string): Thunk =>
+const createActiveFanRecord: ThunkActionCreator = (uid: UserId, domainId: string, fanUrl: string): Thunk =>
   async (): AsyncVoid => {
     /* Create a record in firebase */
     const record = {
       id: uid,
     };
-    const fanRef = firebase.database().ref(`activeBroadcasts/${adminId}/${fanUrl}/activeFans/${uid}`);
+    const fanRef = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/activeFans/${uid}`);
     try {
       // Automatically remove the active fan record on disconnect event
       fanRef.onDisconnect().remove((error: Error): void => error && console.log(error));
@@ -559,9 +565,9 @@ const createActiveFanRecord: ThunkActionCreator = (uid: UserId, adminId: string,
 const updateActiveFanRecord: ThunkActionCreator = (name: string, event: BroadcastEvent): Thunk =>
   async (dispatch: Dispatch): AsyncVoid => {
     const fanId = fanUid();
-    const { adminId, fanUrl } = event;
+    const { domainId, fanUrl } = event;
     /* Create the snapshot and send it to the producer via firebase */
-    const publisher = opentok.getPublisher('backstage');
+    const publisher = opentok.getPublisher('backstage', 'camera');
     const record = {
       name,
       id: fanId,
@@ -573,10 +579,10 @@ const updateActiveFanRecord: ThunkActionCreator = (name: string, event: Broadcas
       isBackstage: false,
       inPrivateCall: false,
     };
-    const fanRef = firebase.database().ref(`activeBroadcasts/${adminId}/${fanUrl}/activeFans/${fanId}`);
+    const fanRef = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/activeFans/${fanId}`);
     try {
       fanRef.update(record);
-      dispatch(setupNetworkTest(fanId, adminId, fanUrl));
+      dispatch(setupNetworkTest(fanId, domainId, fanUrl));
       fanRef.on('value', (snapshot: firebase.database.DataSnapshot) => {
         const update = snapshot.val();
         if (update) {
@@ -590,10 +596,10 @@ const updateActiveFanRecord: ThunkActionCreator = (name: string, event: Broadcas
     }
   };
 
-const connectToPresence: ThunkActionCreator = (adminId: UserId, fanUrl: string): Thunk =>
+const connectToPresence: ThunkActionCreator = (domainId: string, fanUrl: string): Thunk =>
   async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
     const fanId = fanUid();
-    const query = await firebase.database().ref(`activeBroadcasts/${adminId}/${fanUrl}`).once('value');
+    const query = await firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}`).once('value');
     const closedEvent = { status: 'closed' };
     const activeBroadcast = query.val() || closedEvent;
     const { activeFans, interactiveLimit, hlsEnabled } = activeBroadcast;
@@ -603,7 +609,7 @@ const connectToPresence: ThunkActionCreator = (adminId: UserId, fanUrl: string):
     dispatch(setAbleToJoin(ableToJoin));
     if (ableToJoin) {
       /* Create new record to update the presence */
-      dispatch(createActiveFanRecord(fanId, adminId, fanUrl));
+      dispatch(createActiveFanRecord(fanId, domainId, fanUrl));
       const eventData = getState().broadcast.event;
 
       /* Connect to interactive */
@@ -611,7 +617,7 @@ const connectToPresence: ThunkActionCreator = (adminId: UserId, fanUrl: string):
       const credentials = R.pick(credentialProps, eventData);
       /* Init OT Logging */
       analytics = new Analytics(window.location.origin, credentials.stageSessionId, null, credentials.apiKey);
-      dispatch(connectToInteractive(credentials, fanId, adminId, fanUrl));
+      dispatch(connectToInteractive(credentials, fanId, domainId, fanUrl));
     } else if (!hlsEnabled) {
       const options = (): AlertPartialOptions => ({
         title: ["<div style='color: #3dbfd9; font-size:22px'>This show is over the maximum number of participants.</div>"].join(''),
@@ -634,7 +640,7 @@ const connectToPresence: ThunkActionCreator = (adminId: UserId, fanUrl: string):
       dispatch(setBroadcastEvent(eventData));
 
       /* Let's keep the store updated in case the producer change the event status. */
-      const ref = firebase.database().ref(`activeBroadcasts/${adminId}/${fanUrl}`);
+      const ref = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}`);
       ref.on('value', (snapshot: firebase.database.DataSnapshot) => {
         /* Check if the event status and/or hlsUrl have changed */
         const updates: ActiveBroadcast = snapshot.val() || closedEvent;
@@ -654,7 +660,7 @@ const initializeBroadcast: ThunkActionCreator = ({ userUrl, fitMode }: FanInitOp
     try {
       // Get an Auth Token
       const { registrationEnabled } = getState().settings;
-      const adminId = getState().settings.id;
+      const domainId = getState().settings.id;
 
       if (!registrationEnabled) {
         await dispatch(validateUser('fan', userUrl));
@@ -667,7 +673,7 @@ const initializeBroadcast: ThunkActionCreator = ({ userUrl, fitMode }: FanInitOp
       fitMode && dispatch(setFitMode(fitMode));
 
       /* Get the event data */
-      const data = { adminId, fanUrl: userUrl, userType: 'fan' };
+      const data = { domainId, fanUrl: userUrl, userType: 'fan' };
       const eventData: BroadcastEvent = userUrl ?
         await getEventWithCredentials(data, R.prop('authToken', getState().auth)) :
         await getEmbedEventWithCredentials(data, R.prop('authToken', getState().auth));
@@ -676,8 +682,9 @@ const initializeBroadcast: ThunkActionCreator = ({ userUrl, fitMode }: FanInitOp
       // Connect to firebase and check the number of viewers
       firebase.auth().onAuthStateChanged(async (user: InteractiveFan): AsyncVoid => {
         if (user) {
-          if ((registrationEnabled && !user.isAnonymous) || !registrationEnabled) {
-            dispatch(connectToPresence(adminId, eventData.fanUrl));
+          const { currentUser } = getState();
+          if ((registrationEnabled && currentUser) || !registrationEnabled) {
+            dispatch(connectToPresence(domainId, eventData.fanUrl));
           }
         } else {
           await firebase.auth().signInAnonymously();
@@ -754,6 +761,7 @@ const getInLine: ThunkActionCreator = (): Thunk =>
   };
 
 module.exports = {
+  removeActiveFanRecord,
   initializeBroadcast,
   getInLine,
   leaveTheLine,

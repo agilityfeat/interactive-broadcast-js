@@ -79,9 +79,11 @@ const del = (route: string, requiresAuth: boolean = true): Promise<*> => execute
 /** Exports */
 
 /** Auth */
-const getAuthTokenUser = (adminId: string, userType: string, userUrl: string, idToken?: string): Promise<{token: AuthToken}> =>
-  post(`auth/token-${userType}`, R.assoc(`${userType}Url`, userUrl, { adminId, idToken }), false);
+const getAuthTokenUser = (domainId: string, userType: string, userUrl: string, idToken?: string): Promise<{token: AuthToken}> =>
+  post(`auth/token-${userType}`, R.assoc(`${userType}Url`, userUrl, { domainId, idToken }), false);
 const getAuthToken = (idToken: string): Promise<{ token: AuthToken }> => post('auth/token', { idToken }, false);
+const getAuthTokenViewer = (domainId: string, email: string, password: string, fanUrl: string): Promise<{token: AuthToken}> =>
+  post('auth/token-fan', { domainId, email, password, fanUrl });
 
 /** User */
 const getUser = (userId: string): Promise<User> => get(`admin/${userId}`);
@@ -91,45 +93,65 @@ const getAllUsers = (): Promise<[User]> => get('admin');
 const deleteUserRecord = (userId: string): Promise<boolean> => del(`admin/${userId}`);
 
 /** Viewer */
-const getViewer = (adminId: string, userId: string, authToken?: string): Promise<User> => get(`viewer/${adminId}/${userId}`, true, authToken);
-const createViewer = (adminId: string, viewerData: ViewerFormData): Promise<*> => post('viewer', viewerData, false);
+const getViewer = (domainId: string, userId: string, authToken?: string): Promise<User> => get(`viewer/${domainId}/${userId}`, true, authToken);
+const createViewer = (viewerData: ViewerFormData): Promise<*> => post('viewer', viewerData, false);
+const sendViewerResetEmail = (userUrl: string, domainId: string, email: string): Promise<*> =>
+  post('viewer/send-reset-password', { userUrl, domainId, email }, false);
+const resetViewerPassword = (token: string, password: string): Promise<*> => post('viewer/reset-password', { token, password }, false);
 
 /** Events */
-const getEvents = (adminId: string): Promise<BroadcastEventMap> => get(`event?adminId=${adminId}`);
+const getEventsByDomain = (domainId: string): Promise<BroadcastEventMap> => get(`event/get-by-domain?domainId=${domainId}`);
+const getEvents = (): Promise<BroadcastEventMap> => get('event');
 const getEvent = (id: string): Promise<BroadcastEvent> => get(`event/${id}`);
-const getEventByKey = (adminId: string, slug: string): Promise<BroadcastEvent> => get(`event/get-by-key?adminId=${adminId}&slug=${slug}`);
+const getEventByKey = (domainId: string, slug: string): Promise<BroadcastEvent> => get(`event/get-by-key?domainId=${domainId}&slug=${slug}`);
 const createEvent = (data: BroadcastEventFormData): Promise<BroadcastEvent> => post('event', data);
 const updateEvent = (data: BroadcastEventUpdateFormData): Promise<BroadcastEvent> => patch(`event/${data.id}`, data);
 const updateEventStatus = (id: string, status: EventStatus): Promise<BroadcastEvent> => put(`event/change-status/${id}`, { status });
 const deleteEvent = (id: string): Promise<boolean> => del(`event/${id}`);
-const getMostRecentEvent = (id: string): Promise<BroadcastEvent> => get(`event/get-current-admin-event?adminId=${id}`);
+const getMostRecentEvent = (id: string): Promise<BroadcastEvent> => get(`event/get-current-admin-event?domainId=${id}`);
 const getAdminCredentials = (eventId: EventId): Promise<UserCredentials> => post(`event/create-token-producer/${eventId}`);
-const getEventWithCredentials = (data: { adminId: UserId, userType: UserRole }, authToken: AuthToken): Promise<HostCelebEventData> =>
+const getEventWithCredentials = (data: { domainId: string, userType: UserRole }, authToken: AuthToken): Promise<HostCelebEventData> =>
   post(`event/create-token-${data.userType}`, data, true, authToken);
-const getEmbedEventWithCredentials = (data: { adminId: UserId, userType: UserRole }, authToken: AuthToken): Promise<HostCelebEventData> =>
-  post(`event/create-token/${data.adminId}/${data.userType}`, data, true, authToken);
-/** Exports */
+const getEmbedEventWithCredentials = (data: { domainId: string, userType: UserRole }, authToken: AuthToken): Promise<HostCelebEventData> =>
+  post(`event/create-token/${data.domainId}/${data.userType}`, data, true, authToken);
 
+/** Domains */
+const getAllDomains = (): Promise<[Domain]> => get('domain');
+const getDomain = (id: string): Promise<Domain> => get(`domain/${id}`);
+const createDomain = (data: DomainFormData): Promise<Domain> => post('domain', data);
+const updateDomain = (data: DomainFormData): Promise<Domain> => patch(`domain/${data.id}`, data);
+const deleteDomain = (id: string): Promise<*> => del(`domain/${id}`);
+
+/** Exports */
 module.exports = {
+  createDomain,
+  createEvent,
+  createUser,
+  createViewer,
+  deleteDomain,
+  deleteEvent,
+  deleteUserRecord,
+  getAdminCredentials,
+  getAllDomains,
+  getAllUsers,
   getAuthToken,
   getAuthTokenUser,
-  getUser,
-  createUser,
-  updateUser,
-  getAllUsers,
+  getAuthTokenViewer,
+  getDomain,
+  getEmbedEventWithCredentials,
   getEvent,
   getEventByKey,
   getEvents,
+  getEventsByDomain,
+  getEventWithCredentials,
   getMostRecentEvent,
-  createEvent,
+  getUser,
+  getViewer,
+  sendViewerResetEmail,
+  resetViewerPassword,
+  updateDomain,
   updateEvent,
   updateEventStatus,
-  deleteEvent,
-  getAdminCredentials,
-  deleteUserRecord,
+  updateUser,
   url,
-  getEventWithCredentials,
-  getEmbedEventWithCredentials,
-  getViewer,
-  createViewer,
 };

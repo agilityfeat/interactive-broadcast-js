@@ -3,6 +3,7 @@ declare type Settings = {
   loading: boolean,
   siteColor: string,
   registrationEnabled?: boolean,
+  screenSharingEnabled?: boolean,
   siteLogo: {
     id: string | null,
     url: string | null
@@ -10,7 +11,9 @@ declare type Settings = {
   siteFavicon: {
     id: string | null,
     url: string | null
-  } | null
+  } | null,
+  otApiKey: string | null,
+  otSecret: string | null
 };
 
 declare type SettingsAction =

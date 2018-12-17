@@ -1,7 +1,14 @@
 // @flow
 import R from 'ramda';
 import { browserHistory } from 'react-router';
-import { getEvents, createEvent, updateEvent, updateEventStatus, deleteEvent } from '../services/api';
+import {
+  getEvents,
+  getEventsByDomain,
+  createEvent,
+  updateEvent,
+  updateEventStatus,
+  deleteEvent,
+} from '../services/api';
 import { setInfo, setSuccess, setWarning, setError, resetAlert } from './alert';
 
 const setEvents: ActionCreator = (events: BroadcastEventMap): EventsAction => ({
@@ -65,10 +72,13 @@ const sortBroadcastEvents: ActionCreator = (sortBy: EventSortByOption): EventsAc
   sortBy,
 });
 
-const getBroadcastEvents: ThunkActionCreator = (adminId: string): Thunk =>
+const getBroadcastEvents: ThunkActionCreator = (domainId: string, superAdmin: boolean = false): Thunk =>
   async (dispatch: Dispatch): AsyncVoid => {
     try {
-      const events: BroadcastEventMap = await getEvents(adminId);
+      let events: BroadcastEventMap = null;
+      if (superAdmin) events = await getEvents();
+      else events = await getEventsByDomain(domainId);
+
       dispatch(setEvents(events));
     } catch (error) {
       console.log(error);
@@ -165,7 +175,7 @@ const displayNoApiKeyAlert: ThunkActionCreator = (): Thunk =>
       title: 'Missing information',
       text: 'For creating events you need to set your Opentok APIKey and Secret',
       onConfirm: () => {
-        browserHistory.push(['/users/', currentUser.id].join(''));
+        browserHistory.push(['/domains/', currentUser.id].join(''));
         dispatch(resetAlert());
       },
       showCancelButton: false,

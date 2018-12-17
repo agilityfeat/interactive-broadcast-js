@@ -10,6 +10,7 @@ import { initializeBroadcast, getInLine, leaveTheLine, setPublisherMinimized } f
 import FanHeader from './components/FanHeader';
 import FanBody from './components/FanBody';
 import FanStatusBar from './components/FanStatusBar';
+import Loading from '../../../components/Common/Loading';
 import NoEvents from '../../Common/NoEvents';
 import RegisterViewer from '../../../components/RegisterViewer/RegisterViewer';
 import Chat from '../../../components/Common/Chat';
@@ -18,9 +19,9 @@ import { disconnect } from '../../../services/opentok';
 import './Fan.css';
 
 /* beautify preserve:start */
-type InitialProps = { params: { fanUrl: string, adminId: string } };
+type InitialProps = { params: { fanUrl: string, domainId: string } };
 type BaseProps = {
-  adminId: string,
+  domainId: string,
   userType: 'host' | 'celeb',
   userUrl: string,
   event: null | BroadcastEvent,
@@ -59,10 +60,10 @@ class Fan extends Component {
   changeEventStatus: Unit;
 
   componentDidMount() {
-    const { settings, adminId, userType, user, userUrl, init, fitMode } = this.props;
+    const { settings, domainId, userType, user, userUrl, init, fitMode } = this.props;
     if (!settings.registrationEnabled || user) {
       const options = {
-        adminId,
+        domainId: domainId === settings.id ? domainId : null,
         userType,
         userUrl,
         fitMode,
@@ -80,9 +81,10 @@ class Fan extends Component {
     const { // $FlowFixMe
       event,
       status,
+      authError,
       participants,
       userUrl,
-      adminId,
+      domainId,
       inPrivateCall,
       broadcast,
       joinLine,
@@ -103,8 +105,9 @@ class Fan extends Component {
       settings: { registrationEnabled },
     } = this.props;
 
-    if (!user && registrationEnabled) return <RegisterViewer adminId={adminId} userUrl={userUrl} event={event} />;
-    else if (!event) return <NoEvents />;
+    if (!user && registrationEnabled) return <RegisterViewer domainId={domainId} userUrl={userUrl} event={event} />;
+    if (authError) return <NoEvents />;
+    if (!event) return <Loading />;
 
     const participantIsConnected = (type: ParticipantType): boolean => R.path([type, 'connected'], participants || {});
     const hasStreams = R.any(participantIsConnected)(['host', 'celebrity', 'fan']);
@@ -163,7 +166,7 @@ const mapStateToProps = (state: State, ownProps: InitialProps): BaseProps => {
   return {
     user: state.currentUser,
     fitMode: R.path(['location', 'query', 'fitMode'], ownProps),
-    adminId: R.path(['params', 'adminId'], ownProps),
+    domainId: R.path(['params', 'domainId'], ownProps),
     userType: R.path(['route', 'userType'], ownProps),
     isEmbed: R.path(['route', 'embed'], ownProps),
     postProduction: R.path(['fan', 'postProduction'], state),

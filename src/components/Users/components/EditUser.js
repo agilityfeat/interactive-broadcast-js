@@ -16,66 +16,53 @@ import {
   uploadImageSuccess,
   uploadImageCancel,
 } from '../../../actions/users';
-import ColorPicker from '../../Common/ColorPicker';
+import { getDomains } from '../../../actions/domains';
 
 
 const emptyUser: UserFormData = {
   email: '',
   displayName: '',
-  otApiKey: '',
-  otSecret: '',
-  hls: true,
-  httpSupport: false,
-  audioOnlyEnabled: false,
-  embedEnabled: false,
-  registrationEnabled: false,
-  fileSharingEnabled: false,
-  siteColor: null,
-  domain: window.location.hostname,
+  domainId: '',
 };
 
 const formFields = [
   'email',
   'displayName',
-  'hls',
-  'httpSupport',
-  'audioOnlyEnabled',
-  'embedEnabled',
-  'registrationEnabled',
-  'fileSharingEnabled',
-  'siteColor',
-  'siteLogo',
-  'siteFavicon',
-  'domain',
+  'domainId',
 ];
 
 type BaseProps = {
+  domains: DomainMap,
+  settings: Settings
+};
+
+type InitialProps = {
   user: null | User,
   toggleEditPanel: Unit,
   newUser: boolean,
   errors: FormErrors
 };
+
 type DispatchProps = {
   updateUser: UserFormData => void,
   updateCurrentUser: UserFormData => void,
   createUser: UserFormData => Promise<void>,
   uploadImage: string => void,
-  uploadImageSuccess: string => void
+  uploadImageSuccess: string => void,
+  getDomains: Unit
 };
-type Props = BaseProps & DispatchProps;
+type Props = InitialProps & BaseProps & DispatchProps;
 class EditUser extends Component {
 
   props: Props;
   state: {
     fields: UserFormData,
     errors: FormErrors,
-    submissionAttemped: boolean,
-    showCredentials: boolean
+    submissionAttemped: boolean
   };
+  renderDomains: () => ReactComponent;
   handleChange: (string, SyntheticInputEvent) => void;
-  handleColorChange: (string) => void;
   hasErrors: () => boolean;
-  toggleCredentials: () => void;
   handleSubmit: Unit;
 
   constructor(props: Props) {
@@ -84,14 +71,37 @@ class EditUser extends Component {
       fields: props.user ? R.pick(formFields, props.user) : emptyUser,
       errors: null,
       submissionAttemped: false,
-      showCredentials: false,
     };
+    props.getDomains();
     this.uploadFile = this.uploadFile.bind(this);
     this.handleChange = this.handleChange.bind(this);
-    this.handleColorChange = this.handleColorChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.hasErrors = this.hasErrors.bind(this);
-    this.toggleCredentials = this.toggleCredentials.bind(this);
+    this.renderDomains = this.renderDomains.bind(this);
+  }
+
+  renderDomains(): ReactComponent {
+    const errorFields = R.propOr({}, 'fields', this.state.errors);
+    const { domains, settings } = this.props;
+    const { domainId } = this.state.fields;
+
+    return (
+      <div className="input-container">
+        <span className="label">Select a Domain:</span>&nbsp;
+        <select
+          className={classNames({ error: errorFields.otApiKey })}
+          name="domainId"
+          placeholder="Domain"
+          value={domainId || settings.id}
+          onChange={this.handleChange}
+        >
+          {
+            Object.keys(domains).map((k: string): [ReactComponent] =>
+              <option key={k} value={k}>{domains[k].domain}</option>)
+          }
+        </select>
+      </div>
+    );
   }
 
   hasErrors(): boolean {
@@ -139,9 +149,10 @@ class EditUser extends Component {
     this.setState({ submissionAttemped: true });
     if (this.hasErrors()) { return; }
     let userData = R.prop('fields', this.state);
-    const { newUser, toggleEditPanel, createUser, updateUser } = this.props;
+    const { newUser, toggleEditPanel, createUser, settings, updateUser } = this.props;
     const user = R.defaultTo({}, this.props.user);
     const initial = R.pick(formFields, user);
+    userData.domainId = userData.domainId || settings.id;
 
     if (!R.equals(initial, userData)) {
       if (newUser) {
@@ -149,17 +160,12 @@ class EditUser extends Component {
         this.setState({ fields: emptyUser });
       } else {
         userData = R.assoc('id', user.id, userData);
-        userData = !userData.otApiKey && !userData.otSecret ? R.omit(['otApiKKey', 'otSecret'], userData) : userData;
         await updateUser(userData);
         toggleEditPanel();
       }
     } else {
       !newUser && toggleEditPanel();
     }
-  }
-
-  toggleCredentials() {
-    this.setState({ showCredentials: !this.state.showCredentials });
   }
 
   handleChange(e: SyntheticInputEvent) {
@@ -170,30 +176,25 @@ class EditUser extends Component {
     this.state.submissionAttemped && this.hasErrors();
   }
 
-  handleColorChange(hex: string) {
-    this.setState({ fields: R.assoc('siteColor', hex, this.state.fields) });
-  }
-
   render(): ReactComponent {
-    const { errors, fields, showCredentials } = this.state;
+    const { errors, fields } = this.state;
     const {
       email,
       displayName,
-      otApiKey,
-      otSecret,
-      hls,
-      httpSupport,
-      audioOnlyEnabled,
-      embedEnabled,
-      registrationEnabled,
-      fileSharingEnabled,
-      siteColor,
-      domain,
+      // otApiKey,
+      // otSecret,
+      // hls,
+      // httpSupport,
+      // audioOnlyEnabled,
+      // embedEnabled,
+      // registrationEnabled,
+      // fileSharingEnabled,
+      // siteColor,
     } = fields;
-    const { toggleEditPanel, newUser } = this.props;
-    const { handleSubmit, handleChange, handleColorChange } = this;
+    const { toggleEditPanel, newUser, currentUser } = this.props;
+    const { handleSubmit, handleChange } = this;
     const errorFields = R.propOr({}, 'fields', errors);
-    const shouldShowCredentials = newUser || showCredentials;
+
     return (
       <div className="EditUser">
         <form className="EditUser-form" onSubmit={handleSubmit}>
@@ -221,114 +222,42 @@ class EditUser extends Component {
                 placeholder="Name"
               />
             </div>
-            { !shouldShowCredentials && <button className="btn action orange" onClick={this.toggleCredentials}>Change OT credentials</button> }
-            { shouldShowCredentials &&
-              <div className="input-container">
-                <Icon className="icon" name="key" style={{ color: 'darkgrey' }} />
-                <input
-                  className={classNames({ error: errorFields.otApiKey })}
-                  type="text"
-                  name="otApiKey"
-                  value={otApiKey}
-                  placeholder="OT API Key (optional)"
-                  onChange={handleChange}
-                />
-              </div>
-            }
-            { shouldShowCredentials &&
-              <div className="input-container">
-                <Icon className="icon" name="user-secret" style={{ color: 'darkgrey' }} />
-                <input
-                  className={classNames({ error: errorFields.otSecret })}
-                  type="password"
-                  name="otSecret"
-                  value={otSecret}
-                  placeholder="OT API Secret (optional)"
-                  onChange={handleChange}
-                  autoComplete="new-password"
-                  size={42}
-                />
-              </div>
-            }
           </div>
           <hr />
-          <div className="edit-user-options">
-            <div className="edit-user-bottom">
-              <div className="input-container">
-                <input type="checkbox" name="hls" checked={!!hls} onChange={handleChange} />
-                <span className="label">Broadcast Support Enabled</span>
+          {currentUser.superAdmin &&
+            <div className="edit-user-options">
+              <div className="edit-user-other-settings">
+                {this.renderDomains()}
               </div>
-              <div className="input-container">
-                <input type="checkbox" name="httpSupport" checked={!!httpSupport} onChange={handleChange} />
-                <span className="label">HTTP Support Enabled</span>
-              </div>
-              <div className="input-container">
-                <input type="checkbox" name="audioOnlyEnabled" checked={!!audioOnlyEnabled} onChange={handleChange} />
-                <span className="label">Share audio only URL Enabled</span>
-              </div>
-              <div className="input-container">
-                <input type="checkbox" name="embedEnabled" checked={!!embedEnabled} onChange={handleChange} />
-                <span className="label">Enable Embed</span>
-              </div>
-              <div className="input-container">
-                <input type="checkbox" name="registrationEnabled" checked={!!registrationEnabled} onChange={handleChange} />
-                <span className="label">Enable Registration</span>
-              </div>
-              <div className="input-container">
-                <input type="checkbox" name="fileSharingEnabled" checked={!!fileSharingEnabled} onChange={handleChange} />
-                <span className="label">Enable File Sharing</span>
-              </div>
+              <hr />
             </div>
-            <hr />
-            <div className="edit-user-other-settings">
-              <div className="input-container">
-                <Icon className="icon" name="location-arrow" style={{ color: 'darkgrey' }} />
-                <input
-                  className={classNames({ error: errorFields.otApiKey })}
-                  type="text"
-                  name="domain"
-                  value={domain}
-                  placeholder="Domain"
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="input-container">
-                <span className="label">Choose Admin Color:</span>
-                <ColorPicker value={siteColor} onChange={handleColorChange} />
-              </div>
-              <div className="input-container">
-                <div className="label">Site logo:</div>
-                <Icon className="icon" name="image" style={{ color: 'darkgrey', left: '74px' }} />
-                <input type="file" name="siteLogo" onChange={this.uploadFile('Site Logo Upload')} />
-              </div>
-            </div>
-            <div className="edit-user-other-settings">
-              <div className="input-container">
-                <div className="label">Site favicon:</div>
-                <Icon className="icon" name="image" style={{ color: 'darkgrey', left: '90px' }} />
-                <input type="file" name="siteFavicon" onChange={this.uploadFile('Site Favicon Upload')} />
-              </div>
-            </div>
-            <hr />
-            <div className="edit-user-buttons">
-              <input type="submit" className="btn action green" value={newUser ? 'Create User' : 'Save'} />
-              { !newUser && <button className="btn action green" onClick={toggleEditPanel}>Cancel</button> }
-            </div>
+          }
+          <div className="edit-user-buttons">
+            <input type="submit" className="btn action green" value={newUser ? 'Create User' : 'Save'} />
+            { !newUser && <button className="btn action green" onClick={toggleEditPanel}>Cancel</button> }
           </div>
         </form>
       </div>
     );
   }
 }
+
+const mapStateToProps: MapStateToProps<BaseProps> = (state: State): BaseProps => ({
+  domains: state.domains,
+  settings: state.settings,
+  currentUser: state.currentUser,
+});
+
 const mapDispatchToProps: MapDispatchToProps<DispatchProps> = (dispatch: Dispatch): DispatchProps =>
   ({
     updateUser: (userData: UserFormData) => {
       dispatch(updateUserRecord(userData));
     },
+    getDomains: async (): AsyncVoid => dispatch(getDomains()),
     createUser: async (userData: UserFormData): AsyncVoid => dispatch(createNewUser(userData)),
     uploadImage: (title: string): void => dispatch(uploadImage(title)),
     uploadImageSuccess: (title: string): void => dispatch(uploadImageSuccess(title)),
     uploadImageCancel: (): void => dispatch(uploadImageCancel()),
   });
 
-export default withRouter(connect(null, mapDispatchToProps)(EditUser));
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(EditUser));

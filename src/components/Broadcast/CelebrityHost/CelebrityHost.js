@@ -21,9 +21,8 @@ import './CelebrityHost.css';
 
 /* beautify preserve:start */
 
-type InitialProps = { params: { hostUrl: string, celebrityUrl: string, adminId: string } };
+type InitialProps = { params: { hostUrl: string, celebrityUrl: string } };
 type BaseProps = {
-  adminId: string,
   userType: 'host' | 'celebrity',
   userUrl: string,
   broadcast: BroadcastState,
@@ -49,9 +48,8 @@ class CelebrityHost extends Component {
   signalListener: SignalListener;
 
   componentDidMount() {
-    const { adminId, userType, userUrl, init } = this.props;
+    const { userType, userUrl, init } = this.props;
     const options = {
-      adminId,
       userType,
       userUrl,
     };
@@ -102,7 +100,6 @@ class CelebrityHost extends Component {
 const mapStateToProps = (state: State, ownProps: InitialProps): BaseProps => {
   const { hostUrl, celebrityUrl } = ownProps.params;
   return {
-    adminId: R.path(['params', 'adminId'], ownProps),
     userType: R.path(['route', 'userType'], ownProps),
     isEmbed: R.path(['route', 'embed'], ownProps),
     userUrl: hostUrl || celebrityUrl,

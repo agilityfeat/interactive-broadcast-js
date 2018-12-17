@@ -1,0 +1,77 @@
+hr {
+	border-top: 1px solid #e8ebed;
+}
+
+.EditDomain {
+    display: flex;
+    flex-direction: column;
+}
+
+.EditDomain-form .edit-domain-top,
+.EditDomain-form .edit-domain-bottom,
+.EditDomain-form .edit-domain-other-settings {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+}
+
+.EditDomain-form .input-container {
+    position: relative;
+}
+
+.EditDomain-form .edit-domain-top input,
+.EditDomain-form .edit-domain-other-settings input {
+    font-size: 13px;
+    height: 34px;
+    border: 1px solid #BDC4C9;
+    border-radius: 3px;
+    box-shadow: inset 0px 1px 0px #F1F0F1;
+    margin: 0 5px;
+    padding: 6px 12px 6px 30px;
+}
+
+.EditDomain-form .edit-domain-top select,
+.EditDomain-form .edit-domain-other-settings select {
+    font-size: 13px;
+    height: 34px;
+    border: 1px solid #BDC4C9;
+    border-radius: 3px;
+    box-shadow: inset 0px 1px 0px #F1F0F1;
+    margin: 0 5px;
+    padding: 6px 12px 6px 30px;
+}
+
+.EditDomain-form .edit-domain-bottom .input-container {
+    margin-right: 10px;
+}
+
+.EditDomain-form .edit-domain-other-settings .input-container {
+    margin-right: 10px;
+	display: flex;
+	align-items: center;
+}
+
+.EditDomain-form .edit-domain-bottom .input-container .label,
+.EditDomain-form .edit-domain-other-settings .input-container .label {
+	margin-left: 5px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #58666e;
+}
+
+.EditDomain-form .edit-domain-other-settings .input-container .label {
+    margin-left: 5px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #58666e;
+}
+
+.EditDomain-form .edit-domain-buttons {
+	display: flex;
+}
+
+.EditDomain .input-container .icon {
+    position: absolute;
+    top: 10px;
+    left: 14px;
+}

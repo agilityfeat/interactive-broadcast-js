@@ -15,7 +15,7 @@ import '../Header/Header.css';
 
 type BaseProps = {
   userUrl: string,
-  adminId: string,
+  domainId: string,
   settings: Settings,
   event: BroadcastEvent
 };
@@ -46,22 +46,29 @@ class RegisterViewer extends React.Component {
       noEvent: false,
     };
 
-    // use the URL adminId instead of settings.id
-    getEventByKey(props.adminId, props.userUrl)
+    // avoid loading other domains events domain and Id must match
+    const domainId = props.domainId === props.settings.id ? props.domainId : null;
+    getEventByKey(domainId, props.userUrl)
       .then((event?: BroadcastEvent): void => this.setState({ event }))
       .catch((): void => this.setState({ noEvent: true }));
 
     this.toggleRegister = this.toggleRegister.bind(this);
+    this.handleSuccess = this.handleSuccess.bind(this);
   }
 
   toggleRegister() {
     this.setState({ register: !this.state.register });
   }
 
+  handleSuccess(options: AlertPartialOptions) {
+    this.props.onSuccess(options);
+    this.toggleRegister();
+  }
+
   render(): ReactComponent {
-    const { settings, onSuccess, userUrl } = this.props;
+    const { settings, userUrl } = this.props;
     const { register, noEvent, event } = this.state;
-    const startImage = event && event.startImage.url;
+    const startImage = event && event.startImage && event.startImage.url;
     const eventName = event && event.name;
 
     if (noEvent) return <NoEvents />;
@@ -69,9 +76,9 @@ class RegisterViewer extends React.Component {
 
     return (
       <div>
-        <div className="Header">
+        <div className="Register-header">
           <Logo src={(settings.siteLogo && settings.siteLogo.url) || logo} />
-          <h3>Join {eventName}</h3>
+          <h3 className="Header-join">Join {eventName}</h3>
         </div>
         <div className="RegisterViewer">
           <div className="RegisterViewer-header" >
@@ -81,7 +88,7 @@ class RegisterViewer extends React.Component {
             register &&
             <div className="RegisterViewer-body">
               <h4>Create account for {window.location.host}</h4>
-              <RegisterViewerForm onSuccess={onSuccess} settings={settings} />
+              <RegisterViewerForm userUrl={userUrl} onSuccess={this.handleSuccess} settings={settings} />
               <button onClick={this.toggleRegister} className="btn transparent">
                 I already have an account
               </button>
@@ -91,7 +98,7 @@ class RegisterViewer extends React.Component {
             !register &&
             <div className="RegisterViewer-body">
               <h4>Sign in to {window.location.host}</h4>
-              <LoginViewerForm userUrl={userUrl} onSuccess={onSuccess} settings={settings} />
+              <LoginViewerForm userUrl={userUrl} settings={settings} />
               <button onClick={this.toggleRegister} className="btn transparent">
                 {'I don\'t have an account'}
               </button>

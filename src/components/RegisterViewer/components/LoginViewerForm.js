@@ -13,8 +13,7 @@ type BaseProps = { auth: AuthState, currentUser: User };
 type InitialProps = {
   userUrl: string,
   settings: Settings,
-  error: boolean,
-  onSuccess: (options: AlertPartialOptions) => void
+  error: boolean
 };
 
 type DispatchProps = {
@@ -56,7 +55,7 @@ class LoginViewerForm extends Component {
   async handleSubmit(e: SyntheticInputEvent): void {
     e.preventDefault();
     const { auth, settings, sendResetEmail, authenticateUser, userUrl } = this.props;
-    const viewerData = { ...this.state.fields, adminId: settings.id, userUrl };
+    const viewerData = { ...this.state.fields, domainId: settings.id, userUrl };
     try {
       auth.forgotPassword ? await sendResetEmail(viewerData) : await authenticateUser(viewerData);
     } catch (error) {
@@ -67,9 +66,9 @@ class LoginViewerForm extends Component {
   componentDidUpdate(prevProps: Props) {
     const { settings, userUrl } = this.props;
 
-    if (!prevProps.auth.token && this.props.auth.authToken) {
+    if (!prevProps.auth.authToken && this.props.auth.authToken) {
       this.props.init({
-        adminId: settings.id,
+        domainId: settings.id,
         userType: 'fan',
         userUrl,
       });
@@ -134,7 +133,7 @@ const mapDispatchToProps: MapDispatchToProps<DispatchProps> = (dispatch: Dispatc
       dispatch(userForgotPassword(forgot));
     },
     sendResetEmail: (credentials: AuthCredentials) => {
-      dispatch(resetPassword(credentials));
+      dispatch(resetPassword(credentials, true));
     },
   });
 

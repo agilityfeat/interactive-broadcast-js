@@ -43,6 +43,18 @@ const translateRole = (type: ParticipantType): string => {
   return translation[type];
 };
 
+
+/**
+ * shows or hides participant video feed
+ */
+const alterCameraElement = (broadcast: BroadcastState, userType: UserType, action: 'hide' | 'show') => {
+  const streamMap = R.path(['streamMap'], broadcast);
+  const camStream = R.path(['participants', userType, 'stream'], broadcast);
+  const camElement = camStream && document.getElementById(streamMap[camStream.id]);
+
+  if (camElement) camElement.style.display = action === 'hide' ? 'none' : 'block';
+};
+
 module.exports = {
   fanTypeForActiveFan,
   fanTypeByStatus,
@@ -50,4 +62,5 @@ module.exports = {
   isUserOnStage,
   properCase,
   translateRole,
+  alterCameraElement,
 };

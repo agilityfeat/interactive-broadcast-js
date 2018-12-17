@@ -1,0 +1,27 @@
+.Domains {}
+
+.DomainsHeader {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 10px 20px;
+}
+
+.DomainsHeader a {
+    color: #00a3e3;
+    font-size: 13px;
+}
+
+.DomainsHeader h3 {
+    color: #37363E;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 22px;
+    font-weight: 300;
+    margin: 5px 0;
+}
+
+.Domains-list-container {
+    background: #F5F5F5;
+    padding: 20px;
+}

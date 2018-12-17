@@ -5,9 +5,11 @@ import { connect } from 'react-redux';
 import Favicon from 'react-favicon';
 import App from './components/App/App';
 import Login from './components/Login/Login';
+import ResetPassword from './components/ResetPassword/ResetPassword';
 import Loading from './components/Common/Loading';
 import Dashboard from './components/Dashboard/Dashboard';
 import Users from './components/Users/Users';
+import Domains from './components/Domains/Domains';
 import UpdateEvent from './components/UpdateEvent/UpdateEvent';
 import ViewEvent from './components/ViewEvent/ViewEvent';
 import Producer from './components/Broadcast/Producer/Producer';
@@ -26,16 +28,18 @@ const routes = (
     <Route path="/" component={App} >
       <IndexRedirect to="login" />
       <Route path="login" component={Login} />
-      <Route path="/show/:adminId/:fanUrl" component={Fan} hideHeader userType={'fan'} />
+      <Route path="resetPassword" hideHeader component={ResetPassword} />
+      <Route path="/show/:domainId/:fanUrl" component={Fan} hideHeader userType={'fan'} />
       <Route path="/post-production/:adminId/:fanUrl" component={Fan} hideHeader userType={'fan'} />
-      <Route path="/show-host/:adminId/:hostUrl" component={CelebrityHost} hideHeader userType={'host'} />
-      <Route path="/show-guest/:adminId/:celebrityUrl" component={CelebrityHost} hideHeader userType={'celebrity'} />
-      <Route path="/show/:adminId" component={Fan} hideHeader embed userType={'fan'} />
-      <Route path="/show-host/:adminId" component={CelebrityHost} hideHeader embed userType={'host'} />
-      <Route path="/show-guest/:adminId" component={CelebrityHost} hideHeader embed userType={'celebrity'} />
+      <Route path="/show-host/:domainId/:hostUrl" component={CelebrityHost} hideHeader userType={'host'} />
+      <Route path="/show-guest/:domainId/:celebrityUrl" component={CelebrityHost} hideHeader userType={'celebrity'} />
+      <Route path="/show/:domainId" component={Fan} hideHeader embed userType={'fan'} />
+      <Route path="/show-host/:domainId" component={CelebrityHost} hideHeader embed userType={'host'} />
+      <Route path="/show-guest/:domainId" component={CelebrityHost} hideHeader embed userType={'celebrity'} />
       <Route component={AdminRoutes}>
         <Route path="admin" component={Dashboard} />
         <Route path="users" component={Users} />
+        <Route path="domains" component={Domains} />
         <Route path="users/:adminId" component={Users} />
         <Route path="events/new" component={UpdateEvent} />
         <Route path="events/:id/edit" component={UpdateEvent} />
