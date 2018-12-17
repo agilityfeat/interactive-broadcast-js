@@ -64,7 +64,7 @@ const signInViewer: ThunkActionCreator = ({ email, password, userUrl }: ViewerAu
 const signIn: ThunkActionCreator = ({ email, password }: AuthCredentials): Thunk =>
   async (dispatch: Dispatch): AsyncVoid => {
     try {
-      const user = await firebase.auth().signInWithEmailAndPassword(email, password);
+      const { user } = await firebase.auth().signInWithEmailAndPassword(email, password);
       const idToken = await user.getIdToken(true);
       await dispatch(validate(R.prop('uid', user), idToken));
     } catch (error) {
