@@ -4,6 +4,7 @@ const initialState: Settings = {
   id: null,
   loading: true,
   registerEnabled: false,
+  screenSharingEnabled: false,
   siteColor: null,
   siteLogo: null,
   siteFavIcon: null,

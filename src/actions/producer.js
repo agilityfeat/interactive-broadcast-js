@@ -3,7 +3,13 @@ import R from 'ramda';
 import moment from 'moment';
 import { browserHistory } from 'react-router';
 import { updateStatus } from './events';
-import { setInfo, setBlockUserAlert, setCameraError, resetAlert } from './alert';
+import {
+  setInfo,
+  setBlockUserAlert,
+  setCameraError,
+  setError,
+  resetAlert,
+} from './alert';
 import { getEvent, getAdminCredentials, getEventWithCredentials } from '../services/api';
 import firebase from '../services/firebase';
 import {
@@ -64,15 +70,27 @@ const chatWithParticipant: ThunkActionCreator = (participantType: ParticipantTyp
 const onSignal = (dispatch: Dispatch): SignalListener => ({ type, data }: Signal) => {
   const signalData = data ? JSON.parse(data) : {};
   const signalType = R.last(R.split(':', type));
-  if (signalType === 'chatMessage') {
-    const { fromType, fromId } = signalData;
-    const chatId = isFan(fromType) ? fromId : fromType;
-    const actions = [
-      chatWithParticipant(chatId),
-      onChatMessage(chatId),
-      { type: 'NEW_CHAT_MESSAGE', chatId, message: R.assoc('isMe', false, signalData) },
-    ];
-    R.forEach(dispatch, actions);
+
+  switch (signalType) {
+    case 'chatMessage': {
+      const { fromType, fromId } = signalData;
+      const chatId = isFan(fromType) ? fromId : fromType;
+      const actions = [
+        chatWithParticipant(chatId),
+        onChatMessage(chatId),
+        { type: 'NEW_CHAT_MESSAGE', chatId, message: R.assoc('isMe', false, signalData) },
+      ];
+      R.forEach(dispatch, actions);
+      break;
+    }
+    case 'errorScreenShare':
+      dispatch(setError('The user has denied access to their desktop.'));
+      break;
+    case 'errorScreenShareExtension':
+      dispatch(setError('The user has no desktop sharing extension installed'));
+      break;
+    default:
+      break;
   }
 };
 
@@ -91,7 +109,12 @@ const opentokConfig = (dispatch: Dispatch, getState: GetState, userCredentials: 
   const eventListeners: CoreInstanceListener = (instance: Core) => {
 
     // Assign listener for state changes
-    const subscribeEvents: SubscribeEventType[] = ['subscribeToCamera', 'unsubscribeFromCamera'];
+    const subscribeEvents: SubscribeEventType[] = [
+      'subscribeToScreen',
+      'subscribeToCamera',
+      'unsubscribeFromCamera',
+      'unsubscribeFromScreen',
+    ];
     const handleSubscribeEvent = (state: CoreState): void => dispatch(setBroadcastState(state));
     R.forEach((event: SubscribeEventType): void => instance.on(event, handleSubscribeEvent), subscribeEvents);
 

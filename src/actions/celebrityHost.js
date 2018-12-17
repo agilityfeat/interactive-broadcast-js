@@ -20,8 +20,8 @@ import {
   heartBeatTime,
 } from './broadcast';
 import { getEventWithCredentials, getEmbedEventWithCredentials } from '../services/api';
-import { isUserOnStage } from '../services/util';
-import { setInfo, setCameraError } from './alert';
+import { isUserOnStage, alterCameraElement } from '../services/util';
+import { setInfo, setCameraError, setExtensionError } from './alert';
 import firebase from '../services/firebase';
 import {
   Analytics,
@@ -48,7 +48,8 @@ const receivedChatMessage: ThunkActionCreator = (connection: Connection, message
     R.forEach(dispatch, existingChat ? R.tail(actions) : actions);
   };
 
-const onSignal = (dispatch: Dispatch, userType: HostCeleb): SignalListener =>
+
+const onSignal = (dispatch: Dispatch, userType: HostCeleb, getState: GetState): SignalListener =>
   async ({ type, data, from }: Signal): AsyncVoid => {
     const signalData = data ? JSON.parse(data) : {};
     const signalType = R.last(R.split(':', type));
@@ -68,6 +69,27 @@ const onSignal = (dispatch: Dispatch, userType: HostCeleb): SignalListener =>
         break;
       case 'videoOnOff':
         fromProducer && toggleLocalVideo('stage', signalData.video === 'on');
+        break;
+      case 'startScreenShare': {
+        if (fromProducer) {
+          const broadcast = R.path(['broadcast'], getState());
+          const producer = R.path(['participants', 'producer'], broadcast);
+          const to = R.path(['stream', 'connection'], producer);
+
+          opentok.startScreenShare('stage')
+            .then((): void => alterCameraElement(broadcast, userType, 'hide'))
+            .catch(() => {
+              opentok.signal('stage', { type: 'errorScreenShareExtension', to });
+              alterCameraElement(broadcast, userType, 'show');
+              dispatch(setExtensionError());
+            });
+        }
+        dispatch(setBroadcastState(opentok.state('stage')));
+        break;
+      }
+      case 'endScreenShare':
+        fromProducer && await opentok.endScreenShare('stage');
+        dispatch(setBroadcastState(opentok.state('stage')));
         break;
       case 'muteAudio':
         fromProducer && toggleLocalAudio('stage', signalData.mute === 'off');
@@ -91,11 +113,12 @@ const onSignal = (dispatch: Dispatch, userType: HostCeleb): SignalListener =>
     }
   };
 
+
 /**
  * Build the configuration options for the opentok service
  */
 type UserData = { userCredentials: UserCredentials, userType: HostCeleb };
-const opentokConfig = (dispatch: Dispatch, { userCredentials, userType }: UserData): CoreInstanceOptions[] => {
+const opentokConfig = (dispatch: Dispatch, { userCredentials, userType }: UserData, getState: GetState): CoreInstanceOptions[] => {
 
   const eventListeners: CoreInstanceListener = (instance: Core) => {
     // const { onStateChanged, onStreamChanged, onSignal } = listeners;
@@ -107,7 +130,13 @@ const opentokConfig = (dispatch: Dispatch, { userCredentials, userType }: UserDa
       }
       dispatch(setBroadcastState(state));
     };
-    const pubSubEvents: PubSubEventType[] = ['startCall', 'subscribeToCamera', 'unsubscribeFromCamera'];
+    const pubSubEvents: PubSubEventType[] = [
+      'startCall',
+      'subscribeToScreen',
+      'subscribeToCamera',
+      'unsubscribeFromCamera',
+      'unsubscribeFromScreen',
+    ];
     R.forEach((event: PubSubEventType): void => instance.on(event, handlePubSubEvent), pubSubEvents);
 
     // Assign listener for stream changes
@@ -115,6 +144,7 @@ const opentokConfig = (dispatch: Dispatch, { userCredentials, userType }: UserDa
     const handleStreamEvent: StreamEventHandler = async ({ type, stream }: OTStreamEvent): AsyncVoid => {
       const user: UserRole = R.prop('userType', JSON.parse(stream.connection.data));
       const streamCreated = R.equals(type, 'streamCreated');
+
       if (R.equals(user, 'producer')) {
         streamCreated ? opentok.createEmptySubscriber('stage', stream) : dispatch(endPrivateCall(userType, true));
       } else {
@@ -128,7 +158,7 @@ const opentokConfig = (dispatch: Dispatch, { userCredentials, userType }: UserDa
             subscribeAction = (user === 'fan') ?
               logAction.hostSubscribesToFan :
               logAction.hostSubscribesToCelebrity;
-          } 
+          }
           try {
             analytics.log(subscribeAction, logVariation.attempt);
             await opentok.subscribe('stage', stream);
@@ -137,13 +167,41 @@ const opentokConfig = (dispatch: Dispatch, { userCredentials, userType }: UserDa
             analytics.log(subscribeAction, logVariation.fail);
           }
         }
+
         dispatch(updateParticipants(user, type, stream));
       }
-
     };
+
+    const handleScreenShareEvent = (type: string): AsyncVoid =>
+      () => {
+        const started = type === 'start';
+        const update = { property: 'screen', value: started };
+        const action = started ? 'hide' : 'show';
+        alterCameraElement(R.prop('broadcast', getState()), userType, action);
+
+        dispatch({
+          type: 'PARTICIPANT_AV_PROPERTY_CHANGED',
+          participantType: userType,
+          update,
+        });
+      };
+
     R.forEach((event: StreamEventType): void => instance.on(event, handleStreamEvent), otStreamEvents);
-    // Assign signal listener
-    instance.on('signal', onSignal(dispatch, userType));
+    instance.on('signal', onSignal(dispatch, userType, getState));
+
+    // assign screensharing listeners
+    instance.on('startScreenSharing', handleScreenShareEvent('start'));
+    instance.on('endScreenSharing', handleScreenShareEvent('end'));
+    instance.on('screenSharingError', (error: Error) => {
+      if (error.code === 1500) {
+        const producer = R.path(['broadcast', 'participants', 'producer'], getState());
+        const to = R.path(['stream', 'connection'], producer);
+        alterCameraElement(R.prop('broadcast', getState()), userType, 'show');
+
+        opentok.signal('stage', { type: 'errorScreenShare', to });
+      }
+    });
+
     // Assign reconnection event listeners
     instance.on('sessionReconnecting', (): void => dispatch(setReconnecting()));
     instance.on('sessionReconnected', (): void => dispatch(setReconnected()));
@@ -189,7 +247,7 @@ const opentokConfig = (dispatch: Dispatch, { userCredentials, userType }: UserDa
 const monitorPrivateCall: ThunkActionCreator = (userType: HostCeleb): Thunk =>
   (dispatch: Dispatch, getState: GetState) => {
 
-    const event = R.prop('event', getState().broadcast);
+    const event = R.prop('event', R.prop('broadcast', getState()));
     const { domainId, fanUrl } = event;
     const ref = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/privateCall`);
     ref.on('value', (snapshot: firebase.database.DataSnapshot) => {
@@ -242,9 +300,9 @@ const monitorPrivateCall: ThunkActionCreator = (userType: HostCeleb): Thunk =>
  */
 const connectToInteractive: ThunkActionCreator =
   (userCredentials: UserCredentials, userType: HostCeleb): Thunk =>
-  async (dispatch: Dispatch): AsyncVoid => {
+  async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
     // const { onStateChanged, onStreamChanged, onSignal } = roleListeners;
-    const instances: CoreInstanceOptions[] = opentokConfig(dispatch, { userCredentials, userType });
+    const instances: CoreInstanceOptions[] = opentokConfig(dispatch, { userCredentials, userType }, getState);
     opentok.init(instances);
     const isHost = userType === 'host';
     const connectAction = isHost ? logAction.hostConnects : logAction.celebrityConnects;

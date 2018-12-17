@@ -25,7 +25,8 @@ const emptyDomain: DomainFormData = {
   embedEnabled: false,
   registrationEnabled: false,
   fileSharingEnabled: false,
-  siteColor: null,
+  screenSharingEnabled: false,
+  siteColor: '#000000',
   otApiKey: '',
   otSecret: '',
   domain: window.location.host,
@@ -38,6 +39,7 @@ const formFields = [
   'embedEnabled',
   'registrationEnabled',
   'fileSharingEnabled',
+  'screenSharingEnabled',
   'siteColor',
   'siteLogo',
   'siteFavicon',
@@ -177,6 +179,7 @@ class EditDomain extends Component {
       embedEnabled,
       registrationEnabled,
       fileSharingEnabled,
+      screenSharingEnabled,
       siteColor,
       domain,
       otApiKey,
@@ -215,6 +218,10 @@ class EditDomain extends Component {
               <div className="input-container">
                 <input type="checkbox" name="fileSharingEnabled" checked={!!fileSharingEnabled} onChange={handleChange} />
                 <span className="label">Enable File Sharing</span>
+              </div>
+              <div className="input-container">
+                <input type="checkbox" name="screenSharingEnabled" checked={!!screenSharingEnabled} onChange={handleChange} />
+                <span className="label">Enable Screen Sharing</span>
               </div>
             </div>
             <hr />

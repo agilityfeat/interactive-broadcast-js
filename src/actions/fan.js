@@ -333,7 +333,12 @@ const opentokConfig = (userCredentials: UserCredentials, dispatch: Dispatch, get
   const eventListeners: CoreInstanceListener = (instance: Core) => {
 
     // Assign listener for state changes
-    const subscribeEvents: SubscribeEventType[] = ['subscribeToCamera', 'unsubscribeFromCamera'];
+    const subscribeEvents: SubscribeEventType[] = [
+      'subscribeToScreen',
+      'subscribeToCamera',
+      'unsubscribeFromCamera',
+      'unsubscribeFromScreen',
+    ];
     const handleSubscribeEvent = (state: CoreState): void => dispatch(setBroadcastState(state));
     R.forEach((event: SubscribeEventType): void => instance.on(event, handleSubscribeEvent), subscribeEvents);
 
@@ -562,7 +567,7 @@ const updateActiveFanRecord: ThunkActionCreator = (name: string, event: Broadcas
     const fanId = fanUid();
     const { domainId, fanUrl } = event;
     /* Create the snapshot and send it to the producer via firebase */
-    const publisher = opentok.getPublisher('backstage');
+    const publisher = opentok.getPublisher('backstage', 'camera');
     const record = {
       name,
       id: fanId,

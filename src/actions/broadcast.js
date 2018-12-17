@@ -4,12 +4,12 @@ import moment from 'moment';
 import { setInfo, resetAlert } from './alert';
 import opentok from '../services/opentok';
 import firebase from '../services/firebase';
-import { isUserOnStage } from '../services/util';
+import { isUserOnStage, alterCameraElement } from '../services/util';
 
 // Presence heartbeat time in seconds.
 const heartBeatTime = 10;
 let heartBeatInterval;
-const avPropertyChanged: ActionCreator = (participantType: UserRole, update: ParticipantAVPropertyUpdate): BroadcastAction => ({ 
+const avPropertyChanged: ActionCreator = (participantType: UserRole, update: ParticipantAVPropertyUpdate): BroadcastAction => ({
   type: 'PARTICIPANT_AV_PROPERTY_CHANGED',
   participantType,
   update,
@@ -88,6 +88,18 @@ const endPrivateCall: ThunkActionCreator = (participant: ParticipantType, userIn
   };
 
 /**
+ * Request a participants screen
+ */
+const screenShareAction: ThunkActionCreator = (action: string, participantType: ParticipantType): Thunk =>
+  async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
+    const participant = R.path(['broadcast', 'participants', participantType], getState());
+    const instance = R.equals('backstageFan', participantType) ? 'backstage' : 'stage'; // For moving to OT2
+    const to = R.path(['stream', 'connection'], participant);
+
+    opentok.signal(instance, { type: `${action}ScreenShare`, to });
+  };
+
+/**
  * Toggle a participants audio, video, or volume
  */
 const toggleParticipantProperty: ThunkActionCreator = (participantType: ParticipantType, property: ParticipantAVProperty): Thunk =>
@@ -99,7 +111,7 @@ const toggleParticipantProperty: ThunkActionCreator = (participantType: Particip
     const update: ParticipantAVPropertyUpdate = R.ifElse(
       R.equals('volume'), // $FlowFixMe
       (): { property: 'volume', value: number } => ({ property, value: currentValue === 100 ? 25 : 100 }), // $FlowFixMe
-      (): { property: 'audio' | 'video', value: boolean } => ({ property, value: !currentValue }) // eslint-disable-line comma-dangle
+      (): { property: 'audio' | 'video', value: boolean } => ({ property, value: !currentValue }),
     )(property);
     const { value } = update;
 
@@ -153,17 +165,37 @@ const updateParticipants: ThunkActionCreator = (participantType: ParticipantType
         }
         break;
       }
-      case 'streamCreated':
-        dispatch({ type: 'BROADCAST_PARTICIPANT_JOINED', participantType, stream });
+      case 'streamCreated': {
+        if (stream.videoType === 'screen') {
+          const broadcast = R.prop('broadcast', getState());
+          const participants = R.prop('participants', broadcast);
+
+          alterCameraElement(broadcast, participantType, 'hide');
+          dispatch(avPropertyChanged(participantType, { property: 'screen', value: true }));
+
+          Object.keys(participants).forEach((k: ParticipantType) => {
+            const p = participants[k];
+            p.video && dispatch(toggleParticipantProperty(k, 'video'));
+          });
+        } else {
+          dispatch({ type: 'BROADCAST_PARTICIPANT_JOINED', participantType, stream });
+        }
         break;
-      case 'streamDestroyed':
-        {
+      }
+      case 'streamDestroyed': {
+        if (stream.videoType === 'screen') {
+          const broadcast = R.prop('broadcast', getState());
+
+          alterCameraElement(broadcast, participantType, 'show');
+          dispatch(avPropertyChanged(participantType, { property: 'screen', value: false }));
+        } else {
           const inPrivateCall = R.equals(participantType, R.path(['broadcast', 'privateCall', 'isWith'], getState()));
           inPrivateCall && dispatch(endPrivateCall(participantType, true));
           dispatch({ type: 'REMOVE_CHAT', chatId: participantType });
           dispatch({ type: 'BROADCAST_PARTICIPANT_LEFT', participantType });
-          break;
         }
+        break;
+      }
       case 'startCall':
         dispatch({ type: 'BROADCAST_PARTICIPANT_JOINED', participantType, stream });
         break;
@@ -336,6 +368,7 @@ module.exports = {
   startElapsedTime,
   forceFanToDisconnect,
   startFanTransition,
+  screenShareAction,
   stopFanTransition,
   startHeartBeat,
   stopHeartBeat,

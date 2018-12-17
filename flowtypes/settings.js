@@ -3,6 +3,7 @@ declare type Settings = {
   loading: boolean,
   siteColor: string,
   registrationEnabled?: boolean,
+  screenSharingEnabled?: boolean,
   siteLogo: {
     id: string | null,
     url: string | null

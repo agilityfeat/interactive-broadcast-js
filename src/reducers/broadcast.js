@@ -38,9 +38,11 @@ const initialState = (): BroadcastState => ({
   privateCall: null,
   publishers: {
     camera: null,
+    screen: null,
   },
   subscribers: {
     camera: null,
+    screen: null,
   },
   meta: null,
   participants: {

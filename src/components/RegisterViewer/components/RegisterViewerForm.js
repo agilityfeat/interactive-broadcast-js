@@ -128,7 +128,7 @@ class RegisterViewerForm extends Component {
         </div>
         {this.state.error &&
           <div className="RegisterViewer-error">
-            There was an error registering
+            {'There\'s already an user with that email'}
           </div>
         }
       </form>
