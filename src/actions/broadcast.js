@@ -189,31 +189,29 @@ const updateParticipants: ThunkActionCreator = (
             Object.keys(participants).forEach((k: ParticipantType) => {
               const p = participants[k];
               prevState[k] = { video: p.video };
-              p.video && dispatch(toggleParticipantProperty(k, 'video'));
+              const shouldTurnOff = k !== 'backstageFan' && p.video;
+              shouldTurnOff && dispatch(toggleParticipantProperty(k, 'video'));
             });
             localStorage.setItem('participants', JSON.stringify(prevState));
+            dispatch(avPropertyChanged(participantType, { property: 'screen', value: true }));
+            alterCameraElement(participantType, 'hide');
           }
-
-          dispatch(avPropertyChanged(participantType, { property: 'screen', value: true }));
-          alterCameraElement(participantType, 'hide');
-          if (!isProducer) alterAllButScreen(participantType, 'hide');
         } else {
           dispatch({ type: 'BROADCAST_PARTICIPANT_JOINED', participantType, stream });
           if (opentok.instanceHasScreen('stage')) {
             const broadcast = R.prop('broadcast', getState());
             const participant = R.path(['participants', participantType], broadcast);
-            participant.video && dispatch(toggleParticipantProperty(participantType, 'video'));
+            const shouldTurnOff = participantType !== 'backstageFan' && participant.video;
+            shouldTurnOff && dispatch(toggleParticipantProperty(participantType, 'video'));
           }
         }
         break;
       }
       case 'streamDestroyed': {
         if (stream.videoType === 'screen') {
-          alterCameraElement(participantType, 'show');
-          if (!isProducer) alterAllButScreen(participantType, 'show');
-          dispatch(avPropertyChanged(participantType, { property: 'screen', value: false }));
-
           if (isProducer) {
+            alterCameraElement(participantType, 'show');
+            dispatch(avPropertyChanged(participantType, { property: 'screen', value: false }));
             const participants = JSON.parse(localStorage.getItem('participants'));
             localStorage.removeItem('participants');
 
