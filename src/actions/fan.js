@@ -28,7 +28,7 @@ import {
 import takeSnapshot from '../services/snapshot';
 import networkTest from '../services/networkQuality';
 import { getEventWithCredentials, getEmbedEventWithCredentials } from '../services/api';
-import { fanTypeByStatus, isUserOnStage } from '../services/util';
+import { fanTypeByStatus, isUserOnStage, tagSubscriberElements } from '../services/util';
 
 const { toggleLocalAudio, toggleLocalVideo } = opentok;
 
@@ -314,6 +314,12 @@ const onSignal = (dispatch: Dispatch, getState: GetState): SignalListener =>
           /* Start publishing to onstage */
           const { publisher } = await opentok.startCall('stage');
           dispatch(updateStream(publisher.stream.streamId));
+
+          const stream = R.prop(['stream'], publisher);
+          const connectionData: { userType: UserRole } = JSON.parse(R.path(['connection', 'data'], stream));
+          publisher.element.classList.add('camera');
+          publisher.element.classList.add(connectionData.userType);
+
           /* Start subscribing from onstage */
           opentok.subscribeAll('stage');
           break;
@@ -339,7 +345,12 @@ const opentokConfig = (userCredentials: UserCredentials, dispatch: Dispatch, get
       'unsubscribeFromCamera',
       'unsubscribeFromScreen',
     ];
-    const handleSubscribeEvent = (state: CoreState): void => dispatch(setBroadcastState(state));
+
+    const handleSubscribeEvent = (state: CoreState, event: PubSubEventType) => {
+      tagSubscriberElements(state, event);
+      dispatch(setBroadcastState(state));
+    };
+
     R.forEach((event: SubscribeEventType): void => instance.on(event, handleSubscribeEvent), subscribeEvents);
 
     // Assign listener for stream changes
