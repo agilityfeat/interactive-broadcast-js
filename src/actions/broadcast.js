@@ -155,7 +155,12 @@ const forceFanToDisconnect: ThunkActionCreator = (fan: ActiveFan): Thunk =>
 /**
  * Update the participants state when someone joins or leaves
  */
-const updateParticipants: ThunkActionCreator = (participantType: ParticipantType, event: ParticipantEventType, stream: Stream): Thunk =>
+const updateParticipants: ThunkActionCreator = (
+  participantType: ParticipantType,
+  event: ParticipantEventType,
+  stream: Stream,
+  isProducer: boolean = false,
+): Thunk =>
   (dispatch: Dispatch, getState: GetState) => {
     switch (event) {
       case 'backstageFanLeft': {
