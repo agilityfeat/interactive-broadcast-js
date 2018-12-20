@@ -92,9 +92,18 @@ const endPrivateCall: ThunkActionCreator = (participant: ParticipantType, userIn
  */
 const screenShareAction: ThunkActionCreator = (action: string, participantType: ParticipantType): Thunk =>
   async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
-    const participant = R.path(['broadcast', 'participants', participantType], getState());
+    const participants = R.path(['broadcast', 'participants'], getState());
+    const participant = R.prop(participantType, participants);
     const instance = R.equals('backstageFan', participantType) ? 'backstage' : 'stage'; // For moving to OT2
     const to = R.path(['stream', 'connection'], participant);
+
+    if (action === 'start') {
+      Object.keys(participants).forEach((k: ParticipantType) => {
+        const offInstance = R.equals('backstageFan', k) ? 'backstage' : 'stage'; // For moving to OT2
+        const offTo = R.path(['stream', 'connection'], participants[k]);
+        participants[k].screen && opentok.signal(offInstance, { type: 'endScreenShare', to: offTo });
+      });
+    }
 
     opentok.signal(instance, { type: `${action}ScreenShare`, to });
   };
