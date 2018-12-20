@@ -48,7 +48,7 @@ const alterAllButScreen = (userType: UserType, action: 'hide' | 'show'): boolean
   if (action === 'hide') {
     const participants = ['fan', 'celebrity', 'host'];
     const styleEl = document.createElement('style');
-    styleEl.id = 'hide-cameras';
+    styleEl.classList.add('hide-cameras');
 
     participants.forEach((k: ParticipantType) => {
       if (k !== userType) styleEl.innerHTML += `#video${k} { display: none; }`;
@@ -56,8 +56,10 @@ const alterAllButScreen = (userType: UserType, action: 'hide' | 'show'): boolean
 
     document.body.appendChild(styleEl);
   } else {
-    const styleEl = document.getElementById('hide-cameras');
-    styleEl && styleEl.parentNode.removeChild(styleEl);
+    const styleEls = [...document.getElementsByClassName('hide-cameras')];
+    styleEls.forEach((el: HTMLElement) => {
+      el.parentNode.removeChild(el);
+    });
   }
 };
 
