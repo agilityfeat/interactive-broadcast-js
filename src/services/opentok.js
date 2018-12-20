@@ -229,7 +229,7 @@ const subscribeAll = async (instance: SessionName, audioOnly?: boolean = false, 
 const createEmptySubscriber = async (instance: SessionName, stream: Stream): AsyncVoid => {
   const core = instances[instance];
   try {
-    /** 
+    /**
      * Putting subscribeToAudio in true by default and then turn it to false is just a temporary workaround  
      * to solve an issue in OT 2.14
     */
@@ -283,6 +283,15 @@ const unsubscribe = (instance: SessionName, stream: Stream) => {
   const { streamMap, subscribers } = core.state();
   const subscriber = subscribers.camera[streamMap[stream.streamId]] || subscribers.sip[streamMap[stream.streamId]];
   subscriber && core.unsubscribe(subscriber);
+};
+
+
+const instanceHasScreen = (instance: SessionName): boolean => {
+  const core = instances[instance];
+  const { publishers, subscribers } = core.state();
+
+  const screens = [...Object.keys(publishers.screen), ...Object.keys(subscribers.screen)];
+  return screens.length > 0;
 };
 
 const unsubscribeFromAudio: ((SessionName, Stream) => void) = R.partialRight(toggleSubscribeAudio, [false]);
@@ -393,4 +402,5 @@ module.exports = {
   endCall,
   unpublish,
   forceDisconnect,
+  instanceHasScreen,
 };
