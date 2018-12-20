@@ -36,14 +36,6 @@ const initialState = (): BroadcastState => ({
   backstageConnected: false,
   publishOnlyEnabled: false,
   privateCall: null,
-  publishers: {
-    camera: null,
-    screen: null,
-  },
-  subscribers: {
-    camera: null,
-    screen: null,
-  },
   meta: null,
   participants: {
     fan: participantState(),
@@ -99,8 +91,11 @@ const broadcast = (state: BroadcastState = initialState(), action: BroadcastActi
       return R.assoc('disconnected', action.disconnected, state);
     case 'SET_PUBLISH_ONLY_ENABLED':
       return R.assoc('publishOnlyEnabled', action.publishOnlyEnabled, state);
-    case 'BROADCAST_PARTICIPANT_JOINED':
-      return R.assocPath(['participants', action.participantType], participantState(action.stream), state);
+    case 'BROADCAST_PARTICIPANT_JOINED': {
+      const oldState = R.path(['participants', action.participantType], state);
+      const newState = R.merge(oldState, participantState(action.stream));
+      return R.assocPath(['participants', action.participantType], newState, state);
+    }
     case 'BROADCAST_PARTICIPANT_LEFT':
       return R.assocPath(['participants', action.participantType], participantState(), state);
     case 'PARTICIPANT_AV_PROPERTY_CHANGED':
