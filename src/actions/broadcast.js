@@ -4,7 +4,7 @@ import moment from 'moment';
 import { setInfo, resetAlert } from './alert';
 import opentok from '../services/opentok';
 import firebase from '../services/firebase';
-import { isUserOnStage, alterCameraElement } from '../services/util';
+import { alterAllButScreen, isUserOnStage, alterCameraElement } from '../services/util';
 
 // Presence heartbeat time in seconds.
 const heartBeatTime = 10;
@@ -155,7 +155,12 @@ const forceFanToDisconnect: ThunkActionCreator = (fan: ActiveFan): Thunk =>
 /**
  * Update the participants state when someone joins or leaves
  */
-const updateParticipants: ThunkActionCreator = (participantType: ParticipantType, event: ParticipantEventType, stream: Stream): Thunk =>
+const updateParticipants: ThunkActionCreator = (
+  participantType: ParticipantType,
+  event: ParticipantEventType,
+  stream: Stream,
+  isProducer: boolean = false,
+): Thunk =>
   (dispatch: Dispatch, getState: GetState) => {
     switch (event) {
       case 'backstageFanLeft': {
@@ -170,24 +175,44 @@ const updateParticipants: ThunkActionCreator = (participantType: ParticipantType
           const broadcast = R.prop('broadcast', getState());
           const participants = R.prop('participants', broadcast);
 
-          alterCameraElement(broadcast, participantType, 'hide');
-          dispatch(avPropertyChanged(participantType, { property: 'screen', value: true }));
+          if (isProducer) {
+            const prevState = {};
+            Object.keys(participants).forEach((k: ParticipantType) => {
+              const p = participants[k];
+              prevState[k] = { video: p.video };
+              p.video && dispatch(toggleParticipantProperty(k, 'video'));
+            });
+            localStorage.setItem('participants', JSON.stringify(prevState));
+          }
 
-          Object.keys(participants).forEach((k: ParticipantType) => {
-            const p = participants[k];
-            p.video && dispatch(toggleParticipantProperty(k, 'video'));
-          });
+          dispatch(avPropertyChanged(participantType, { property: 'screen', value: true }));
+          alterCameraElement(participantType, 'hide');
+          if (!isProducer) alterAllButScreen(participantType, 'hide');
         } else {
           dispatch({ type: 'BROADCAST_PARTICIPANT_JOINED', participantType, stream });
+          if (opentok.instanceHasScreen('stage')) {
+            const broadcast = R.prop('broadcast', getState());
+            const participant = R.path(['participants', participantType], broadcast);
+            participant.video && dispatch(toggleParticipantProperty(participantType, 'video'));
+          }
         }
         break;
       }
       case 'streamDestroyed': {
         if (stream.videoType === 'screen') {
-          const broadcast = R.prop('broadcast', getState());
-
-          alterCameraElement(broadcast, participantType, 'show');
+          alterCameraElement(participantType, 'show');
+          if (!isProducer) alterAllButScreen(participantType, 'show');
           dispatch(avPropertyChanged(participantType, { property: 'screen', value: false }));
+
+          if (isProducer) {
+            const participants = JSON.parse(localStorage.getItem('participants'));
+            localStorage.removeItem('participants');
+
+            Object.keys(participants).forEach((k: ParticipantType) => {
+              const p = participants[k];
+              p.video && dispatch(toggleParticipantProperty(k, 'video'));
+            });
+          }
         } else {
           const inPrivateCall = R.equals(participantType, R.path(['broadcast', 'privateCall', 'isWith'], getState()));
           inPrivateCall && dispatch(endPrivateCall(participantType, true));

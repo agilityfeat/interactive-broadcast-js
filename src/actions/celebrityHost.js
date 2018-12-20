@@ -20,7 +20,7 @@ import {
   heartBeatTime,
 } from './broadcast';
 import { getEventWithCredentials, getEmbedEventWithCredentials } from '../services/api';
-import { isUserOnStage, alterCameraElement } from '../services/util';
+import { isUserOnStage, alterAllButScreen, alterCameraElement, tagSubscriberElements } from '../services/util';
 import { setInfo, setCameraError, setExtensionError } from './alert';
 import firebase from '../services/firebase';
 import {
@@ -77,10 +77,10 @@ const onSignal = (dispatch: Dispatch, userType: HostCeleb, getState: GetState): 
           const to = R.path(['stream', 'connection'], producer);
 
           opentok.startScreenShare('stage')
-            .then((): void => alterCameraElement(broadcast, userType, 'hide'))
+            .then((): void => alterCameraElement(userType, 'hide'))
             .catch(() => {
               opentok.signal('stage', { type: 'errorScreenShareExtension', to });
-              alterCameraElement(broadcast, userType, 'show');
+              alterCameraElement(userType, 'show');
               dispatch(setExtensionError());
             });
         }
@@ -125,7 +125,12 @@ const opentokConfig = (dispatch: Dispatch, { userCredentials, userType }: UserDa
 
     // Assign listener for state changes
     const handlePubSubEvent = (state: CoreStateWithPublisher, event: PubSubEventType) => {
+      tagSubscriberElements(state, event);
       if (R.equals(event, 'startCall')) {
+        const stream = R.path(['publisher', 'stream'], state);
+        const connectionData: { userType: UserRole } = JSON.parse(R.path(['connection', 'data'], stream));
+        state.publisher.element.classList.add('camera');
+        state.publisher.element.classList.add(connectionData.userType);
         dispatch(updateParticipants(userType, event, R.path(['publisher', 'stream'], state)));
       }
       dispatch(setBroadcastState(state));
@@ -177,7 +182,9 @@ const opentokConfig = (dispatch: Dispatch, { userCredentials, userType }: UserDa
         const started = type === 'start';
         const update = { property: 'screen', value: started };
         const action = started ? 'hide' : 'show';
-        alterCameraElement(R.prop('broadcast', getState()), userType, action);
+
+        alterCameraElement(userType, action);
+        alterAllButScreen(userType, action);
 
         dispatch({
           type: 'PARTICIPANT_AV_PROPERTY_CHANGED',
@@ -196,7 +203,8 @@ const opentokConfig = (dispatch: Dispatch, { userCredentials, userType }: UserDa
       if (error.code === 1500) {
         const producer = R.path(['broadcast', 'participants', 'producer'], getState());
         const to = R.path(['stream', 'connection'], producer);
-        alterCameraElement(R.prop('broadcast', getState()), userType, 'show');
+        alterCameraElement(userType, 'show');
+        alterAllButScreen(userType, 'show');
 
         opentok.signal('stage', { type: 'errorScreenShare', to });
       }
