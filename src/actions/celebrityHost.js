@@ -76,22 +76,30 @@ const onSignal = (dispatch: Dispatch, userType: HostCeleb, getState: GetState): 
           const broadcast = R.path(['broadcast'], getState());
           const producer = R.path(['participants', 'producer'], broadcast);
           const to = R.path(['stream', 'connection'], producer);
+          const event = R.prop('event', getState().broadcast);
+          const { domainId, fanUrl } = event;
+          const ref = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/screen`);
 
-          opentok.startScreenShare('stage')
-            .then((): void => alterCameraElement(userType, 'hide'))
-            .catch(() => {
-              opentok.signal('stage', { type: 'errorScreenShareExtension', to });
-              alterCameraElement(userType, 'show');
-              dispatch(setExtensionError());
-            });
+          opentok.startScreenShare('stage').then(() => {
+            ref.set(userType);
+            ref.onDisconnect().remove();
+          }).catch(() => {
+            opentok.signal('stage', { type: 'errorScreenShareExtension', to });
+            dispatch(setExtensionError());
+            ref.remove();
+          });
         }
         dispatch(setBroadcastState(opentok.state('stage')));
         break;
       }
-      case 'endScreenShare':
+      case 'endScreenShare': {
         fromProducer && await opentok.endScreenShare('stage');
-        dispatch(setBroadcastState(opentok.state('stage')));
+        const event = R.prop('event', getState().broadcast);
+        const { domainId, fanUrl } = event;
+        const ref = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/screen`);
+        ref.remove();
         break;
+      }
       case 'muteAudio':
         fromProducer && toggleLocalAudio('stage', signalData.mute === 'off');
         break;
@@ -178,34 +186,19 @@ const opentokConfig = (dispatch: Dispatch, { userCredentials, userType }: UserDa
       }
     };
 
-    const handleScreenShareEvent = (type: string): AsyncVoid =>
-      () => {
-        const started = type === 'start';
-        const update = { property: 'screen', value: started };
-        const action = started ? 'hide' : 'show';
-
-        alterCameraElement(userType, action);
-        alterAllButScreen(userType, action);
-
-        dispatch({
-          type: 'PARTICIPANT_AV_PROPERTY_CHANGED',
-          participantType: userType,
-          update,
-        });
-      };
-
     R.forEach((event: StreamEventType): void => instance.on(event, handleStreamEvent), otStreamEvents);
     instance.on('signal', onSignal(dispatch, userType, getState));
 
     // assign screensharing listeners
-    instance.on('startScreenSharing', handleScreenShareEvent('start'));
-    instance.on('endScreenSharing', handleScreenShareEvent('end'));
     instance.on('screenSharingError', (error: Error) => {
       if (error.code === 1500) {
-        const producer = R.path(['broadcast', 'participants', 'producer'], getState());
+        const broadcast = R.path(['broadcast'], getState());
+        const producer = R.path(['participants', 'producer'], broadcast);
         const to = R.path(['stream', 'connection'], producer);
-        alterCameraElement(userType, 'show');
-        alterAllButScreen(userType, 'show');
+        const event = R.prop('event', getState().broadcast);
+        const { domainId, fanUrl } = event;
+        const ref = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/screen`);
+        ref.remove();
 
         opentok.signal('stage', { type: 'errorScreenShare', to });
       }
