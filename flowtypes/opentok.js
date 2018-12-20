@@ -170,7 +170,8 @@ declare type CoreState = {
   subscribers: {
     camera: { [subscriberId: string]: Subscriber},
     screen: { [subscriberId: string]: Subscriber}
-  }
+  },
+  subscriber: Subscriber
 }
 
 declare type CoreStateWithPublisher = CoreState & { publisher: Publisher };

@@ -90,10 +90,10 @@ declare type BroadcastState = {
   connected: boolean,
   publishOnlyEnabled: boolean,
   privateCall: PrivateCallState,
-  publishers: {
+  publishers?: {
     camera: null | { [publisherId: string]: Publisher}
   },
-  subscribers: {
+  subscribers?: {
     camera: null | { [subscriberId: string]: Subscriber}
   },
   meta: null | CoreMeta,
