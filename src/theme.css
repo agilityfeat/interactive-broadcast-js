@@ -5,6 +5,15 @@
   --link-color: rgba(95, 0, 178, 0.75);
 }
 
+.OT_root {
+  position: absolute;
+  z-index: 0;
+}
+
+.screen {
+  z-index: 1;
+}
+
 .Header {
   background-color: var(--main-header-bg);
 }
