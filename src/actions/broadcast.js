@@ -4,7 +4,7 @@ import moment from 'moment';
 import { setInfo, resetAlert } from './alert';
 import opentok from '../services/opentok';
 import firebase from '../services/firebase';
-import { isUserOnStage, alterCameraElement } from '../services/util';
+import { alterAllButScreen, isUserOnStage, alterCameraElement } from '../services/util';
 
 // Presence heartbeat time in seconds.
 const heartBeatTime = 10;
@@ -200,10 +200,19 @@ const updateParticipants: ThunkActionCreator = (
       }
       case 'streamDestroyed': {
         if (stream.videoType === 'screen') {
-          const broadcast = R.prop('broadcast', getState());
-
-          alterCameraElement(broadcast, participantType, 'show');
+          alterCameraElement(participantType, 'show');
+          if (!isProducer) alterAllButScreen(participantType, 'show');
           dispatch(avPropertyChanged(participantType, { property: 'screen', value: false }));
+
+          if (isProducer) {
+            const participants = JSON.parse(localStorage.getItem('participants'));
+            localStorage.removeItem('participants');
+
+            Object.keys(participants).forEach((k: ParticipantType) => {
+              const p = participants[k];
+              p.video && dispatch(toggleParticipantProperty(k, 'video'));
+            });
+          }
         } else {
           const inPrivateCall = R.equals(participantType, R.path(['broadcast', 'privateCall', 'isWith'], getState()));
           inPrivateCall && dispatch(endPrivateCall(participantType, true));
