@@ -11,6 +11,7 @@ import {
   resetAlert,
 } from './alert';
 import { getEvent, getAdminCredentials, getEventWithCredentials } from '../services/api';
+import { tagSubscriberElements } from '../services/util';
 import firebase from '../services/firebase';
 import {
   Analytics,
@@ -115,7 +116,11 @@ const opentokConfig = (dispatch: Dispatch, getState: GetState, userCredentials: 
       'unsubscribeFromCamera',
       'unsubscribeFromScreen',
     ];
-    const handleSubscribeEvent = (state: CoreState): void => dispatch(setBroadcastState(state));
+
+    const handleSubscribeEvent = (state: CoreState, event: SubscribeEventType) => {
+      dispatch(setBroadcastState(state));
+      tagSubscriberElements(state, event);
+    };
     R.forEach((event: SubscribeEventType): void => instance.on(event, handleSubscribeEvent), subscribeEvents);
 
     // Assign listener for stream changes
@@ -124,8 +129,9 @@ const opentokConfig = (dispatch: Dispatch, getState: GetState, userCredentials: 
       const isStage = R.propEq('name', 'stage', instance);
       const backstageFanLeft = type === 'streamDestroyed' && !isStage;
       const connectionData: { userType: UserRole } = JSON.parse(stream.connection.data);
-      isStage && dispatch(updateParticipants(connectionData.userType, type, stream));
-      backstageFanLeft && dispatch(updateParticipants(connectionData.userType, 'backstageFanLeft', stream));
+
+      isStage && dispatch(updateParticipants(connectionData.userType, type, stream, true));
+      backstageFanLeft && dispatch(updateParticipants(connectionData.userType, 'backstageFanLeft', stream, true));
     };
 
     R.forEach((event: StreamEventType): void => instance.on(event, handleStreamEvent), otStreamEvents);
