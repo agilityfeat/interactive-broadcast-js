@@ -90,6 +90,7 @@ class Participant extends React.Component {
     const volumeIconClass = classNames('icon', { active: !volumeIconDisabled });
     const privateCallIconClass = classNames('icon', { active: me.connected && availableForPrivateCall() });
     const status = me.connected ? 'Online' : 'Offline';
+
     return (
       <div className="Participant">
         <div className="Participant-header">
@@ -146,12 +147,14 @@ class Participant extends React.Component {
                 disabled={!me.connected}
               />
             }
-            <ControlIcon
-              name="video-camera"
-              className={controlIconClass}
-              onClick={toggleVideo}
-              disabled={!me.connected}
-            />
+            { !me.screen &&
+              <ControlIcon
+                name="video-camera"
+                className={controlIconClass}
+                onClick={toggleVideo}
+                disabled={!me.connected}
+              />
+            }
             { R.contains('fan', R.toLower(type)) ?
               <ControlIcon name="ban" className={controlIconClass} onClick={kickFan} disabled={!me.connected} /> :
               <ControlIcon name="comment" onClick={chat} className={controlIconClass} disabled={!me.connected} />
