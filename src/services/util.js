@@ -44,15 +44,53 @@ const translateRole = (type: ParticipantType): string => {
 };
 
 
+const alterAllButScreen = (userType: UserType, action: 'hide' | 'show'): boolean => {
+  if (action === 'hide') {
+    const participants = ['fan', 'celebrity', 'host'];
+    const styleEl = document.createElement('style');
+    styleEl.id = 'hide-cameras';
+
+    participants.forEach((k: ParticipantType) => {
+      if (k !== userType) styleEl.innerHTML += `#video${k} { display: none; }`;
+    });
+
+    document.body.appendChild(styleEl);
+  } else {
+    const styleEl = document.getElementById('hide-cameras');
+    styleEl && styleEl.parentNode.removeChild(styleEl);
+  }
+};
+
 /**
  * shows or hides participant video feed
  */
-const alterCameraElement = (broadcast: BroadcastState, userType: UserType, action: 'hide' | 'show') => {
-  const streamMap = R.path(['streamMap'], broadcast);
-  const camStream = R.path(['participants', userType, 'stream'], broadcast);
-  const camElement = camStream && document.getElementById(streamMap[camStream.id]);
+const alterCameraElement = (userType: UserType, action: 'hide' | 'show') => {
+  const elements = document.querySelectorAll(`.camera.${userType}`);
+  for (let i = 0; i < elements.length; i += 1) {
+    elements[i].style.display = action === 'hide' ? 'none' : 'block';
+  }
+};
 
-  if (camElement) camElement.style.display = action === 'hide' ? 'none' : 'block';
+
+const tagSubscriberElements = (state: CoreStateWithPublisher, event: SubscribeEventType) => {
+  switch (event) {
+    case 'subscribeToCamera': {
+      const stream = R.path(['subscriber', 'stream'], state);
+      const connectionData: { userType: UserRole } = JSON.parse(R.path(['connection', 'data'], stream));
+      state.subscriber.element.classList.add('camera');
+      state.subscriber.element.classList.add(connectionData.userType);
+      break;
+    }
+    case 'subscribeToScreen': {
+      const stream = R.path(['subscriber', 'stream'], state);
+      const connectionData: { userType: UserRole } = JSON.parse(R.path(['connection', 'data'], stream));
+      state.subscriber.element.classList.add('screen');
+      state.subscriber.element.classList.add(connectionData.userType);
+      break;
+    }
+    default:
+      break;
+  }
 };
 
 module.exports = {
@@ -63,4 +101,6 @@ module.exports = {
   properCase,
   translateRole,
   alterCameraElement,
+  tagSubscriberElements,
+  alterAllButScreen,
 };
