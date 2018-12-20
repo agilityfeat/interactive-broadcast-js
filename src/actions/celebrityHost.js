@@ -16,11 +16,12 @@ import {
   setPrivateCall,
   onChatMessage,
   monitorVolume,
+  monitorScreen,
   startHeartBeat,
   heartBeatTime,
 } from './broadcast';
 import { getEventWithCredentials, getEmbedEventWithCredentials } from '../services/api';
-import { isUserOnStage, alterAllButScreen, alterCameraElement, tagSubscriberElements } from '../services/util';
+import { isUserOnStage, tagSubscriberElements } from '../services/util';
 import { setInfo, setCameraError, setExtensionError } from './alert';
 import firebase from '../services/firebase';
 import {
@@ -320,6 +321,7 @@ const connectToInteractive: ThunkActionCreator =
     analytics.log(publishAction, logVariation.attempt);
     analytics.log(allowDenyAction, logVariation.attempt);
     try {
+      dispatch(monitorScreen());
       await opentok.connect(['stage']);
       analytics.log(connectAction, logVariation.success);
       analytics.log(publishAction, logVariation.success);
