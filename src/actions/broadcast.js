@@ -190,6 +190,11 @@ const updateParticipants: ThunkActionCreator = (
           if (!isProducer) alterAllButScreen(participantType, 'hide');
         } else {
           dispatch({ type: 'BROADCAST_PARTICIPANT_JOINED', participantType, stream });
+          if (opentok.instanceHasScreen('stage')) {
+            const broadcast = R.prop('broadcast', getState());
+            const participant = R.path(['participants', participantType], broadcast);
+            participant.video && dispatch(toggleParticipantProperty(participantType, 'video'));
+          }
         }
         break;
       }
