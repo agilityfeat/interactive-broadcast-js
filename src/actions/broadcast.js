@@ -170,13 +170,19 @@ const updateParticipants: ThunkActionCreator = (participantType: ParticipantType
           const broadcast = R.prop('broadcast', getState());
           const participants = R.prop('participants', broadcast);
 
-          alterCameraElement(broadcast, participantType, 'hide');
-          dispatch(avPropertyChanged(participantType, { property: 'screen', value: true }));
+          if (isProducer) {
+            const prevState = {};
+            Object.keys(participants).forEach((k: ParticipantType) => {
+              const p = participants[k];
+              prevState[k] = { video: p.video };
+              p.video && dispatch(toggleParticipantProperty(k, 'video'));
+            });
+            localStorage.setItem('participants', JSON.stringify(prevState));
+          }
 
-          Object.keys(participants).forEach((k: ParticipantType) => {
-            const p = participants[k];
-            p.video && dispatch(toggleParticipantProperty(k, 'video'));
-          });
+          dispatch(avPropertyChanged(participantType, { property: 'screen', value: true }));
+          alterCameraElement(participantType, 'hide');
+          if (!isProducer) alterAllButScreen(participantType, 'hide');
         } else {
           dispatch({ type: 'BROADCAST_PARTICIPANT_JOINED', participantType, stream });
         }
