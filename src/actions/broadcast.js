@@ -251,6 +251,32 @@ const monitorVolume: ThunkActionCreator = (): Thunk =>
     });
   };
 
+const monitorScreen: ThunkActionCreator = (isProducer: boolean = false): Thunk =>
+  (dispatch: Dispatch, getState: GetState) => {
+    const event = R.prop('event', getState().broadcast);
+    const { domainId, fanUrl } = event;
+    const ref = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/screen`);
+    ref.on('value', (snapshot: firebase.database.DataSnapshot) => {
+      const userTypeSharing = snapshot.val();
+      const update = { property: 'screen', value: !!userTypeSharing };
+
+      if (userTypeSharing) {
+        !isProducer && alterAllButScreen(userTypeSharing, 'hide');
+        alterCameraElement(userTypeSharing, 'hide');
+        dispatch(avPropertyChanged(userTypeSharing, update));
+      } else {
+        !isProducer && alterAllButScreen(null, 'show');
+        const { broadcast: { participants } } = getState();
+        Object.keys(participants).forEach((k: ParticipantType) => {
+          if (participants[k].screen) {
+            alterCameraElement(k, 'show');
+            dispatch(avPropertyChanged(k, update));
+          }
+        });
+      }
+    });
+  };
+
 /**
  * Heartbeat that keeps track of the user presence
  */
@@ -385,6 +411,7 @@ module.exports = {
   sendChatMessage,
   minimizeChat,
   monitorVolume,
+  monitorScreen,
   displayChat,
   onChatMessage,
   updateStageCountdown,
