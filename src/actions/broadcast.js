@@ -263,6 +263,7 @@ const monitorScreen: ThunkActionCreator = (isProducer: boolean = false): Thunk =
     const event = R.prop('event', getState().broadcast);
     const { domainId, fanUrl } = event;
     const ref = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/screen`);
+
     ref.on('value', (snapshot: firebase.database.DataSnapshot) => {
       const userTypeSharing = snapshot.val();
       const update = { property: 'screen', value: !!userTypeSharing };

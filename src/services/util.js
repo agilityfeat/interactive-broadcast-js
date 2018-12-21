@@ -45,6 +45,11 @@ const translateRole = (type: ParticipantType): string => {
 
 
 const alterAllButScreen = (userType: UserType, action: 'hide' | 'show'): boolean => {
+  const styleEls = [...document.getElementsByClassName('hide-cameras')];
+  styleEls.forEach((el: HTMLElement) => {
+    el.parentNode.removeChild(el);
+  });
+
   if (action === 'hide') {
     const participants = ['fan', 'celebrity', 'host'];
     const styleEl = document.createElement('style');
@@ -55,11 +60,6 @@ const alterAllButScreen = (userType: UserType, action: 'hide' | 'show'): boolean
     });
 
     document.body.appendChild(styleEl);
-  } else {
-    const styleEls = [...document.getElementsByClassName('hide-cameras')];
-    styleEls.forEach((el: HTMLElement) => {
-      el.parentNode.removeChild(el);
-    });
   }
 };
 
