@@ -1,6 +1,6 @@
 export default {
-  extensionURL: 'https://chrome.google.com/webstore/detail/unicustomercare-screen-sh/nnhpjapaiinbdemkjhfhjhedkhfindli',
-  extensionID: 'nnhpjapaiinbdemkjhfhjhedkhfindli',
+  extensionURL: 'https://chrome.google.com/webstore/detail/unicustomercare-screen-sh/mihfgloaoaggnpkgamibeihlnklhpjla',
+  extensionID: 'mihfgloaoaggnpkgamibeihlnklhpjla',
   annotation: false,
   appendWebStoreLink: true,
   externalWindow: false,

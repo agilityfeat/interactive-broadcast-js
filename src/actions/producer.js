@@ -34,6 +34,7 @@ import {
   setDisconnected,
   setPrivateCall,
   onChatMessage,
+  monitorScreen,
   monitorVolume,
   startCountdown,
   startFanTransition,
@@ -230,6 +231,7 @@ const connectToInteractive: ThunkActionCreator = (userCredentials: UserCredentia
 
     try {
       analytics.log(logAction.producerConnects, logVariation.attempt);
+      dispatch(monitorScreen(true));
       await opentok.connect(['stage', 'backstage']);
       analytics.log(logAction.producerConnects, logVariation.success);
       dispatch(setBroadcastState(opentok.state('stage')));

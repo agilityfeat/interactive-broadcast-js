@@ -17,6 +17,7 @@ import {
   setPrivateCall,
   onChatMessage,
   monitorVolume,
+  monitorScreen,
 } from './broadcast';
 import { setInfo, resetAlert, setCameraError } from './alert';
 import opentok from '../services/opentok';
@@ -536,6 +537,7 @@ const monitorProducer: ThunkActionCreator = (): Thunk =>
 const connectToInteractive: ThunkActionCreator = (userCredentials: UserCredentials): Thunk =>
   async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
     const instances: CoreInstanceOptions[] = opentokConfig(userCredentials, dispatch, getState);
+    dispatch(monitorScreen());
     const fanId = fanUid();
     opentok.init(instances);
     analytics.log(logAction.fanConnectsOnstage, logVariation.attempt);

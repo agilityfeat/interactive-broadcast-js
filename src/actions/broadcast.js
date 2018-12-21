@@ -92,9 +92,18 @@ const endPrivateCall: ThunkActionCreator = (participant: ParticipantType, userIn
  */
 const screenShareAction: ThunkActionCreator = (action: string, participantType: ParticipantType): Thunk =>
   async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
-    const participant = R.path(['broadcast', 'participants', participantType], getState());
+    const participants = R.path(['broadcast', 'participants'], getState());
+    const participant = R.prop(participantType, participants);
     const instance = R.equals('backstageFan', participantType) ? 'backstage' : 'stage'; // For moving to OT2
     const to = R.path(['stream', 'connection'], participant);
+
+    if (action === 'start') {
+      Object.keys(participants).forEach((k: ParticipantType) => {
+        const offInstance = R.equals('backstageFan', k) ? 'backstage' : 'stage'; // For moving to OT2
+        const offTo = R.path(['stream', 'connection'], participants[k]);
+        participants[k].screen && opentok.signal(offInstance, { type: 'endScreenShare', to: offTo });
+      });
+    }
 
     opentok.signal(instance, { type: `${action}ScreenShare`, to });
   };
@@ -180,31 +189,29 @@ const updateParticipants: ThunkActionCreator = (
             Object.keys(participants).forEach((k: ParticipantType) => {
               const p = participants[k];
               prevState[k] = { video: p.video };
-              p.video && dispatch(toggleParticipantProperty(k, 'video'));
+              const shouldTurnOff = k !== 'backstageFan' && p.video;
+              shouldTurnOff && dispatch(toggleParticipantProperty(k, 'video'));
             });
             localStorage.setItem('participants', JSON.stringify(prevState));
+            dispatch(avPropertyChanged(participantType, { property: 'screen', value: true }));
+            alterCameraElement(participantType, 'hide');
           }
-
-          dispatch(avPropertyChanged(participantType, { property: 'screen', value: true }));
-          alterCameraElement(participantType, 'hide');
-          if (!isProducer) alterAllButScreen(participantType, 'hide');
         } else {
           dispatch({ type: 'BROADCAST_PARTICIPANT_JOINED', participantType, stream });
           if (opentok.instanceHasScreen('stage')) {
             const broadcast = R.prop('broadcast', getState());
             const participant = R.path(['participants', participantType], broadcast);
-            participant.video && dispatch(toggleParticipantProperty(participantType, 'video'));
+            const shouldTurnOff = participantType !== 'backstageFan' && participant.video;
+            shouldTurnOff && dispatch(toggleParticipantProperty(participantType, 'video'));
           }
         }
         break;
       }
       case 'streamDestroyed': {
         if (stream.videoType === 'screen') {
-          alterCameraElement(participantType, 'show');
-          if (!isProducer) alterAllButScreen(participantType, 'show');
-          dispatch(avPropertyChanged(participantType, { property: 'screen', value: false }));
-
           if (isProducer) {
+            alterCameraElement(participantType, 'show');
+            dispatch(avPropertyChanged(participantType, { property: 'screen', value: false }));
             const participants = JSON.parse(localStorage.getItem('participants'));
             localStorage.removeItem('participants');
 
@@ -248,6 +255,33 @@ const monitorVolume: ThunkActionCreator = (): Thunk =>
           dispatch(avPropertyChanged(participantType, update));
         }
       }, volumeMap);
+    });
+  };
+
+const monitorScreen: ThunkActionCreator = (isProducer: boolean = false): Thunk =>
+  (dispatch: Dispatch, getState: GetState) => {
+    const event = R.prop('event', getState().broadcast);
+    const { domainId, fanUrl } = event;
+    const ref = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/screen`);
+
+    ref.on('value', (snapshot: firebase.database.DataSnapshot) => {
+      const userTypeSharing = snapshot.val();
+      const update = { property: 'screen', value: !!userTypeSharing };
+
+      if (userTypeSharing) {
+        !isProducer && alterAllButScreen(userTypeSharing, 'hide');
+        alterCameraElement(userTypeSharing, 'hide');
+        dispatch(avPropertyChanged(userTypeSharing, update));
+      } else {
+        !isProducer && alterAllButScreen(null, 'show');
+        const { broadcast: { participants } } = getState();
+        Object.keys(participants).forEach((k: ParticipantType) => {
+          if (participants[k].screen) {
+            alterCameraElement(k, 'show');
+            dispatch(avPropertyChanged(k, update));
+          }
+        });
+      }
     });
   };
 
@@ -385,6 +419,7 @@ module.exports = {
   sendChatMessage,
   minimizeChat,
   monitorVolume,
+  monitorScreen,
   displayChat,
   onChatMessage,
   updateStageCountdown,

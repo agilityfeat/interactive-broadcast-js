@@ -66,6 +66,16 @@ const init = (instancesToCreate: CoreInstanceOptions[]) => {
   }
 };
 
+
+const instanceHasScreen = (instance: SessionName): boolean => {
+  const core = instances[instance];
+  const { publishers, subscribers } = core.state();
+
+  const screens = [...Object.keys(publishers.screen), ...Object.keys(subscribers.screen)];
+  return screens.length > 0;
+};
+
+
 /**
  * Connect to all sessions/instances of core
  */
@@ -285,14 +295,6 @@ const unsubscribe = (instance: SessionName, stream: Stream) => {
   subscriber && core.unsubscribe(subscriber);
 };
 
-
-const instanceHasScreen = (instance: SessionName): boolean => {
-  const core = instances[instance];
-  const { publishers, subscribers } = core.state();
-
-  const screens = [...Object.keys(publishers.screen), ...Object.keys(subscribers.screen)];
-  return screens.length > 0;
-};
 
 const unsubscribeFromAudio: ((SessionName, Stream) => void) = R.partialRight(toggleSubscribeAudio, [false]);
 
