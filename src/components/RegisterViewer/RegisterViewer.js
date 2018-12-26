@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import R from 'ramda';
 import { getEventByKey } from '../../services/api';
 import { setSuccess } from '../../actions/alert';
+import { setBroadcastEvent } from '../../actions/broadcast';
 import { userForgotPassword } from '../../actions/auth';
 import Loading from '../Common/Loading';
 import NoEvents from '../Common/NoEvents';
@@ -21,13 +22,13 @@ type BaseProps = {
 };
 
 type DispatchProps = {
+  setEvent: (event: Event) => void,
   onSuccess: (options: AlertPartialOptions) => void,
   onForgotPassword: () => void
 };
 
 type Props = BaseProps & DispatchProps;
 
-const Logo = ({ src }: LogoProps): ReactComponent => <div className="Header-logo"><img src={src} alt="opentok" /></div>;
 class RegisterViewer extends React.Component {
   state: {
     register: boolean,
@@ -49,7 +50,7 @@ class RegisterViewer extends React.Component {
     // avoid loading other domains events domain and Id must match
     const domainId = props.domainId === props.settings.id ? props.domainId : null;
     getEventByKey(domainId, props.userUrl)
-      .then((event?: BroadcastEvent): void => this.setState({ event }))
+      .then((event?: BroadcastEvent): void => props.setEvent(event))
       .catch((): void => this.setState({ noEvent: true }));
 
     this.toggleRegister = this.toggleRegister.bind(this);
@@ -113,8 +114,13 @@ class RegisterViewer extends React.Component {
   }
 }
 
-const mapStateToProps = (state: State): BaseProps => R.pick(['settings'], state);
+const mapStateToProps = (state: State): BaseProps => ({
+  settings: R.prop('settings', state),
+  event: R.path(['broadcast', 'event'], state),
+});
+
 const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
+  setEvent: (event: Event): void => dispatch(setBroadcastEvent(event)),
   onSuccess: (options: AlertPartialOptions): void => dispatch(setSuccess(options)),
   onForgotPassword: (forgot: boolean) => {
     dispatch(userForgotPassword(forgot));
