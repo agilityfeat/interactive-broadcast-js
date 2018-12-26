@@ -5,7 +5,6 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import classNames from 'classnames';
 import { setBroadcastEventStatus } from '../../../actions/broadcast';
-import { signOut } from '../../../actions/auth';
 import { initializeBroadcast, getInLine, leaveTheLine, setPublisherMinimized } from '../../../actions/fan';
 import FanHeader from './components/FanHeader';
 import FanBody from './components/FanBody';
@@ -42,7 +41,6 @@ type BaseProps = {
   settings: Settings
 };
 type DispatchProps = {
-  signOut: () => void,
   init: FanInitOptions => void,
   changeEventStatus: EventStatus => void,
   joinLine: Unit,
@@ -94,7 +92,6 @@ class Fan extends Component {
       producerChat,
       ableToJoin,
       disconnected,
-      logoutUser,
       postProduction,
       user,
       isEmbed,
@@ -125,11 +122,9 @@ class Fan extends Component {
             status={status}
             ableToJoin={ableToJoin}
             getInLine={joinLine}
-            logoutUser={logoutUser}
             postProduction={postProduction}
             leaveLine={leaveLine}
             fanStatus={fanStatus}
-            showLogout={settings.registrationEnabled}
             backstageConnected={backstageConnected}
             inPrivateCall={inPrivateCall}
             privateCall={broadcast.privateCall}
@@ -195,7 +190,6 @@ const mapDispatchToProps: MapDispatchToProps<DispatchProps> = (dispatch: Dispatc
   leaveLine: (): void => dispatch(leaveTheLine()),
   minimizePublisher: (): void => dispatch(setPublisherMinimized(true)),
   restorePublisher: (): void => dispatch(setPublisherMinimized(false)),
-  logoutUser: (): void => dispatch(signOut(false)),
 });
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Fan));
