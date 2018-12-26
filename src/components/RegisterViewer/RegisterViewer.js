@@ -67,20 +67,15 @@ class RegisterViewer extends React.Component {
   }
 
   render(): ReactComponent {
-    const { settings, userUrl } = this.props;
-    const { register, noEvent, event } = this.state;
+    const { settings, userUrl, event } = this.props;
+    const { register, noEvent } = this.state;
     const startImage = event && event.startImage && event.startImage.url;
-    const eventName = event && event.name;
 
     if (noEvent) return <NoEvents />;
     if (!event) return <Loading />;
 
     return (
       <div>
-        <div className="Register-header">
-          <Logo src={(settings.siteLogo && settings.siteLogo.url) || logo} />
-          <h3 className="Header-join">Join {eventName}</h3>
-        </div>
         <div className="RegisterViewer">
           <div className="RegisterViewer-header" >
             <img src={startImage || (settings.siteLogo && settings.siteLogo.url) || logo} alt="logo" />
