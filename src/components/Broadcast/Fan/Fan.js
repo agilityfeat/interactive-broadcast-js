@@ -70,6 +70,10 @@ class Fan extends Component {
     }
   }
 
+  componentWillUnmount() {
+    this.props.leaveLine();
+  }
+
   componentWillReceiveProps(nextProps: Props) {
     // Need to check for change to event status here
     if (R.pathEq(['event', 'status'], 'closed', nextProps)) { disconnect(); }
