@@ -2,7 +2,6 @@
 import R from 'ramda';
 import { browserHistory } from 'react-router';
 import {
-  getEvents,
   getEventsByDomain,
   createEvent,
   updateEvent,
@@ -72,12 +71,10 @@ const sortBroadcastEvents: ActionCreator = (sortBy: EventSortByOption): EventsAc
   sortBy,
 });
 
-const getBroadcastEvents: ThunkActionCreator = (domainId: string, superAdmin: boolean = false): Thunk =>
+const getBroadcastEvents: ThunkActionCreator = (domainId: string): Thunk =>
   async (dispatch: Dispatch): AsyncVoid => {
     try {
-      let events: BroadcastEventMap = null;
-      if (superAdmin) events = await getEvents();
-      else events = await getEventsByDomain(domainId);
+      const events = await getEventsByDomain(domainId);
 
       dispatch(setEvents(events));
     } catch (error) {
