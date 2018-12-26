@@ -8,6 +8,7 @@
 
 # production
 /build
+/screenshare-extensions
 
 # misc
 .DS_Store

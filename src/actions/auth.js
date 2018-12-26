@@ -72,14 +72,16 @@ const signIn: ThunkActionCreator = ({ email, password }: AuthCredentials): Thunk
     }
   };
 
-const signOut: ThunkActionCreator = (redirect: boolean = true): Thunk =>
-  (dispatch: Dispatch) => {
+const signOut: ThunkActionCreator = (): Thunk =>
+  (dispatch: Dispatch, getState: GetState) => {
     // We need to ensure the localstorage is updated ASAP
+    const { currentUser } = getState();
+
     dispatch(logOut());
     saveState({ currentUser: null });
 
     firebase.auth().signOut().then(() => {
-      if (redirect) window.location.href = '/';
+      if (currentUser.adminId) window.location.href = '/';
     });
   };
 

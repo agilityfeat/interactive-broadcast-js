@@ -1,9 +1,39 @@
 .Header {
     height: 60px;
     display: flex;
-    justify-content: space-between;
     color: white;
 	background-color: var(--main-header-bg);
+}
+
+.Header-left {
+	width: 50%;
+	display: flex;
+	justify-content: flex-end;
+}
+
+.Header-right {
+	width: 50%;
+	display: flex;
+	justify-content: flex-start;
+}
+
+a.Header-item {
+	color: white !important;
+	line-height: 4.1em;
+	padding: 0px 10px;
+	font-size: 14px;
+	font-weight: 300;
+	margin-right: 5px;
+}
+
+a.Header-item.active {
+	font-weight: 700;
+}
+
+.Header h3 {
+  margin-left: 20px;
+  font-size: 1.4em;
+  font-weight: normal;
 }
 
 .Header-logo {

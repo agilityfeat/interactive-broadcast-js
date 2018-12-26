@@ -9,31 +9,23 @@ type Props = {
   name: string,
   status: EventStatus,
   ableToJoin: boolean,
-  showLogout: boolean,
   fanStatus: FanStatus,
   inPrivateCall: boolean,
   privateCall: PrivateCallState,
   getInLine: Unit,
   leaveLine: Unit,
-  logoutUser: Unit,
   backstageConnected: boolean,
   disconnected: boolean,
   postProduction: boolean
 };
 
 const FanHeader = (props: Props): ReactComponent => {
-  const handleLogout = async (): void => {
-    await props.leaveLine();
-    await props.logoutUser();
-  };
-
   const {
     name,
     status,
     ableToJoin,
     getInLine,
     leaveLine,
-    showLogout,
     backstageConnected,
     inPrivateCall,
     privateCall,
@@ -44,7 +36,9 @@ const FanHeader = (props: Props): ReactComponent => {
   const isConnecting = fanStatus === 'connecting';
   const isDisconnecting = fanStatus === 'disconnecting';
   const isOnStage = fanStatus === 'stage';
-  const displayGetInLineButton = ableToJoin && status !== 'closed' && !isOnStage && !isConnecting && !isDisconnecting && !postProduction && !disconnected;
+  const displayGetInLineButton = ableToJoin && status !== 'closed'
+        && !isOnStage && !isConnecting && !isDisconnecting
+        && !postProduction && !disconnected;
   const inPrivateCallWith = R.propOr(null, 'isWith', privateCall || {});
   const onStageUserInPrivateCall = !inPrivateCall && isOnStage && inPrivateCallWith && isUserOnStage(inPrivateCallWith);
   const getInLineButton = (): ReactComponent =>
@@ -56,7 +50,6 @@ const FanHeader = (props: Props): ReactComponent => {
     <div className="FanHeader">
       <div className="FanHeader-main">
         <h4>{name}<sup>{status === 'notStarted' ? 'NOT STARTED' : status}</sup></h4>
-        {showLogout && <button className="btn red getInLine" onClick={handleLogout}>LOGOUT</button>}
         { displayGetInLineButton &&
           <div>
             { getInLineButton() }
