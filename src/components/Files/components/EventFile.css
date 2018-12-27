@@ -42,7 +42,9 @@
 }
 
 .EventFile-content img {
+	background-color: var(--main-header-bg);
 	max-width: 100%;
+	padding: 10px;
 }
 
 .EventFile-header .label {
