@@ -54,7 +54,7 @@ const signInViewer: ThunkActionCreator = ({ email, password, userUrl }: ViewerAu
 
       dispatch({ type: 'SET_AUTH_TOKEN', token });
       saveAuthToken(token);
-      await dispatch(setCurrentUser({ ...user, uid: user.id }));
+      await dispatch(setCurrentUser({ ...user, uid: user.id, isViewer: true }));
     } catch (error) {
       await dispatch(authError(error));
     }
@@ -81,7 +81,7 @@ const signOut: ThunkActionCreator = (): Thunk =>
     saveState({ currentUser: null });
 
     firebase.auth().signOut().then(() => {
-      if (currentUser.adminId) window.location.href = '/';
+      if (!currentUser.isViewer) window.location.href = '/';
     });
   };
 

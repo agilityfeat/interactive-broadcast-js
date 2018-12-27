@@ -39,8 +39,9 @@ class Login extends Component {
 
   componentDidMount() {
     const { currentUser } = this.props;
-    if (currentUser && !currentUser.adminId) {
-      browserHistory.push('/admin');
+    if (currentUser) {
+      const route = currentUser.isViewer ? '/files' : '/admin';
+      browserHistory.push(route);
     }
   }
 

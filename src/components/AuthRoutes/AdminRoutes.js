@@ -15,7 +15,7 @@ class AdminRoutes extends Component {
   componentWillMount() {
     const { currentUser } = this.props;
 
-    if (!currentUser || currentUser.adminId) {
+    if (!currentUser || currentUser.isViewer) {
       browserHistory.replace('/');
     }
   }

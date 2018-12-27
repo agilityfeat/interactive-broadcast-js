@@ -10,6 +10,7 @@ declare type User = {
   otApiKey: string,
   otSecret: string,
   superAdmin: boolean,
+  isViewer: boolean,
   hls: boolean,
   httpSupport: boolean,
   audioOnlyEnabled: boolean,
