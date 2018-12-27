@@ -17,16 +17,21 @@
 	justify-content: flex-start;
 }
 
-a.Header-item {
+.Header-item {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.Header-item a {
 	color: white !important;
-	line-height: 4.1em;
 	padding: 0px 10px;
 	font-size: 14px;
 	font-weight: 300;
 	margin-right: 5px;
 }
 
-a.Header-item.active {
+a.active {
 	font-weight: 700;
 }
 
