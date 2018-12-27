@@ -32,9 +32,11 @@ type ItemProps = {
 };
 
 const HeaderItem = (props: ItemProps): ReactComponent => (
-  <Link className={`Header-item ${props.to.includes(props.path) && 'active'}`} to={props.to}>
-    {props.title}
-  </Link>
+  <span className="Header-item">
+    <Link className={`${props.to.includes(props.path) && 'active'}`} to={props.to}>
+      {props.title}
+    </Link>
+  </span>
 );
 
 const Header = (props: Props): ReactComponent => {
