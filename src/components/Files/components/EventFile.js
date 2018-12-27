@@ -15,7 +15,7 @@ const EventFile = (props: Props): ReactComponent => {
   const date = moment(event.startDate);
 
   return (
-    <a className="EventFile" href={event.archiveUrl}>
+    <a className="EventFile" href={event.archiveUrl} target="_blank">
       <div className="EventFile-content">
         <img alt="event-recording" src={image.url} />
         <div className="EventFile-info">
