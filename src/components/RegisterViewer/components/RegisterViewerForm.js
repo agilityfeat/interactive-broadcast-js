@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import R from 'ramda';
 import Icon from 'react-fontawesome';
 import classNames from 'classnames';
+import { browserHistory } from 'react-router';
 import shortid from 'shortid';
 import { connect } from 'react-redux';
 import { createViewer } from '../../../services/api';
@@ -86,14 +87,20 @@ class RegisterViewerForm extends Component {
   }
 
   componentDidUpdate(prevProps: Props) {
-    const { settings, userUrl } = this.props;
+    const { settings, userUrl, currentUser, auth, eventMode } = this.props;
 
-    if (!prevProps.auth.authToken && this.props.auth.authToken) {
-      this.props.init({
-        domainId: settings.id,
-        userType: 'fan',
-        userUrl,
-      });
+    if (!prevProps.auth.authToken && auth.authToken) {
+      if (eventMode) {
+        this.props.init({
+          domainId: settings.id,
+          userType: 'fan',
+          userUrl,
+        });
+      }
+    }
+
+    if (!prevProps.currentUser && currentUser && !eventMode) {
+      browserHistory.replace('/files');
     }
   }
 

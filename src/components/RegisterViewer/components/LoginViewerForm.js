@@ -2,6 +2,7 @@
 import React, { Component } from 'react';
 import R from 'ramda';
 import { connect } from 'react-redux';
+import { browserHistory } from 'react-router';
 import Icon from 'react-fontawesome';
 import { userForgotPassword, resetPassword, signInViewer } from '../../../actions/auth';
 import { initializeBroadcast } from '../../../actions/fan';
@@ -63,15 +64,22 @@ class LoginViewerForm extends Component {
     }
   }
 
-  componentDidUpdate(prevProps: Props) {
-    const { settings, userUrl } = this.props;
 
-    if (!prevProps.auth.authToken && this.props.auth.authToken) {
-      this.props.init({
-        domainId: settings.id,
-        userType: 'fan',
-        userUrl,
-      });
+  componentDidUpdate(prevProps: Props) {
+    const { settings, userUrl, currentUser, auth, eventMode } = this.props;
+
+    if (!prevProps.auth.authToken && auth.authToken) {
+      if (eventMode) {
+        this.props.init({
+          domainId: settings.id,
+          userType: 'fan',
+          userUrl,
+        });
+      }
+    }
+
+    if (!prevProps.currentUser && currentUser && !eventMode) {
+      browserHistory.replace('/files');
     }
   }
 
