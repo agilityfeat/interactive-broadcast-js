@@ -4,6 +4,7 @@ declare type Settings = {
   siteColor: string,
   registrationEnabled?: boolean,
   screenSharingEnabled?: boolean,
+  fileSharingEnabled?: boolean,
   siteLogo: {
     id: string | null,
     url: string | null
