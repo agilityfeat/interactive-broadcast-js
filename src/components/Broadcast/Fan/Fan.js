@@ -72,6 +72,7 @@ class Fan extends Component {
 
   componentWillUnmount() {
     this.props.leaveLine();
+    disconnect();
   }
 
   componentWillReceiveProps(nextProps: Props) {
@@ -106,7 +107,16 @@ class Fan extends Component {
       settings: { registrationEnabled },
     } = this.props;
 
-    if (!user && registrationEnabled) return <RegisterViewer domainId={domainId} userUrl={userUrl} event={event} />;
+    if (!user && registrationEnabled) {
+      return (
+        <RegisterViewer
+          eventMode
+          domainId={domainId}
+          userUrl={userUrl}
+          event={event}
+        />
+      );
+    }
     if (authError) return <NoEvents />;
     if (!event) return <Loading />;
 

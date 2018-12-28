@@ -24,7 +24,8 @@ const listenSiteSettings: ThunkActionCreator = (): Thunk =>
                   'registrationEnabled',
                   'screenSharingEnabled',
                   'siteLogo',
-                  'siteFavicon'
+                  'fileSharingEnabled',
+                  'siteFavicon',
                 ],
                 domain[Object.keys(domain)[0]],
               );

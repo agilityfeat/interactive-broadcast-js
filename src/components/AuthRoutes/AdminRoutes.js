@@ -16,7 +16,15 @@ class AdminRoutes extends Component {
     const { currentUser } = this.props;
 
     if (!currentUser || currentUser.isViewer) {
-      browserHistory.replace('/');
+      browserHistory.replace('/admin');
+    }
+  }
+
+  componentWillReceiveProps(nextProps: Props) {
+    const { currentUser } = nextProps;
+
+    if (!currentUser || currentUser.isViewer) {
+      browserHistory.replace('/admin');
     }
   }
 

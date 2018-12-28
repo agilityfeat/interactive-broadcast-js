@@ -4,8 +4,9 @@ import { Router, Route, IndexRedirect, browserHistory } from 'react-router';
 import { connect } from 'react-redux';
 import Favicon from 'react-favicon';
 import App from './components/App/App';
-import Login from './components/Login/Login';
 import Files from './components/Files/Files';
+import RegisterViewer from './components/RegisterViewer/RegisterViewer';
+import Login from './components/Login/Login';
 import ResetPassword from './components/ResetPassword/ResetPassword';
 import Loading from './components/Common/Loading';
 import Dashboard from './components/Dashboard/Dashboard';
@@ -15,7 +16,6 @@ import UpdateEvent from './components/UpdateEvent/UpdateEvent';
 import ViewEvent from './components/ViewEvent/ViewEvent';
 import Producer from './components/Broadcast/Producer/Producer';
 import AdminRoutes from './components/AuthRoutes/AdminRoutes';
-import AuthRoutes from './components/AuthRoutes/AuthRoutes';
 import CelebrityHost from './components/Broadcast/CelebrityHost/CelebrityHost';
 import Fan from './components/Broadcast/Fan/Fan';
 import { listenSiteSettings } from './actions/settings';
@@ -29,7 +29,9 @@ const routes = (
   <Router history={browserHistory}>
     <Route path="/" component={App} >
       <IndexRedirect to="login" />
-      <Route path="login" component={Login} />
+      <Route path="login" component={RegisterViewer} />
+      <Route path="admin" component={Login} />
+      <Route path="files" component={Files} />
       <Route path="resetPassword" hideHeader component={ResetPassword} />
       <Route path="/show/:domainId/:fanUrl" component={Fan} userType={'fan'} />
       <Route path="/post-production/:adminId/:fanUrl" component={Fan} hideHeader userType={'fan'} />
@@ -38,11 +40,8 @@ const routes = (
       <Route path="/show/:domainId" component={Fan} hideHeader embed userType={'fan'} />
       <Route path="/show-host/:domainId" component={CelebrityHost} hideHeader embed userType={'host'} />
       <Route path="/show-guest/:domainId" component={CelebrityHost} hideHeader embed userType={'celebrity'} />
-      <Route component={AuthRoutes}>
-        <Route path="files" component={Files} />
-      </Route>
       <Route component={AdminRoutes}>
-        <Route path="admin" component={Dashboard} />
+        <Route path="dashboard" component={Dashboard} />
         <Route path="users" component={Users} />
         <Route path="domains" component={Domains} />
         <Route path="users/:adminId" component={Users} />
