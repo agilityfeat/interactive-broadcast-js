@@ -2,6 +2,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import R from 'ramda';
+import { browserHistory } from 'react-router';
 import { getEventByKey } from '../../services/api';
 import { setSuccess } from '../../actions/alert';
 import { setBroadcastEvent } from '../../actions/broadcast';
@@ -15,6 +16,8 @@ import './RegisterViewer.css';
 import '../Header/Header.css';
 
 type BaseProps = {
+  eventMode: boolean,
+  currentUser: User,
   userUrl: string,
   domainId: string,
   settings: Settings,
@@ -49,12 +52,22 @@ class RegisterViewer extends React.Component {
 
     // avoid loading other domains events domain and Id must match
     const domainId = props.domainId === props.settings.id ? props.domainId : null;
-    getEventByKey(domainId, props.userUrl)
+    props.eventMode && getEventByKey(domainId, props.userUrl)
       .then((event?: BroadcastEvent): void => props.setEvent(event))
       .catch((): void => this.setState({ noEvent: true }));
 
     this.toggleRegister = this.toggleRegister.bind(this);
     this.handleSuccess = this.handleSuccess.bind(this);
+  }
+
+  // this wont trigger in Fan view since we don't allow
+  // the component to render if a user exists
+  componentDidMount() {
+    const { currentUser, settings } = this.props;
+
+    if (!settings.registrationEnabled || currentUser) {
+      browserHistory.replace('/admin');
+    }
   }
 
   toggleRegister() {
@@ -63,16 +76,17 @@ class RegisterViewer extends React.Component {
 
   handleSuccess(options: AlertPartialOptions) {
     this.props.onSuccess(options);
-    this.toggleRegister();
   }
 
   render(): ReactComponent {
-    const { settings, userUrl, event } = this.props;
+    const { eventMode, settings, userUrl, event } = this.props;
     const { register, noEvent } = this.state;
     const startImage = event && event.startImage && event.startImage.url;
 
-    if (noEvent) return <NoEvents />;
-    if (!event) return <Loading />;
+    if (eventMode) {
+      if (noEvent) return <NoEvents />;
+      if (!event) return <Loading />;
+    }
 
     return (
       <div>
@@ -84,7 +98,7 @@ class RegisterViewer extends React.Component {
             register &&
             <div className="RegisterViewer-body">
               <h4>Create account for {window.location.host}</h4>
-              <RegisterViewerForm userUrl={userUrl} onSuccess={this.handleSuccess} settings={settings} />
+              <RegisterViewerForm eventMode={eventMode} userUrl={userUrl} onSuccess={this.handleSuccess} />
               <button onClick={this.toggleRegister} className="btn transparent">
                 I already have an account
               </button>
@@ -94,7 +108,7 @@ class RegisterViewer extends React.Component {
             !register &&
             <div className="RegisterViewer-body">
               <h4>Sign in to {window.location.host}</h4>
-              <LoginViewerForm userUrl={userUrl} settings={settings} />
+              <LoginViewerForm eventMode={eventMode} userUrl={userUrl} />
               <button onClick={this.toggleRegister} className="btn transparent">
                 {'I don\'t have an account'}
               </button>
@@ -110,6 +124,7 @@ class RegisterViewer extends React.Component {
 }
 
 const mapStateToProps = (state: State): BaseProps => ({
+  currentUser: R.prop('currentUser', state),
   settings: R.prop('settings', state),
   event: R.path(['broadcast', 'event'], state),
 });
