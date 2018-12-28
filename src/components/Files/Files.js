@@ -2,6 +2,7 @@
 import React, { Component } from 'react';
 import R from 'ramda';
 import { connect } from 'react-redux';
+import { browserHistory } from 'react-router';
 import { getBroadcastEvents } from '../../actions/events';
 import EventFile from './components/EventFile';
 import './Files.css';
@@ -16,8 +17,21 @@ class Dashboard extends Component {
   props: Props;
 
   componentDidMount() {
-    const { loadEvents, settings } = this.props;
-    loadEvents(settings.id);
+    const { currentUser, loadEvents, settings } = this.props;
+    const { registrationEnabled, fileSharingEnabled } = settings;
+    const shouldLogin = !currentUser && registrationEnabled && fileSharingEnabled;
+    const shouldAdmin = !fileSharingEnabled;
+
+
+    if (shouldLogin) {
+      browserHistory.replace('/login');
+    }
+
+    if (shouldAdmin) {
+      browserHistory.replace('/admin');
+    }
+
+    if (!shouldLogin && !shouldAdmin) loadEvents(settings.id);
   }
 
   render(): ReactComponent {
