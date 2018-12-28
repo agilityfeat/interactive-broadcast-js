@@ -39,15 +39,27 @@ class Login extends Component {
 
   componentDidMount() {
     const { currentUser } = this.props;
-    if (currentUser) {
-      const route = currentUser.isViewer ? '/files' : '/admin';
-      browserHistory.push(route);
+    if (!currentUser.isViewer) {
+      browserHistory.replace('/dashboard');
     }
   }
 
   handleSubmit(credentials: AuthCredentials) {
     const { sendResetEmail, authenticateUser } = this.props;
     this.props.auth.forgotPassword ? sendResetEmail(credentials) : authenticateUser(credentials);
+  }
+
+  componentDidUpdate(prevProps: Props) {
+    const { currentUser } = this.props;
+
+    if (!prevProps.currentUser && currentUser) {
+      browserHistory.replace('/dashboard');
+    }
+
+    if (prevProps.currentUser && prevProps.currentUser.isViewer &&
+        !prevProps.currentUser.isViewer) {
+      browserHistory.replace('/dashboard');
+    }
   }
 
   componentWillReceiveProps(nextProps: Props) {
@@ -64,6 +76,7 @@ class Login extends Component {
     const { error } = this.state;
     const { onForgotPassword, settings: { siteLogo } } = this.props;
     const { forgotPassword } = this.props.auth;
+
     return (
       <div className="Login">
         <div className="Login-header" >
