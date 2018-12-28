@@ -40,8 +40,10 @@ const HeaderItem = (props: ItemProps): ReactComponent => (
 );
 
 const Header = (props: Props): ReactComponent => {
-  const { user, routes, settings: { siteLogo }, event } = props;
+  const { user, routes, settings, event } = props
+  const { siteLogo, fileSharingEnabled, registrationEnabled } = settings;
   const currentRoute = routes[routes.length - 1];
+  const shouldShowFiles = fileSharingEnabled && (user || !registrationEnabled);
 
   if (currentRoute.hideHeader) return null;
   return (
@@ -51,7 +53,7 @@ const Header = (props: Props): ReactComponent => {
         {(event && !user) && <h3>Join {event.name}</h3>}
       </div>
       <div className="Header-left">
-        {user && <HeaderItem to="/files" path={currentRoute.path} title="Files" />}
+        {shouldShowFiles && <HeaderItem to="/files" path={currentRoute.path} title="Files" />}
         <Logout />
       </div>
     </div>
