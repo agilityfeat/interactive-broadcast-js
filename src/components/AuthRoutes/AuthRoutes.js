@@ -15,7 +15,16 @@ class AuthRoutes extends Component {
 
   componentWillMount() {
     const { currentUser, settings } = this.props;
-    const authorized = currentUser || !settings.registerEnabled;
+    const authorized = currentUser || !settings.registrationEnabled;
+
+    if (!authorized) {
+      browserHistory.replace('/');
+    }
+  }
+
+  componentWillReceiveProps(nextProps: Props) {
+    const { currentUser, settings } = nextProps;
+    const authorized = currentUser || !settings.registrationEnabled;
 
     if (!authorized) {
       browserHistory.replace('/');
@@ -24,7 +33,7 @@ class AuthRoutes extends Component {
 
   render(): ReactComponent {
     const { currentUser, settings } = this.props;
-    const authorized = currentUser || !settings.registerEnabled;
+    const authorized = currentUser || !settings.registrationEnabled;
 
     return authorized ? this.props.children : null;
   }
