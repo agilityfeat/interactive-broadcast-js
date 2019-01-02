@@ -100,7 +100,7 @@ class RegisterViewerForm extends Component {
     }
 
     if (!prevProps.currentUser && currentUser && !eventMode) {
-      browserHistory.replace('/files');
+      browserHistory.replace('/events');
     }
   }
 
