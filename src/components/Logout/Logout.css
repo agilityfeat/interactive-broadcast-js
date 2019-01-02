@@ -6,6 +6,7 @@
   color: white;
   font-weight: 300;
   margin-right: 5px;
+  margin-left: 10px;
 }
 
 .Logout .divider {
@@ -15,7 +16,7 @@
   font-size: 18px;
 }
 
-.Logout .btn .fa {
+.Logout-btn .fa {
   margin-top: 2px;
   margin-left: 5px;
 }

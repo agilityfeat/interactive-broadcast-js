@@ -33,7 +33,7 @@ class Logout extends React.Component {
         <span className="Logout">
           <Link to="/admin" className="link white">{currentUser.displayName}</Link>
           <span className="divider">|</span>
-          <button className="Logout btn" onClick={this.handleLogout}>Logout <Icon name="sign-out" size="lg" /></button>
+          <button className="Logout-btn btn" onClick={this.handleLogout}>Logout <Icon name="sign-out" size="lg" /></button>
         </span>
     );
   }

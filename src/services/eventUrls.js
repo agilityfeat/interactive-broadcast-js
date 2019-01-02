@@ -14,10 +14,22 @@ export const createUrls = ({ name, domainId }: { name?: string, domainId: string
   const eventName = convertName(name);
   const eventNameHash = hashEventName(eventName);
   return {
-    fanUrl: `${window.location.host}/show/${domainId}/${eventName}`,
-    fanAudioUrl: `${window.location.host}/post-production/${domainId}/${eventName}`,
-    hostUrl: `${window.location.host}/show-host/${domainId}/${eventNameHash}`,
-    celebrityUrl: `${window.location.host}/show-guest/${domainId}/${eventNameHash}`,
+    fanUrl: `${window.location.origin}/show/${domainId}/${eventName}`,
+    fanAudioUrl: `${window.location.origin}/post-production/${domainId}/${eventName}`,
+    hostUrl: `${window.location.origin}/show-host/${domainId}/${eventNameHash}`,
+    celebrityUrl: `${window.location.origin}/show-guest/${domainId}/${eventNameHash}`,
+  };
+};
+
+export const createRoutes = ({ name, domainId }: { name?: string, domainId: string}): EventUrls => {
+  if (!domainId) { return {}; }
+  const eventName = convertName(name);
+  const eventNameHash = hashEventName(eventName);
+  return {
+    fanRoute: `/show/${domainId}/${eventName}`,
+    fanAudioRoute: `/post-production/${domainId}/${eventName}`,
+    hostRoute: `/show-host/${domainId}/${eventNameHash}`,
+    celebrityRoute: `/show-guest/${domainId}/${eventNameHash}`,
   };
 };
 

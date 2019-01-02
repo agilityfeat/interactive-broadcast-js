@@ -10,12 +10,14 @@ import Login from './components/Login/Login';
 import ResetPassword from './components/ResetPassword/ResetPassword';
 import Loading from './components/Common/Loading';
 import Dashboard from './components/Dashboard/Dashboard';
+import ViewerDashboard from './components/ViewerDashboard/ViewerDashboard';
 import Users from './components/Users/Users';
 import Domains from './components/Domains/Domains';
 import UpdateEvent from './components/UpdateEvent/UpdateEvent';
 import ViewEvent from './components/ViewEvent/ViewEvent';
 import Producer from './components/Broadcast/Producer/Producer';
 import AdminRoutes from './components/AuthRoutes/AdminRoutes';
+import AuthRoutes from './components/AuthRoutes/AuthRoutes';
 import CelebrityHost from './components/Broadcast/CelebrityHost/CelebrityHost';
 import Fan from './components/Broadcast/Fan/Fan';
 import { listenSiteSettings } from './actions/settings';
@@ -40,6 +42,9 @@ const routes = (
       <Route path="/show/:domainId" component={Fan} hideHeader embed userType={'fan'} />
       <Route path="/show-host/:domainId" component={CelebrityHost} hideHeader embed userType={'host'} />
       <Route path="/show-guest/:domainId" component={CelebrityHost} hideHeader embed userType={'celebrity'} />
+      <Route component={AuthRoutes}>
+        <Route path="events" component={ViewerDashboard} />
+      </Route>
       <Route component={AdminRoutes}>
         <Route path="dashboard" component={Dashboard} />
         <Route path="users" component={Users} />
