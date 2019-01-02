@@ -57,7 +57,7 @@ class Login extends Component {
     }
 
     if (prevProps.currentUser && prevProps.currentUser.isViewer &&
-        !prevProps.currentUser.isViewer) {
+        !currentUser.isViewer) {
       browserHistory.replace('/dashboard');
     }
   }
