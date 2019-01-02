@@ -53,6 +53,7 @@ const Header = (props: Props): ReactComponent => {
         {(event && !user) && <h3>Join {event.name}</h3>}
       </div>
       <div className="Header-left">
+        {user && user.isViewer && <HeaderItem to="/events" path={currentRoute.path} title="Events" />}
         {shouldShowFiles && <HeaderItem to="/files" path={currentRoute.path} title="Files" />}
         <Logout />
       </div>
