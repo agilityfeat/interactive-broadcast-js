@@ -13,18 +13,29 @@ type DispatchProps = {
 };
 type Props = BaseProps & DispatchProps;
 
-const FilterEvents = ({ filter, setFilter }: Props): ReactComponent =>
-  <div className="filter-events">
-    <button className={classNames('btn', { transparent: filter !== 'all' })} onClick={R.partial(setFilter, ['all'])}>
-      All Events
-    </button>
-    <button className={classNames('btn', { transparent: filter !== 'current' })} onClick={R.partial(setFilter, ['current'])}>
-      Current Events
-    </button>
-    <button className={classNames('btn', { transparent: filter !== 'archived' })} onClick={R.partial(setFilter, ['archived'])}>
-      Archived Events
-    </button>
-  </div>;
+class FilterEvents extends React.Component {
+  constructor(props: Props) {
+    super(props);
+    props.setFilter('all');
+  }
+
+  render(): ReactComponent {
+    const { filter, setFilter } = this.props;
+    return (
+      <div className="filter-events">
+        <button className={classNames('btn', { transparent: filter !== 'all' })} onClick={R.partial(setFilter, ['all'])}>
+          All Events
+        </button>
+        <button className={classNames('btn', { transparent: filter !== 'current' })} onClick={R.partial(setFilter, ['current'])}>
+          Current Events
+        </button>
+        <button className={classNames('btn', { transparent: filter !== 'archived' })} onClick={R.partial(setFilter, ['archived'])}>
+          Archived Events
+        </button>
+      </div>
+    );
+  }
+}
 
 
 const mapStateToProps = (state: State): Props => R.pick(['filter'], R.prop('events', state));
