@@ -84,6 +84,7 @@ class Participant extends React.Component {
       const inPreshow = R.pathEq(['event', 'status'], 'preshow', broadcast);
       return (me.connected && (inPreshow || isBackstageFan(type)));
     };
+    const producerHost = R.path(['event', 'producerHost'], broadcast);
     const statusIconClass = classNames('icon', { green: me.connected });
     const controlIconClass = classNames('icon', { active: me.connected });
     const volumeIconDisabled = (!inPrivateCall && isBackstageFan(type)) || !me.connected;
@@ -108,14 +109,20 @@ class Participant extends React.Component {
         </div>
         { isBackstageFan(type) ?
           <div className="Participant-move-fan">
-            <button className="move btn transparent" onClick={sendFanToStage}>Move to {translateRole('fan')} feed</button>
+            <button className="move btn transparent" onClick={sendFanToStage}>
+              Move to {translateRole('fan')} feed
+            </button>
           </div> :
-          <div className="Participant-url">
-            <span className="url">{ this.state.url }</span>
-            <CopyToClipboard text={this.state.url || ''} onCopyText="URL">
-              <button className="btn white">COPY</button>
-            </CopyToClipboard >
-          </div>
+          type === 'producer' ?
+            <div className="Participant-move-fan">
+              <button className="move btn transparent">You are acting as {translateRole('host')}</button>
+            </div> :
+            <div className="Participant-url">
+              <span className="url">{ this.state.url }</span>
+              <CopyToClipboard text={this.state.url || ''} onCopyText="URL">
+                <button className="btn white">COPY</button>
+              </CopyToClipboard >
+            </div>
         }
         <div className="Participant-feed-controls">
           <span className="label">Alter Feed</span>
@@ -126,27 +133,20 @@ class Participant extends React.Component {
               disabled={volumeIconDisabled}
               onClick={toggleVolume}
             />
-            <ControlIcon
-              name={inPrivateCall ? 'phone-square' : 'phone'}
-              className={privateCallIconClass}
-              disabled={!availableForPrivateCall()}
-              onClick={R.partial(privateCall, [fanId])}
-            />
+            {!producerHost &&
+              <ControlIcon
+                name={inPrivateCall ? 'phone-square' : 'phone'}
+                className={privateCallIconClass}
+                disabled={!availableForPrivateCall()}
+                onClick={R.partial(privateCall, [fanId])}
+              />
+            }
             <ControlIcon
               name={me.audio ? 'microphone' : 'microphone-slash'}
               disabled={!me.connected}
               className={controlIconClass}
               onClick={toggleAudio}
             />
-            { !R.contains('fan', R.toLower(type)) &&
-              screenSharingEnabled &&
-              <ControlIcon
-                name="desktop"
-                className={controlIconClass}
-                onClick={this.handleScreenShareRequest}
-                disabled={!me.connected}
-              />
-            }
             { !me.screen &&
               <ControlIcon
                 name="video-camera"
@@ -157,7 +157,16 @@ class Participant extends React.Component {
             }
             { R.contains('fan', R.toLower(type)) ?
               <ControlIcon name="ban" className={controlIconClass} onClick={kickFan} disabled={!me.connected} /> :
-              <ControlIcon name="comment" onClick={chat} className={controlIconClass} disabled={!me.connected} />
+              type !== 'producer' && <ControlIcon name="comment" onClick={chat} className={controlIconClass} disabled={!me.connected} />
+            }
+            { !R.contains('fan', R.toLower(type)) &&
+              screenSharingEnabled &&
+              <ControlIcon
+                name="desktop"
+                className={controlIconClass}
+                onClick={this.handleScreenShareRequest}
+                disabled={!me.connected}
+              />
             }
           </div>
         </div>
