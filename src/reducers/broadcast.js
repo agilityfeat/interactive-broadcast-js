@@ -39,6 +39,7 @@ const initialState = (): BroadcastState => ({
   meta: null,
   participants: {
     fan: participantState(),
+    producer: participantState(),
     celebrity: participantState(),
     host: participantState(),
     backstageFan: participantState(),

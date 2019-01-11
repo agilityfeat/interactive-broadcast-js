@@ -20,7 +20,7 @@ import {
   startHeartBeat,
   heartBeatTime,
 } from './broadcast';
-import { getEventWithCredentials, getEmbedEventWithCredentials } from '../services/api';
+import { getEventWithCredentials, getEmbedEventWithCredentials, getEventByKey } from '../services/api';
 import { isUserOnStage, tagSubscriberElements } from '../services/util';
 import { setInfo, setCameraError, setExtensionError } from './alert';
 import firebase from '../services/firebase';
@@ -133,9 +133,9 @@ const opentokConfig = (dispatch: Dispatch, { userCredentials, userType }: UserDa
     // const { onStateChanged, onStreamChanged, onSignal } = listeners;
 
     // Assign listener for state changes
-    const handlePubSubEvent = (state: CoreStateWithPublisher, event: PubSubEventType) => {
-      tagSubscriberElements(state, event);
-      if (R.equals(event, 'startCall')) {
+    const handlePubSubEvent = (state: CoreStateWithPublisher, eventType: PubSubEventType) => {
+      tagSubscriberElements(state, eventType);
+      if (R.equals(eventType, 'startCall')) {
         const stream = R.path(['publisher', 'stream'], state);
         const connectionData: { userType: UserRole } = JSON.parse(R.path(['connection', 'data'], stream));
         state.publisher.element.classList.add('camera');
@@ -158,9 +158,11 @@ const opentokConfig = (dispatch: Dispatch, { userCredentials, userType }: UserDa
     const handleStreamEvent: StreamEventHandler = async ({ type, stream }: OTStreamEvent): AsyncVoid => {
       const user: UserRole = R.prop('userType', JSON.parse(stream.connection.data));
       const streamCreated = R.equals(type, 'streamCreated');
+      const producerHost = R.path(['broadcast', 'event', 'producerHost'], getState());
 
       if (R.equals(user, 'producer')) {
-        streamCreated ? opentok.createEmptySubscriber('stage', stream) : dispatch(endPrivateCall(userType, true));
+        const subscribeAction = producerHost ? opentok.subscribe : opentok.createEmptySubscriber;
+        streamCreated ? subscribeAction('stage', stream) : dispatch(endPrivateCall(userType, true));
       } else {
         let subscribeAction;
         if (streamCreated) {
@@ -181,9 +183,9 @@ const opentokConfig = (dispatch: Dispatch, { userCredentials, userType }: UserDa
             analytics.log(subscribeAction, logVariation.fail);
           }
         }
-
-        dispatch(updateParticipants(user, type, stream));
       }
+
+      dispatch(updateParticipants(user, type, stream));
     };
 
     R.forEach((event: StreamEventType): void => instance.on(event, handleStreamEvent), otStreamEvents);
@@ -355,8 +357,12 @@ const setBroadcastEventWithCredentials: ThunkActionCreator = (userType: string, 
 const initializeBroadcast: ThunkActionCreator = ({ userType, userUrl }: CelebHostInitOptions): Thunk =>
   async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
     try {
-      // Get/set an Auth Token
-      await dispatch(validateUser(userType, userUrl));
+      // Validate usertype
+      const { currentUser } = getState();
+
+      if (!currentUser || (currentUser && currentUser.isViewer)) {
+        await dispatch(validateUser(userType, userUrl));
+      }
 
       // Get the event data + OT credentials
       await dispatch(setBroadcastEventWithCredentials(userType, userUrl));

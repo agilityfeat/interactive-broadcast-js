@@ -108,6 +108,29 @@ const screenShareAction: ThunkActionCreator = (action: string, participantType: 
     opentok.signal(instance, { type: `${action}ScreenShare`, to });
   };
 
+
+const setParticipantAV: ThunkActionCreator = (property: ParticipantAVProperty, participantType: ParticipantType, action: 'on' | 'off'): Thunk =>
+  async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
+    const participant = R.path(['broadcast', 'participants', participantType], getState());
+
+    const to = R.path(['stream', 'connection'], participant);
+    const instance = R.equals('backstageFan', participantType) ? 'backstage' : 'stage'; // For moving to OT2
+    const update = { property, value: action === 'on' };
+
+    switch (property) {
+      case 'audio':
+        opentok.signal(instance, { type: 'muteAudio', to, data: { mute: action } });
+        dispatch(avPropertyChanged(participantType, update));
+        break;
+      case 'video':
+        opentok.signal(instance, { type: 'videoOnOff', to, data: { video: action } });
+        dispatch(avPropertyChanged(participantType, update));
+        break;
+      default: // Do Nothing
+        break;
+    }
+  };
+
 /**
  * Toggle a participants audio, video, or volume
  */
@@ -179,6 +202,7 @@ const updateParticipants: ThunkActionCreator = (
         }
         break;
       }
+      case 'startScreenShare':
       case 'streamCreated': {
         if (stream.videoType === 'screen') {
           const broadcast = R.prop('broadcast', getState());
@@ -187,10 +211,12 @@ const updateParticipants: ThunkActionCreator = (
           if (isProducer) {
             const prevState = {};
             Object.keys(participants).forEach((k: ParticipantType) => {
+
               const p = participants[k];
               prevState[k] = { video: p.video };
-              const shouldTurnOff = k !== 'backstageFan' && p.video;
-              shouldTurnOff && dispatch(toggleParticipantProperty(k, 'video'));
+              const shouldTurnOff = (k !== 'backstageFan');
+              shouldTurnOff && dispatch(setParticipantAV('video', k, 'off'));
+
             });
             localStorage.setItem('participants', JSON.stringify(prevState));
             dispatch(avPropertyChanged(participantType, { property: 'screen', value: true }));
@@ -199,16 +225,15 @@ const updateParticipants: ThunkActionCreator = (
         } else {
           dispatch({ type: 'BROADCAST_PARTICIPANT_JOINED', participantType, stream });
           if (opentok.instanceHasScreen('stage')) {
-            const broadcast = R.prop('broadcast', getState());
-            const participant = R.path(['participants', participantType], broadcast);
-            const shouldTurnOff = participantType !== 'backstageFan' && participant.video;
-            shouldTurnOff && dispatch(toggleParticipantProperty(participantType, 'video'));
+            const shouldTurnOff = (participantType !== 'backstageFan');
+            shouldTurnOff && dispatch(setParticipantAV('video', participantType, 'off'));
           }
         }
         break;
       }
+      case 'endScreenShare':
       case 'streamDestroyed': {
-        if (stream.videoType === 'screen') {
+        if (event === 'endScreenShare' || stream.videoType === 'screen') {
           if (isProducer) {
             alterCameraElement(participantType, 'show');
             dispatch(avPropertyChanged(participantType, { property: 'screen', value: false }));
@@ -217,7 +242,7 @@ const updateParticipants: ThunkActionCreator = (
 
             Object.keys(participants).forEach((k: ParticipantType) => {
               const p = participants[k];
-              p.video && dispatch(toggleParticipantProperty(k, 'video'));
+              p.video && dispatch(setParticipantAV('video', k, 'on'));
             });
           }
         } else {
@@ -433,5 +458,6 @@ module.exports = {
   startHeartBeat,
   stopHeartBeat,
   heartBeatTime,
+  avPropertyChanged,
 };
 

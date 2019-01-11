@@ -121,7 +121,10 @@ class Fan extends Component {
     if (!event) return <Loading />;
 
     const participantIsConnected = (type: ParticipantType): boolean => R.path([type, 'connected'], participants || {});
-    const hasStreams = R.any(participantIsConnected)(['host', 'celebrity', 'fan']);
+    const hasStreams = event.producerHost ?
+          R.any(participantIsConnected)(['host', 'celebrity', 'fan', 'producer']) :
+          R.any(participantIsConnected)(['host', 'celebrity', 'fan']);
+
     const isClosed = R.equals(status, 'closed');
     const isLive = R.equals(status, 'live');
     const mainClassNames = classNames('Fan', { FanEmbed: isEmbed });
@@ -146,6 +149,7 @@ class Fan extends Component {
           />
           { !isClosed && <FanStatusBar fanStatus={fanStatus} /> }
           <FanBody
+            producerHost={event.producerHost}
             settings={settings}
             publisherMinimized={publisherMinimized}
             restorePublisher={restorePublisher}

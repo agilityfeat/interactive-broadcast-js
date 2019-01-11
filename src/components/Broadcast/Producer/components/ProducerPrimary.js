@@ -31,6 +31,8 @@ type Props = {
 
 const ProducerPrimary = (props: Props): ReactComponent => {
   const { privateCall, viewers, interactiveLimit, activeFans, disconnected, elapsedTime } = props.broadcast;
+  const producerHost = R.path(['event', 'producerHost'], props.broadcast);
+
   return (
     <div className="ProducerPrimary admin-page-content">
       <div className="ProducerPrimary-info">
@@ -48,7 +50,8 @@ const ProducerPrimary = (props: Props): ReactComponent => {
       <div className="ProducerPrimary-participants">
         <Particpant type="backstageFan" />
         <Particpant type="fan" />
-        <Particpant type="host" />
+        {producerHost && <Particpant type="producer" />}
+        {!producerHost && <Particpant type="host" />}
         <Particpant type="celebrity" />
         <div id="videoproducer" className="producerContainer" />
       </div>

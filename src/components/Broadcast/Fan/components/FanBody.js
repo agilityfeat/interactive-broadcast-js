@@ -23,7 +23,8 @@ type Props = {
   publisherMinimized: boolean,
   restorePublisher: Unit,
   minimizePublisher: Unit,
-  settings: SettingsState
+  settings: SettingsState,
+  producerHost: boolean
 };
 
 const FanBody = (props: Props): ReactComponent => {
@@ -42,6 +43,7 @@ const FanBody = (props: Props): ReactComponent => {
     minimizePublisher,
     restorePublisher,
     settings,
+    producerHost,
   } = props;
   const fanOnStage = R.equals('stage', fanStatus);
   const showImage = ((!isLive && !postProduction) || (!hasStreams && ableToJoin)) && !fanOnStage;
@@ -56,7 +58,7 @@ const FanBody = (props: Props): ReactComponent => {
     <div className={mainClassNames}>
       { showImage &&
         <div className="imageHolder" style={{ background: backgroundDefault }}>
-          <img src={image ? image.url : imgHolderDefault} alt="event" className={image ? '' : 'default'}/>
+          <img src={image ? image.url : imgHolderDefault} alt="event" className={image ? '' : 'default'} />
         </div>
       }
       { !isClosed &&
@@ -67,6 +69,14 @@ const FanBody = (props: Props): ReactComponent => {
           userType={type}
         />)
       }
+      { !isClosed && producerHost ?
+        <VideoHolder
+          key="videoStreamproducer"
+          connected={shouldSubscribe && participants && participants.producer && participants.producer.connected}
+          userType="producer"
+        /> :
+        <div id="videoproducer" className="producerContainer" />
+      }
       { showHLSPlayer && <FanHLSPlayer isLive={isLive} hlsUrl={hlsUrl} /> }
       <div className={classNames('publisherWrapper', { hidePublisher, minimized: publisherMinimized })}>
         <div className="publisherActions">
@@ -75,7 +85,6 @@ const FanBody = (props: Props): ReactComponent => {
         </div>
         <div className={classNames('VideoWrap', 'smallVideo', { hidePublisher: hidePublisher || publisherMinimized })} id="videobackstageFan" />
       </div>
-      <div id="videoproducer" className="producerContainer" />
     </div>
   );
 };

@@ -40,6 +40,14 @@ const getStreamById = (instance: SessionName, streamId: string): Stream => {
 };
 
 /**
+ * Get the userType of a stream
+ */
+const getStreamUserType = (stream: Stream): UserRole => {
+  const data = JSON.parse(stream.connection.data);
+  return data.userType;
+};
+
+/**
  * Get all the subscribers for an instance
  */
 const getAllSubscribers = (instance: SessionName): Subscriber[] =>
@@ -79,14 +87,14 @@ const instanceHasScreen = (instance: SessionName): boolean => {
 /**
  * Connect to all sessions/instances of core
  */
-const connect = async (instancesToConnect: InstancesToConnect): AsyncVoid => {
+const connect = async (instancesToConnect: InstancesToConnect, hasScreen: boolean = false): AsyncVoid => {
 
   const connectInstance = async (name: SessionName): AsyncVoid => {
     const instance = instances[name];
     const instanceOptions = options[name];
     listeners[name](instance); // Connect listeners
     const connection = await instance.connect();
-    return instanceOptions.autoPublish ? instance.startCall() : connection;
+    return instanceOptions.autoPublish ? instance.startCall({ publishVideo: !hasScreen }) : connection;
   };
 
   try {
@@ -196,7 +204,7 @@ const signal = async (instance: SessionName, { type, data, to }: SignalParams): 
 const startScreenShare = async (instance: SessionName): Promise<*> => {
   const core = instances[instance];
   return core.screenSharing.extensionAvailable()
-    .then((): void => core.screenSharing.start());
+    .then(core.screenSharing.start);
 };
 
 
@@ -405,4 +413,5 @@ module.exports = {
   unpublish,
   forceDisconnect,
   instanceHasScreen,
+  getStreamUserType,
 };

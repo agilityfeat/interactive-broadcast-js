@@ -9,9 +9,10 @@ import {
   setCameraError,
   setError,
   resetAlert,
+  setExtensionError,
 } from './alert';
 import { getEvent, getAdminCredentials, getEventWithCredentials } from '../services/api';
-import { tagSubscriberElements } from '../services/util';
+import { tagSubscriberElements, isFan, isUserOnStage, fanTypeForActiveFan } from '../services/util';
 import firebase from '../services/firebase';
 import {
   Analytics,
@@ -19,7 +20,6 @@ import {
   logAction,
 } from '../services/logging';
 import opentok from '../services/opentok';
-import { isFan, isUserOnStage, fanTypeForActiveFan } from '../services/util';
 import {
   setBroadcastEventStatus,
   setBroadcastEventShowStarted,
@@ -69,32 +69,69 @@ const chatWithParticipant: ThunkActionCreator = (participantType: ParticipantTyp
     }
   };
 
-const onSignal = (dispatch: Dispatch): SignalListener => ({ type, data }: Signal) => {
-  const signalData = data ? JSON.parse(data) : {};
-  const signalType = R.last(R.split(':', type));
+const onSignal = (dispatch: Dispatch, getState: GetState): SignalListener =>
+  async ({ type, data, from }: Signal): AsyncVoid => {
+    const signalData = data ? JSON.parse(data) : {};
+    const signalType = R.last(R.split(':', type));
+    const fromData = JSON.parse(from.data);
+    const fromProducer = fromData.userType === 'producer';
+    const userType = 'producer';
+    const event: BroadcastEvent = R.path(['broadcast', 'event'], getState());
+    const { domainId, fanUrl, producerHost } = event;
 
-  switch (signalType) {
-    case 'chatMessage': {
-      const { fromType, fromId } = signalData;
-      const chatId = isFan(fromType) ? fromId : fromType;
-      const actions = [
-        chatWithParticipant(chatId),
-        onChatMessage(chatId),
-        { type: 'NEW_CHAT_MESSAGE', chatId, message: R.assoc('isMe', false, signalData) },
-      ];
-      R.forEach(dispatch, actions);
-      break;
+    switch (signalType) {
+      case 'chatMessage': {
+        const { fromType, fromId } = signalData;
+        const chatId = isFan(fromType) ? fromId : fromType;
+        const actions = [
+          chatWithParticipant(chatId),
+          onChatMessage(chatId),
+          { type: 'NEW_CHAT_MESSAGE', chatId, message: R.assoc('isMe', false, signalData) },
+        ];
+        R.forEach(dispatch, actions);
+        break;
+      }
+      case 'startScreenShare': {
+        if (fromProducer) {
+          const broadcast = R.path(['broadcast'], getState());
+          const producer = R.path(['participants', 'producer'], broadcast);
+          const to = R.path(['stream', 'connection'], producer);
+          const ref = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/screen`);
+
+          opentok.startScreenShare('stage').then(() => {
+            ref.set(userType);
+            ref.onDisconnect().remove();
+          }).catch(() => {
+            opentok.signal('stage', { type: 'errorScreenShareExtension', to });
+            dispatch(setExtensionError());
+            ref.remove();
+          });
+        }
+        dispatch(setBroadcastState(opentok.state('stage')));
+        break;
+      }
+      case 'endScreenShare': {
+        fromProducer && await opentok.endScreenShare('stage');
+        const ref = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/screen`);
+        ref.remove();
+        break;
+      }
+      case 'videoOnOff':
+        fromProducer && opentok.toggleLocalVideo('stage', signalData.video === 'on');
+        break;
+      case 'muteAudio':
+        fromProducer && opentok.toggleLocalAudio('stage', signalData.mute === 'off');
+        break;
+      case 'changeVolume':
+        fromProducer && opentok.changeVolume('stage', signalData.userType, signalData.volume);
+        break;
+      case 'errorScreenShareExtension':
+        !producerHost && dispatch(setError('The user has no desktop sharing extension installed'));
+        break;
+      default:
+        break;
     }
-    case 'errorScreenShare':
-      dispatch(setError('The user has denied access to their desktop.'));
-      break;
-    case 'errorScreenShareExtension':
-      dispatch(setError('The user has no desktop sharing extension installed'));
-      break;
-    default:
-      break;
-  }
-};
+  };
 
 const restoreVolume = (domainId: string, fanUrl: string, userType: UserRole) => {
   try {
@@ -105,22 +142,29 @@ const restoreVolume = (domainId: string, fanUrl: string, userType: UserRole) => 
   }
 };
 
-const opentokConfig = (dispatch: Dispatch, getState: GetState, userCredentials: UserCredentials): CoreInstanceOptions[] => {
+const opentokConfig = (dispatch: Dispatch, getState: GetState, userCredentials: UserCredentials, autoPublish: boolean): CoreInstanceOptions[] => {
 
   // Set common listeners for all user types here
   const eventListeners: CoreInstanceListener = (instance: Core) => {
 
     // Assign listener for state changes
     const subscribeEvents: SubscribeEventType[] = [
+      'startScreenShare',
+      'endScreenShare',
+      'startCall',
       'subscribeToScreen',
       'subscribeToCamera',
       'unsubscribeFromCamera',
       'unsubscribeFromScreen',
     ];
 
-    const handleSubscribeEvent = (state: CoreState, event: SubscribeEventType) => {
+    const handleSubscribeEvent = (state: CoreState, eventType: SubscribeEventType) => {
       dispatch(setBroadcastState(state));
-      tagSubscriberElements(state, event);
+      tagSubscriberElements(state, eventType);
+
+      const stream = R.path(['publisher', 'stream'], state);
+      const userType = stream && opentok.getStreamUserType(stream);
+      dispatch(updateParticipants(userType, eventType, stream, true));
     };
     R.forEach((event: SubscribeEventType): void => instance.on(event, handleSubscribeEvent), subscribeEvents);
 
@@ -129,16 +173,24 @@ const opentokConfig = (dispatch: Dispatch, getState: GetState, userCredentials: 
     const handleStreamEvent: StreamEventHandler = ({ type, stream }: OTStreamEvent) => {
       const isStage = R.propEq('name', 'stage', instance);
       const backstageFanLeft = type === 'streamDestroyed' && !isStage;
-      const connectionData: { userType: UserRole } = JSON.parse(stream.connection.data);
+      const userType = opentok.getStreamUserType(stream);
 
-      isStage && dispatch(updateParticipants(connectionData.userType, type, stream, true));
-      backstageFanLeft && dispatch(updateParticipants(connectionData.userType, 'backstageFanLeft', stream, true));
+      isStage && dispatch(updateParticipants(userType, type, stream, true));
+      backstageFanLeft && dispatch(updateParticipants(userType, 'backstageFanLeft', stream, true));
     };
 
     R.forEach((event: StreamEventType): void => instance.on(event, handleStreamEvent), otStreamEvents);
 
     // Assign signal listener
-    instance.on('signal', onSignal(dispatch));
+    instance.on('screenSharingError', (error: Error) => {
+      if (error.code === 1500) {
+        const event = R.path(['broadcast', 'event'], getState());
+        const { domainId, fanUrl } = event;
+        const ref = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/screen`);
+        ref.remove();
+      }
+    });
+    instance.on('signal', onSignal(dispatch, getState));
 
     // Assign reconnection event listeners
     instance.on('sessionReconnecting', (): void => dispatch(setReconnecting()));
@@ -174,7 +226,6 @@ const opentokConfig = (dispatch: Dispatch, getState: GetState, userCredentials: 
   const stage = (): CoreInstanceOptions => {
     const { apiKey, stageSessionId, stageToken } = userCredentials;
     analytics = new Analytics(window.location.origin, stageSessionId, null, apiKey);
-    const autoSubscribe = true;
     const credentials = {
       apiKey,
       sessionId: stageSessionId,
@@ -182,14 +233,14 @@ const opentokConfig = (dispatch: Dispatch, getState: GetState, userCredentials: 
     };
     return {
       name: 'stage',
-      coreOptions: coreOptions('stage', credentials, 'producer', autoSubscribe),
+      coreOptions: coreOptions('stage', credentials, 'producer'),
       eventListeners,
+      opentokOptions: { autoPublish },
     };
   };
 
   const backstage = (): CoreInstanceOptions => {
     const { apiKey, sessionId, backstageToken } = userCredentials;
-    const autoSubscribe = false;
     const credentials = {
       apiKey,
       sessionId,
@@ -197,7 +248,7 @@ const opentokConfig = (dispatch: Dispatch, getState: GetState, userCredentials: 
     };
     return {
       name: 'backstage',
-      coreOptions: coreOptions('backstage', credentials, 'producer', autoSubscribe),
+      coreOptions: coreOptions('backstage', credentials, 'producer', false),
       eventListeners,
     };
   };
@@ -205,12 +256,13 @@ const opentokConfig = (dispatch: Dispatch, getState: GetState, userCredentials: 
   return [stage(), backstage()];
 };
 
+
 /**
  * Connect to OpenTok sessions
  */
-const connectToInteractive: ThunkActionCreator = (userCredentials: UserCredentials): Thunk =>
+const connectToInteractive: ThunkActionCreator = (userCredentials: UserCredentials, autoPublish: boolean): Thunk =>
   async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
-    const instances: CoreInstanceOptions[] = opentokConfig(dispatch, getState, userCredentials);
+    const instances: CoreInstanceOptions[] = opentokConfig(dispatch, getState, userCredentials, autoPublish);
     try {
       opentok.init(instances);
     } catch (error) {
@@ -232,7 +284,8 @@ const connectToInteractive: ThunkActionCreator = (userCredentials: UserCredentia
     try {
       analytics.log(logAction.producerConnects, logVariation.attempt);
       dispatch(monitorScreen(true));
-      await opentok.connect(['stage', 'backstage']);
+      const hasScreen = await activeBroadcastRef.child('screen').once('value');
+      await opentok.connect(['backstage', 'stage'], !!hasScreen.val());
       analytics.log(logAction.producerConnects, logVariation.success);
       dispatch(setBroadcastState(opentok.state('stage')));
       dispatch(monitorVolume());
@@ -466,6 +519,7 @@ const connectBroadcast: ThunkActionCreator = (event: BroadcastEvent): Thunk =>
   async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
     const credentialProps = ['apiKey', 'sessionId', 'stageSessionId', 'stageToken', 'backstageToken'];
     const credentials = R.pick(credentialProps, await getAdminCredentials(event.id));
+    const producerHost = R.prop('producerHost', event);
 
     // Register the producer in firebase
     firebase.auth().onAuthStateChanged(async (user: AuthState): AsyncVoid => {
@@ -498,10 +552,12 @@ const connectBroadcast: ThunkActionCreator = (event: BroadcastEvent): Thunk =>
         }
 
         // Connect to the session
-        await dispatch(connectToInteractive(credentials));
+        await dispatch(connectToInteractive(credentials, producerHost));
         try {
-          await createEmptyPublisher('stage');
-          await createEmptyPublisher('backstage');
+          if (!producerHost) {
+            await createEmptyPublisher('stage');
+            await createEmptyPublisher('backstage');
+          }
           dispatch(updateActiveFans());
           dispatch({ type: 'BROADCAST_CONNECTED', connected: true });
         } catch (error) {
@@ -518,21 +574,26 @@ const connectBroadcast: ThunkActionCreator = (event: BroadcastEvent): Thunk =>
   };
 
 const resetBroadcastEvent: ThunkActionCreator = (): Thunk =>
-  (dispatch: Dispatch, getState: GetState) => {
+  async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
     const state = getState();
     const { domainId, fanUrl, status } = R.defaultTo({})(state.broadcast.event);
     const connecting = R.path(['broadcast', 'connecting'], state);
     const isClosed = status === 'closed';
     if (domainId && fanUrl) {
-      dispatch(stopHeartBeat());
-      disconnect();
+      const userScreen = await activeBroadcastRef.child('screen').once('value');
+      const screen = userScreen.val() === 'producer' ? null : userScreen.val();
+
       activeBroadcastRef && activeBroadcastRef.onDisconnect().cancel();
       if (!isClosed && !connecting) {
         firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}`).update({
           producerActive: false,
           privateCall: null,
+          screen,
         });
       }
+
+      dispatch(stopHeartBeat());
+      disconnect();
     }
     dispatch({ type: 'RESET_BROADCAST_EVENT' });
   };
@@ -719,18 +780,21 @@ const sendToStage: ThunkActionCreator = (): Thunk =>
     }
   };
 
+
 /**
  * Update the event status
  */
 const changeStatus: ThunkActionCreator = (eventId: EventId, newStatus: EventStatus): Thunk =>
-  async (dispatch: Dispatch): AsyncVoid => {
+  async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
     const goLive = newStatus === 'live';
     const type = goLive ? 'goLive' : 'finishEvent';
     const actionType = goLive ? logAction.producerGoLive : logAction.producerEndShow;
+    const producerHost = R.path(['broadcast', 'event', 'producerHost'], getState());
+
     analytics.log(actionType, logVariation.attempt);
     try {
       /* If the event goes live, the producer should stop publishing to stage session */
-      goLive && await opentok.unpublish('stage');
+      !producerHost && goLive && await opentok.unpublish('stage');
       /* If the event goes live, start the elapsed time counter */
       goLive && dispatch(setBroadcastEventShowStarted());
       /* If the event is finishing, let's stop the elapsed time counter */

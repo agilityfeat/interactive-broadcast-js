@@ -11,17 +11,20 @@ type Props = {
   status: EventStatus,
   endImage?: EventImage,
   participants: null | BroadcastParticipants, // publishOnly => null
-  userType: 'host' | 'celebrity',
-  settings: SettingsState
+  userType: 'host' | 'celebrity' | 'producer',
+  settings: SettingsState,
+  producerHost: boolean
 };
+
 const CelebrityHostBody = (props: Props): ReactComponent => {
-  const { status, endImage, participants, userType, settings } = props;
+  const { status, producerHost, endImage, participants, userType, settings } = props;
   const isClosed = status === 'closed';
   const imgClass = classNames('CelebrityHostBody', { withStreams: !isClosed });
   const endImageUrl = endImage ? endImage.url : null;
   const closeImageClass = classNames('closeImage', { default: !endImageUrl });
   const imgHolderDefault = settings && settings.siteLogo ? settings.siteLogo.url : defaultImg;
   const backgroundDefault = !endImageUrl && settings ? settings.siteColor : '#fff';
+
   return (
     <div className={imgClass}>
       { isClosed &&
@@ -32,11 +35,20 @@ const CelebrityHostBody = (props: Props): ReactComponent => {
       { !isClosed && userTypes.map((type: ParticipantType): ReactComponent =>
         <VideoHolder
           key={`videoStream${type}`}
-          connected={participants && participants[type] ? participants[type].connected : false}
+          connected={participants && participants[type] && participants[type].connected}
           isMe={userType === type}
           userType={type}
-        />)}
-      <div id="videoproducer" className="producerContainer" />
+        />)
+      }
+      {
+        producerHost ?
+          <VideoHolder
+            key="videoStreamproducer"
+            connected={participants && participants.producer && participants.producer.connected}
+            userType="producer"
+          /> :
+          <div id="videoproducer" className="producerContainer" />
+      }
     </div>
   );
 };
