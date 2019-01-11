@@ -9,9 +9,10 @@ import {
   setCameraError,
   setError,
   resetAlert,
+  setExtensionError,
 } from './alert';
 import { getEvent, getAdminCredentials, getEventWithCredentials } from '../services/api';
-import { tagSubscriberElements } from '../services/util';
+import { tagSubscriberElements, isFan, isUserOnStage, fanTypeForActiveFan } from '../services/util';
 import firebase from '../services/firebase';
 import {
   Analytics,
@@ -19,7 +20,6 @@ import {
   logAction,
 } from '../services/logging';
 import opentok from '../services/opentok';
-import { isFan, isUserOnStage, fanTypeForActiveFan } from '../services/util';
 import {
   setBroadcastEventStatus,
   setBroadcastEventShowStarted,
