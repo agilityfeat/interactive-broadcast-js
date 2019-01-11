@@ -226,7 +226,6 @@ const opentokConfig = (dispatch: Dispatch, getState: GetState, userCredentials: 
   const stage = (): CoreInstanceOptions => {
     const { apiKey, stageSessionId, stageToken } = userCredentials;
     analytics = new Analytics(window.location.origin, stageSessionId, null, apiKey);
-    const autoSubscribe = true;
     const credentials = {
       apiKey,
       sessionId: stageSessionId,
@@ -234,14 +233,14 @@ const opentokConfig = (dispatch: Dispatch, getState: GetState, userCredentials: 
     };
     return {
       name: 'stage',
-      coreOptions: coreOptions('stage', credentials, 'producer', autoSubscribe),
+      coreOptions: coreOptions('stage', credentials, 'producer'),
       eventListeners,
+      opentokOptions: { autoPublish },
     };
   };
 
   const backstage = (): CoreInstanceOptions => {
     const { apiKey, sessionId, backstageToken } = userCredentials;
-    const autoSubscribe = false;
     const credentials = {
       apiKey,
       sessionId,
@@ -249,7 +248,7 @@ const opentokConfig = (dispatch: Dispatch, getState: GetState, userCredentials: 
     };
     return {
       name: 'backstage',
-      coreOptions: coreOptions('backstage', credentials, 'producer', autoSubscribe),
+      coreOptions: coreOptions('backstage', credentials, 'producer', false),
       eventListeners,
     };
   };
