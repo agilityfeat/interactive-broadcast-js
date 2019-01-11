@@ -355,8 +355,12 @@ const setBroadcastEventWithCredentials: ThunkActionCreator = (userType: string, 
 const initializeBroadcast: ThunkActionCreator = ({ userType, userUrl }: CelebHostInitOptions): Thunk =>
   async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
     try {
-      // Get/set an Auth Token
-      await dispatch(validateUser(userType, userUrl));
+      // Validate usertype
+      const { currentUser } = getState();
+
+      if (!currentUser || (currentUser && currentUser.isViewer)) {
+        await dispatch(validateUser(userType, userUrl));
+      }
 
       // Get the event data + OT credentials
       await dispatch(setBroadcastEventWithCredentials(userType, userUrl));
