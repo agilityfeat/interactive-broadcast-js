@@ -69,32 +69,69 @@ const chatWithParticipant: ThunkActionCreator = (participantType: ParticipantTyp
     }
   };
 
-const onSignal = (dispatch: Dispatch): SignalListener => ({ type, data }: Signal) => {
-  const signalData = data ? JSON.parse(data) : {};
-  const signalType = R.last(R.split(':', type));
+const onSignal = (dispatch: Dispatch, getState: GetState): SignalListener =>
+  async ({ type, data, from }: Signal): AsyncVoid => {
+    const signalData = data ? JSON.parse(data) : {};
+    const signalType = R.last(R.split(':', type));
+    const fromData = JSON.parse(from.data);
+    const fromProducer = fromData.userType === 'producer';
+    const userType = 'producer';
+    const event: BroadcastEvent = R.path(['broadcast', 'event'], getState());
+    const { domainId, fanUrl, producerHost } = event;
 
-  switch (signalType) {
-    case 'chatMessage': {
-      const { fromType, fromId } = signalData;
-      const chatId = isFan(fromType) ? fromId : fromType;
-      const actions = [
-        chatWithParticipant(chatId),
-        onChatMessage(chatId),
-        { type: 'NEW_CHAT_MESSAGE', chatId, message: R.assoc('isMe', false, signalData) },
-      ];
-      R.forEach(dispatch, actions);
-      break;
+    switch (signalType) {
+      case 'chatMessage': {
+        const { fromType, fromId } = signalData;
+        const chatId = isFan(fromType) ? fromId : fromType;
+        const actions = [
+          chatWithParticipant(chatId),
+          onChatMessage(chatId),
+          { type: 'NEW_CHAT_MESSAGE', chatId, message: R.assoc('isMe', false, signalData) },
+        ];
+        R.forEach(dispatch, actions);
+        break;
+      }
+      case 'startScreenShare': {
+        if (fromProducer) {
+          const broadcast = R.path(['broadcast'], getState());
+          const producer = R.path(['participants', 'producer'], broadcast);
+          const to = R.path(['stream', 'connection'], producer);
+          const ref = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/screen`);
+
+          opentok.startScreenShare('stage').then(() => {
+            ref.set(userType);
+            ref.onDisconnect().remove();
+          }).catch(() => {
+            opentok.signal('stage', { type: 'errorScreenShareExtension', to });
+            dispatch(setExtensionError());
+            ref.remove();
+          });
+        }
+        dispatch(setBroadcastState(opentok.state('stage')));
+        break;
+      }
+      case 'endScreenShare': {
+        fromProducer && await opentok.endScreenShare('stage');
+        const ref = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/screen`);
+        ref.remove();
+        break;
+      }
+      case 'videoOnOff':
+        fromProducer && opentok.toggleLocalVideo('stage', signalData.video === 'on');
+        break;
+      case 'muteAudio':
+        fromProducer && opentok.toggleLocalAudio('stage', signalData.mute === 'off');
+        break;
+      case 'changeVolume':
+        fromProducer && opentok.changeVolume('stage', signalData.userType, signalData.volume);
+        break;
+      case 'errorScreenShareExtension':
+        !producerHost && dispatch(setError('The user has no desktop sharing extension installed'));
+        break;
+      default:
+        break;
     }
-    case 'errorScreenShare':
-      dispatch(setError('The user has denied access to their desktop.'));
-      break;
-    case 'errorScreenShareExtension':
-      dispatch(setError('The user has no desktop sharing extension installed'));
-      break;
-    default:
-      break;
-  }
-};
+  };
 
 const restoreVolume = (domainId: string, fanUrl: string, userType: UserRole) => {
   try {
