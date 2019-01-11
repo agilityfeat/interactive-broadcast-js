@@ -97,7 +97,7 @@ class RegisterViewer extends React.Component {
           {
             register &&
             <div className="RegisterViewer-body">
-              <h4>Create account for {window.location.host}</h4>
+              <h4>Create an account</h4>
               <RegisterViewerForm eventMode={eventMode} userUrl={userUrl} onSuccess={this.handleSuccess} />
               <button onClick={this.toggleRegister} className="btn transparent">
                 I already have an account
@@ -107,7 +107,7 @@ class RegisterViewer extends React.Component {
           {
             !register &&
             <div className="RegisterViewer-body">
-              <h4>Sign in to {window.location.host}</h4>
+              <h4>Sign in</h4>
               <LoginViewerForm eventMode={eventMode} userUrl={userUrl} />
               <button onClick={this.toggleRegister} className="btn transparent">
                 {'I don\'t have an account'}
