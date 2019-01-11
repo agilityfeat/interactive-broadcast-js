@@ -20,7 +20,7 @@ import {
   startHeartBeat,
   heartBeatTime,
 } from './broadcast';
-import { getEventWithCredentials, getEmbedEventWithCredentials } from '../services/api';
+import { getEventWithCredentials, getEmbedEventWithCredentials, getEventByKey } from '../services/api';
 import { isUserOnStage, tagSubscriberElements } from '../services/util';
 import { setInfo, setCameraError, setExtensionError } from './alert';
 import firebase from '../services/firebase';
