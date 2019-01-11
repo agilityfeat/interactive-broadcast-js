@@ -256,12 +256,13 @@ const opentokConfig = (dispatch: Dispatch, getState: GetState, userCredentials: 
   return [stage(), backstage()];
 };
 
+
 /**
  * Connect to OpenTok sessions
  */
-const connectToInteractive: ThunkActionCreator = (userCredentials: UserCredentials): Thunk =>
+const connectToInteractive: ThunkActionCreator = (userCredentials: UserCredentials, autoPublish: boolean): Thunk =>
   async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
-    const instances: CoreInstanceOptions[] = opentokConfig(dispatch, getState, userCredentials);
+    const instances: CoreInstanceOptions[] = opentokConfig(dispatch, getState, userCredentials, autoPublish);
     try {
       opentok.init(instances);
     } catch (error) {
@@ -573,21 +574,26 @@ const connectBroadcast: ThunkActionCreator = (event: BroadcastEvent): Thunk =>
   };
 
 const resetBroadcastEvent: ThunkActionCreator = (): Thunk =>
-  (dispatch: Dispatch, getState: GetState) => {
+  async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
     const state = getState();
     const { domainId, fanUrl, status } = R.defaultTo({})(state.broadcast.event);
     const connecting = R.path(['broadcast', 'connecting'], state);
     const isClosed = status === 'closed';
     if (domainId && fanUrl) {
-      dispatch(stopHeartBeat());
-      disconnect();
+      const userScreen = await activeBroadcastRef.child('screen').once('value');
+      const screen = userScreen.val() === 'producer' ? null : userScreen.val();
+
       activeBroadcastRef && activeBroadcastRef.onDisconnect().cancel();
       if (!isClosed && !connecting) {
         firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}`).update({
           producerActive: false,
           privateCall: null,
+          screen,
         });
       }
+
+      dispatch(stopHeartBeat());
+      disconnect();
     }
     dispatch({ type: 'RESET_BROADCAST_EVENT' });
   };
