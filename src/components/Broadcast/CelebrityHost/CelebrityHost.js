@@ -83,6 +83,7 @@ class CelebrityHost extends Component {
           />
           <CelebrityHostBody
             settings={settings}
+            producerHost={event.producerHost}
             endImage={event.endImage}
             participants={availableParticipants}
             status={event.status}
