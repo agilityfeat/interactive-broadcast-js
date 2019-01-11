@@ -142,22 +142,29 @@ const restoreVolume = (domainId: string, fanUrl: string, userType: UserRole) => 
   }
 };
 
-const opentokConfig = (dispatch: Dispatch, getState: GetState, userCredentials: UserCredentials): CoreInstanceOptions[] => {
+const opentokConfig = (dispatch: Dispatch, getState: GetState, userCredentials: UserCredentials, autoPublish: boolean): CoreInstanceOptions[] => {
 
   // Set common listeners for all user types here
   const eventListeners: CoreInstanceListener = (instance: Core) => {
 
     // Assign listener for state changes
     const subscribeEvents: SubscribeEventType[] = [
+      'startScreenShare',
+      'endScreenShare',
+      'startCall',
       'subscribeToScreen',
       'subscribeToCamera',
       'unsubscribeFromCamera',
       'unsubscribeFromScreen',
     ];
 
-    const handleSubscribeEvent = (state: CoreState, event: SubscribeEventType) => {
+    const handleSubscribeEvent = (state: CoreState, eventType: SubscribeEventType) => {
       dispatch(setBroadcastState(state));
-      tagSubscriberElements(state, event);
+      tagSubscriberElements(state, eventType);
+
+      const stream = R.path(['publisher', 'stream'], state);
+      const userType = stream && opentok.getStreamUserType(stream);
+      dispatch(updateParticipants(userType, eventType, stream, true));
     };
     R.forEach((event: SubscribeEventType): void => instance.on(event, handleSubscribeEvent), subscribeEvents);
 
@@ -166,16 +173,24 @@ const opentokConfig = (dispatch: Dispatch, getState: GetState, userCredentials: 
     const handleStreamEvent: StreamEventHandler = ({ type, stream }: OTStreamEvent) => {
       const isStage = R.propEq('name', 'stage', instance);
       const backstageFanLeft = type === 'streamDestroyed' && !isStage;
-      const connectionData: { userType: UserRole } = JSON.parse(stream.connection.data);
+      const userType = opentok.getStreamUserType(stream);
 
-      isStage && dispatch(updateParticipants(connectionData.userType, type, stream, true));
-      backstageFanLeft && dispatch(updateParticipants(connectionData.userType, 'backstageFanLeft', stream, true));
+      isStage && dispatch(updateParticipants(userType, type, stream, true));
+      backstageFanLeft && dispatch(updateParticipants(userType, 'backstageFanLeft', stream, true));
     };
 
     R.forEach((event: StreamEventType): void => instance.on(event, handleStreamEvent), otStreamEvents);
 
     // Assign signal listener
-    instance.on('signal', onSignal(dispatch));
+    instance.on('screenSharingError', (error: Error) => {
+      if (error.code === 1500) {
+        const event = R.path(['broadcast', 'event'], getState());
+        const { domainId, fanUrl } = event;
+        const ref = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/screen`);
+        ref.remove();
+      }
+    });
+    instance.on('signal', onSignal(dispatch, getState));
 
     // Assign reconnection event listeners
     instance.on('sessionReconnecting', (): void => dispatch(setReconnecting()));
