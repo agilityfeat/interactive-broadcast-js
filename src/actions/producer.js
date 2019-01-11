@@ -517,6 +517,7 @@ const connectBroadcast: ThunkActionCreator = (event: BroadcastEvent): Thunk =>
   async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
     const credentialProps = ['apiKey', 'sessionId', 'stageSessionId', 'stageToken', 'backstageToken'];
     const credentials = R.pick(credentialProps, await getAdminCredentials(event.id));
+    const producerHost = R.prop('producerHost', event);
 
     // Register the producer in firebase
     firebase.auth().onAuthStateChanged(async (user: AuthState): AsyncVoid => {
@@ -549,10 +550,12 @@ const connectBroadcast: ThunkActionCreator = (event: BroadcastEvent): Thunk =>
         }
 
         // Connect to the session
-        await dispatch(connectToInteractive(credentials));
+        await dispatch(connectToInteractive(credentials, producerHost));
         try {
-          await createEmptyPublisher('stage');
-          await createEmptyPublisher('backstage');
+          if (!producerHost) {
+            await createEmptyPublisher('stage');
+            await createEmptyPublisher('backstage');
+          }
           dispatch(updateActiveFans());
           dispatch({ type: 'BROADCAST_CONNECTED', connected: true });
         } catch (error) {
