@@ -39,7 +39,7 @@ class Login extends Component {
 
   componentDidMount() {
     const { currentUser } = this.props;
-    if (!currentUser.isViewer) {
+    if (currentUser && !currentUser.isViewer) {
       browserHistory.replace('/dashboard');
     }
   }
@@ -57,7 +57,7 @@ class Login extends Component {
     }
 
     if (prevProps.currentUser && prevProps.currentUser.isViewer &&
-        !currentUser.isViewer) {
+        currentUser && !currentUser.isViewer) {
       browserHistory.replace('/dashboard');
     }
   }
@@ -82,7 +82,7 @@ class Login extends Component {
         <div className="Login-header" >
           <img src={(siteLogo && siteLogo.url) || logo} alt="opentok" />
         </div>
-        <h4>Sign in to {window.location.host} as an admin</h4>
+        <h4>Sign in as an admin</h4>
         <LoginForm onSubmit={handleSubmit} onUpdate={resetError} error={error} forgotPassword={forgotPassword} />
         <div className="Login-messages">
           { error && <div className="Login-error">Please check your credentials and try again</div> }
