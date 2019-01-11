@@ -183,9 +183,9 @@ const opentokConfig = (dispatch: Dispatch, { userCredentials, userType }: UserDa
             analytics.log(subscribeAction, logVariation.fail);
           }
         }
-
-        dispatch(updateParticipants(user, type, stream));
       }
+
+      dispatch(updateParticipants(user, type, stream));
     };
 
     R.forEach((event: StreamEventType): void => instance.on(event, handleStreamEvent), otStreamEvents);
