@@ -87,14 +87,14 @@ const instanceHasScreen = (instance: SessionName): boolean => {
 /**
  * Connect to all sessions/instances of core
  */
-const connect = async (instancesToConnect: InstancesToConnect): AsyncVoid => {
+const connect = async (instancesToConnect: InstancesToConnect, hasScreen: boolean = false): AsyncVoid => {
 
   const connectInstance = async (name: SessionName): AsyncVoid => {
     const instance = instances[name];
     const instanceOptions = options[name];
     listeners[name](instance); // Connect listeners
     const connection = await instance.connect();
-    return instanceOptions.autoPublish ? instance.startCall() : connection;
+    return instanceOptions.autoPublish ? instance.startCall({ publishVideo: !hasScreen }) : connection;
   };
 
   try {
