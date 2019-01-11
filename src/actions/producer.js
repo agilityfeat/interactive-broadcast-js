@@ -719,18 +719,21 @@ const sendToStage: ThunkActionCreator = (): Thunk =>
     }
   };
 
+
 /**
  * Update the event status
  */
 const changeStatus: ThunkActionCreator = (eventId: EventId, newStatus: EventStatus): Thunk =>
-  async (dispatch: Dispatch): AsyncVoid => {
+  async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
     const goLive = newStatus === 'live';
     const type = goLive ? 'goLive' : 'finishEvent';
     const actionType = goLive ? logAction.producerGoLive : logAction.producerEndShow;
+    const producerHost = R.path(['broadcast', 'event', 'producerHost'], getState());
+
     analytics.log(actionType, logVariation.attempt);
     try {
       /* If the event goes live, the producer should stop publishing to stage session */
-      goLive && await opentok.unpublish('stage');
+      !producerHost && goLive && await opentok.unpublish('stage');
       /* If the event goes live, start the elapsed time counter */
       goLive && dispatch(setBroadcastEventShowStarted());
       /* If the event is finishing, let's stop the elapsed time counter */
