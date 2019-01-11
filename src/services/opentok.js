@@ -204,7 +204,7 @@ const signal = async (instance: SessionName, { type, data, to }: SignalParams): 
 const startScreenShare = async (instance: SessionName): Promise<*> => {
   const core = instances[instance];
   return core.screenSharing.extensionAvailable()
-    .then((): void => core.screenSharing.start());
+    .then(core.screenSharing.start);
 };
 
 
