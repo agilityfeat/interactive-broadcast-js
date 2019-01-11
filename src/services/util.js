@@ -38,6 +38,7 @@ const translateRole = (type: ParticipantType): string => {
     host: 'host',
     celebrity: 'guest',
     backstageFan: 'backstage viewer',
+    producer: 'producer',
   };
 
   return translation[type];
@@ -51,7 +52,7 @@ const alterAllButScreen = (userType: UserType, action: 'hide' | 'show'): boolean
   });
 
   if (action === 'hide') {
-    const participants = ['fan', 'celebrity', 'host'];
+    const participants = ['fan', 'celebrity', 'host', 'producer'];
     const styleEl = document.createElement('style');
     styleEl.classList.add('hide-cameras');
 

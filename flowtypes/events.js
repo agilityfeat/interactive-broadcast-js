@@ -28,6 +28,7 @@ declare type BroadcastEvent = {
   stageSessionId: string,
   archiveUrl?: string,
   rtmpUrl?: string,
+  producerHost: boolean,
   redirectUrl: string,
   uncomposed: boolean,
   showStartedAt: string,
