@@ -283,7 +283,8 @@ const connectToInteractive: ThunkActionCreator = (userCredentials: UserCredentia
     try {
       analytics.log(logAction.producerConnects, logVariation.attempt);
       dispatch(monitorScreen(true));
-      await opentok.connect(['stage', 'backstage']);
+      const hasScreen = await activeBroadcastRef.child('screen').once('value');
+      await opentok.connect(['backstage', 'stage'], !!hasScreen.val());
       analytics.log(logAction.producerConnects, logVariation.success);
       dispatch(setBroadcastState(opentok.state('stage')));
       dispatch(monitorVolume());
