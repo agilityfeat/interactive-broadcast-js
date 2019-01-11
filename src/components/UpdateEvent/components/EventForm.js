@@ -46,7 +46,8 @@ type EventFormState = {
     rtmpUrl: string,
     dateTimeStart: string,
     dateTimeEnd: string,
-    uncomposed: boolean
+    uncomposed: boolean,
+    producerHost: boolean
   },
   submitting: boolean
 };
@@ -65,6 +66,7 @@ const eventFields = [
   'dateTimeStart',
   'dateTimeEnd',
   'uncomposed',
+  'producerHost',
 ];
 
 class EventForm extends Component {
@@ -96,6 +98,7 @@ class EventForm extends Component {
         redirectUrl: '',
         rtmpUrl: '',
         uncomposed: false,
+        producerHost: false,
       },
       submitting: false,
     };
@@ -282,12 +285,10 @@ class EventForm extends Component {
           <span className="label">Record Event</span>
         </div>
 
-        {/*
         <div className="input-container checkbox">
-          <input type="checkbox" name="uncomposed" checked={fields.uncomposed} onChange={handleChange} />
-          <span className="label">Record Individual Streams (Uncheck for Composed Video)</span>
+          <input type="checkbox" name="producerHost" checked={fields.producerHost} onChange={handleChange} />
+          <span className="label">Producer is Host</span>
         </div>
-        */}
 
         { this.props.otApiKey &&
           <div className="input-container submit">
