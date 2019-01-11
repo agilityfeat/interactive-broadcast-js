@@ -107,7 +107,7 @@ const setupNetworkTest: ThunkActionCreator = (fanId: UserId, domainId: string, f
         const coreState = opentok.state('stage');
         const isHostOrCeleb = ({ stream }: { stream: Stream }): boolean => {
           const { userType } = JSON.parse(R.pathOr(null, ['connection', 'data'], stream));
-          return R.contains(userType, ['host', 'celebrity']);
+          return R.contains(userType, ['host', 'celebrity', 'producer']);
         };
         return R.find(isHostOrCeleb, R.values(coreState.subscribers.camera));
       };
