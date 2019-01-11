@@ -42,7 +42,8 @@ declare type BroadcastParticipants = {
   fan: FanParticipantState,
   celebrity: ParticipantState,
   host: ParticipantState,
-  backstageFan: FanParticipantState
+  backstageFan: FanParticipantState,
+  producer: FanParticipantState
 };
 
 declare type InteractiveFan = { uid: UserId };

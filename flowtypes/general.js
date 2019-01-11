@@ -3,25 +3,21 @@ import React from 'react';
 /* eslint no-undef: "off" */
 /* beautify preserve:start */
 
-// API
-// declare type RequestHeaders = { 'Content-Type': 'application/json', jwt?: string };
-// declare class Headers {
-//   constructor(values: HeaderValues): void
-// }
-type HeadersInit = Headers | {[key: string]: string};
 declare class Headers {
-    @@iterator(): Iterator<[string, string]>;
-    constructor(init?: HeadersInit): void;
-    append(name: string, value: string): void;
-    delete(name: string): void;
-    entries(): Iterator<[string, string]>;
-    get(name: string): string;
-    getAll(name: string): Array<string>;
-    has(name: string): boolean;
-    keys(): Iterator<string>;
-    set(name: string, value: string): void;
-    values(): Iterator<string>;
+    iterator(): Iterator<[string, string]>,
+    constructor(init?: HeadersInit): void,
+    append(name: string, value: string): void,
+    delete(name: string): void,
+    entries(): Iterator<[string, string]>,
+    get(name: string): string,
+    getAll(name: string): Array<string>,
+    has(name: string): boolean,
+    keys(): Iterator<string>,
+    set(name: string, value: string): void,
+    values(): Iterator<string>
 }
+
+type HeadersInit = Headers | {[key: string]: string};
 declare type HttpMethod = 'get' | 'GET' | 'post' | 'POST' | 'put' | 'PUT' | 'patch' | 'PATCH' | 'delete' | 'DELETE';
 
 // Redux state(s)
@@ -37,7 +33,7 @@ declare type State = {
 // What persists in local storage
 declare type LocalStorageState = {
   currentUser?: CurrentUserState
-}
+};
 
 // Redux Actions
 declare type Action =
@@ -73,8 +69,7 @@ declare type Route = {
 
 // Functions
 declare type Unit = () => void;
-declare type AsyncVoid = Promise<void>
-
+declare type AsyncVoid = Promise<void>;
 
 // Forms
 declare type FormErrors = null | { fields: { [field: string]: string, message: string } };
@@ -97,13 +92,13 @@ declare class SyntheticEvent {
   nativeEvent: Event,
   preventDefault(): void,
   stopPropagation(): void,
-  +target: EventTarget,
+  target: EventTarget,
   timeStamp: number,
   type: string,
   persist(): void
 }
 declare class SyntheticInputEvent extends SyntheticEvent {
-  +target: HTMLInputElement,
+  target: HTMLInputElement,
   data: any // eslint-disable-line flowtype/no-weak-types
 }
 
