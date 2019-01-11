@@ -133,9 +133,9 @@ const opentokConfig = (dispatch: Dispatch, { userCredentials, userType }: UserDa
     // const { onStateChanged, onStreamChanged, onSignal } = listeners;
 
     // Assign listener for state changes
-    const handlePubSubEvent = (state: CoreStateWithPublisher, event: PubSubEventType) => {
-      tagSubscriberElements(state, event);
-      if (R.equals(event, 'startCall')) {
+    const handlePubSubEvent = (state: CoreStateWithPublisher, eventType: PubSubEventType) => {
+      tagSubscriberElements(state, eventType);
+      if (R.equals(eventType, 'startCall')) {
         const stream = R.path(['publisher', 'stream'], state);
         const connectionData: { userType: UserRole } = JSON.parse(R.path(['connection', 'data'], stream));
         state.publisher.element.classList.add('camera');
