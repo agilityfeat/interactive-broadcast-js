@@ -40,6 +40,14 @@ const getStreamById = (instance: SessionName, streamId: string): Stream => {
 };
 
 /**
+ * Get the userType of a stream
+ */
+const getStreamUserType = (stream: Stream): UserRole => {
+  const data = JSON.parse(stream.connection.data);
+  return data.userType;
+};
+
+/**
  * Get all the subscribers for an instance
  */
 const getAllSubscribers = (instance: SessionName): Subscriber[] =>
@@ -405,4 +413,5 @@ module.exports = {
   unpublish,
   forceDisconnect,
   instanceHasScreen,
+  getStreamUserType,
 };
