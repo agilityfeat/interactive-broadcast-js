@@ -10,7 +10,7 @@ const userTypes: ParticipantType[] = ['host', 'celebrity', 'fan'];
 type Props = {
   status: EventStatus,
   endImage?: EventImage,
-  participants: null | BroadcastParticipants, // publishOnly => null
+  participants: null | BroadcastParticipants,
   userType: 'host' | 'celebrity' | 'producer',
   settings: SettingsState,
   producerHost: boolean
