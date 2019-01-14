@@ -34,7 +34,6 @@ const initialState = (): BroadcastState => ({
   connecting: false,
   connected: false,
   backstageConnected: false,
-  publishOnlyEnabled: false,
   privateCall: null,
   meta: null,
   participants: {
@@ -90,8 +89,6 @@ const broadcast = (state: BroadcastState = initialState(), action: BroadcastActi
       return R.assoc('reconnecting', action.reconnecting, state);
     case 'SET_DISCONNECTED':
       return R.assoc('disconnected', action.disconnected, state);
-    case 'SET_PUBLISH_ONLY_ENABLED':
-      return R.assoc('publishOnlyEnabled', action.publishOnlyEnabled, state);
     case 'BROADCAST_PARTICIPANT_JOINED': {
       const oldState = R.path(['participants', action.participantType], state);
       const newState = R.merge(oldState, participantState(action.stream));
