@@ -60,11 +60,6 @@ const setBroadcastState: ActionCreator = (state: CoreState): BroadcastAction => 
   state,
 });
 
-const setPublishOnly: ActionCreator = (publishOnlyEnabled: boolean): BroadcastAction => ({
-  type: 'SET_PUBLISH_ONLY_ENABLED',
-  publishOnlyEnabled,
-});
-
 const setBroadcastEvent: ActionCreator = (event: BroadcastEvent): BroadcastAction => ({
   type: 'SET_BROADCAST_EVENT',
   event,
@@ -358,17 +353,6 @@ const startCountdown: ThunkActionCreator = (): Thunk =>
     }, 1000);
   });
 
-const publishOnly: ThunkActionCreator = (): Thunk =>
-  async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
-    const enabled = !R.path(['broadcast', 'publishOnlyEnabled'], getState());
-    const newBroadcastState = enabled ? opentok.unsubscribeAll('stage', false, true) : opentok.subscribeAll('stage', false, true);
-    const actions = [
-      setBroadcastState(newBroadcastState),
-      setPublishOnly(enabled),
-    ];
-    R.forEach(dispatch, actions);
-  };
-
 const sendChatMessage: ThunkActionCreator = (chatId: ChatId, message: ChatMessagePartial): Thunk =>
   async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
     const chat: ChatState = R.path(['broadcast', 'chats', chatId], getState());
@@ -433,10 +417,8 @@ module.exports = {
   setReconnected,
   setDisconnected,
   setPrivateCall,
-  setPublishOnly,
   startCountdown,
   endPrivateCall,
-  publishOnly,
   toggleParticipantProperty,
   setBroadcastEventStatus,
   updateParticipants,

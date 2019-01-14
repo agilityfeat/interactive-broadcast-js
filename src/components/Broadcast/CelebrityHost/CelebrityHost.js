@@ -8,7 +8,7 @@ import { toastr } from 'react-redux-toastr';
 import classNames from 'classnames';
 import { validateUser } from '../../../actions/auth';
 import { initializeBroadcast } from '../../../actions/celebrityHost';
-import { setBroadcastState, publishOnly, setBroadcastEventStatus, startCountdown } from '../../../actions/broadcast';
+import { setBroadcastState, setBroadcastEventStatus, startCountdown } from '../../../actions/broadcast';
 import { setInfo, resetAlert } from '../../../actions/alert';
 import CelebrityHostHeader from './components/CelebrityHostHeader';
 import CelebrityHostBody from './components/CelebrityHostBody';
@@ -32,8 +32,7 @@ type BaseProps = {
 };
 type DispatchProps = {
   init: CelebHostInitOptions => void,
-  changeEventStatus: (event: EventStatus) => void,
-  togglePublishOnly: (enable: boolean) => void
+  changeEventStatus: (event: EventStatus) => void
 };
 type Props = InitialProps & BaseProps & DispatchProps;
 /* beautify preserve:end */
@@ -61,12 +60,11 @@ class CelebrityHost extends Component {
   }
 
   render(): ReactComponent {
-    const { userType, togglePublishOnly, broadcast, disconnected, authError, isEmbed, settings } = this.props;
-    const { event, participants, publishOnlyEnabled, privateCall, chats } = broadcast;
+    const { userType, broadcast, disconnected, authError, isEmbed, settings } = this.props;
+    const { event, participants, privateCall, chats } = broadcast;
     const producerChat = R.prop('producer', chats);
     if (authError) return <NoEvents />;
     if (!event) return <Loading />;
-    const availableParticipants = publishOnlyEnabled ? null : participants;
     const mainClassNames = classNames('CelebrityHost', { CelebrityHostEmbed: isEmbed });
     return (
       <div className={mainClassNames}>
@@ -76,8 +74,6 @@ class CelebrityHost extends Component {
             name={event.name}
             status={event.status}
             userType={userType}
-            togglePublishOnly={togglePublishOnly}
-            publishOnlyEnabled={publishOnlyEnabled}
             privateCall={privateCall}
             disconnected={disconnected}
           />
@@ -85,7 +81,7 @@ class CelebrityHost extends Component {
             settings={settings}
             producerHost={event.producerHost}
             endImage={event.endImage}
-            participants={availableParticipants}
+            participants={participants}
             status={event.status}
             userType={userType}
           />
@@ -116,7 +112,6 @@ const mapDispatchToProps: MapDispatchToProps<DispatchProps> = (dispatch: Dispatc
   init: (options: CelebHostInitOptions): void => dispatch(initializeBroadcast(options)),
   changeEventStatus: (status: EventStatus): void => dispatch(setBroadcastEventStatus(status)),
   showCountdown: (): void => dispatch(startCountdown()),
-  togglePublishOnly: (enable: boolean): void => dispatch(publishOnly()),
 });
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(CelebrityHost));

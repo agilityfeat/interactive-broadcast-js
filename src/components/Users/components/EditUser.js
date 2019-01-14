@@ -181,15 +181,6 @@ class EditUser extends Component {
     const {
       email,
       displayName,
-      // otApiKey,
-      // otSecret,
-      // hls,
-      // httpSupport,
-      // audioOnlyEnabled,
-      // embedEnabled,
-      // registrationEnabled,
-      // fileSharingEnabled,
-      // siteColor,
     } = fields;
     const { toggleEditPanel, newUser, currentUser } = this.props;
     const { handleSubmit, handleChange } = this;
