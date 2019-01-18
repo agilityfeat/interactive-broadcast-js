@@ -8,7 +8,6 @@
 }
 
 .ViewEvent .ViewEvent-header a {
-    color: #00a3e3;
     font-size: 13px;
 }
 
@@ -18,4 +17,36 @@
     font-size: 22px;
     font-weight: 300;
     margin: 5px 0;
+}
+
+.ViewEvent .ViewEvent-video-flex {
+	margin-top: 30px;
+	margin-left: 10%;
+	margin-right: 10%;
+}
+
+.ViewEvent .ViewEvent-video-flex {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	position: relative;
+	overflow: hidden;
+}
+
+.ViewEvent video {
+	max-width: 80%;
+	min-width: 100%;
+    background-color: var(--main-header-bg);
+}
+
+.ViewEvent .img-container {
+	position: absolute;
+	height: 100%;
+	display: flex;
+	flex-direction: row;
+	align-content: center;
+	align-items: center;
+}
+
+.ViewEvent img {
 }
