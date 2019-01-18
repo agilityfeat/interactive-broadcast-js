@@ -13,7 +13,8 @@ type InitialProps = { params: { id?: EventId } };
 type BaseProps = {
   user: CurrentUserState,
   events: null | BroadcastEventMap,
-  eventId: null | EventId
+  eventId: null | EventId,
+  siteLogo: null | string
 };
 type DispatchProps = {
   loadEvents: (string, boolean) => void
@@ -31,19 +32,24 @@ class UpdateEvent extends Component {
     }
   }
   render(): ReactComponent {
-    const { eventId } = this.props;
-    const event = R.pathOr(null, ['events', eventId], this.props);
+    const { eventId, events, siteLogo } = this.props;
+    const event = events && R.find(R.propEq('id', eventId))(events);
     if (!event) return <Loading />;
 
-    const poster = R.pathOr(defaultImg, ['startImage', 'url'], event);
+    const poster = R.pathOr(siteLogo || defaultImg, ['startImage', 'url'], event);
     return (
       <div className="ViewEvent">
         <div className="ViewEvent-header">
           <Link to="/admin">Back to Events</Link>
           <h3>{event.name}</h3>
         </div>
-        <div>
-          <video src={event.archiveUrl} preload="metadata" poster={poster} controls />
+        <div className="ViewEvent-video-container">
+          <div className="ViewEvent-video-flex">
+            <div className="img-container">
+              <img alt="preview video" src={poster} />
+            </div>
+            <video src={event.archiveUrl} preload="metadata" poster="data:image/gif,AAAA" controls />
+          </div>
         </div>
       </div>
     );
@@ -54,6 +60,7 @@ const mapStateToProps = (state: State, ownProps: InitialProps): BaseProps => ({
   eventId: R.pathOr(null, ['params', 'id'], ownProps),
   events: R.path(['events', 'map'], state),
   domainId: R.path(['settings', 'id'], state),
+  siteLogo: R.pathOr(null, ['settings', 'siteLogo', 'url'], state),
   user: state.currentUser,
   state,
 });
