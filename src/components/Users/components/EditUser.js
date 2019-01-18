@@ -132,7 +132,7 @@ class EditUser extends Component {
         const ref = firebase.storage().ref().child(`eventImages/${imageId}`);
         try {
           const snapshot: * = await ref.put(file);
-          const imageData = { id: imageId, url: snapshot.downloadURL };
+          const imageData = { id: imageId, url: await snapshot.ref.getDownloadURL() };
           this.setState({ fields: R.assoc(field, imageData, this.state.fields) });
           this.props.uploadImageSuccess(title);
         } catch (error) {
