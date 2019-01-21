@@ -15,12 +15,13 @@ type Props = BaseProps & DispatchProps;
 /* beautify preserve:end */
 
 
-class Logout extends React.Component {
+class Logout extends React.Component<Props> {
   constructor(props: Props) {
     super(props);
     this.handleLogout = this.handleLogout.bind(this);
   }
 
+  handleLogout: UnitPromise;
   async handleLogout(): AsyncVoid {
     await this.props.leaveLine();
     await this.props.logOutUser();
@@ -28,10 +29,12 @@ class Logout extends React.Component {
 
   render(): ReactComponent {
     const { currentUser } = this.props;
+    const to = currentUser && currentUser.isViewer ? null : '/admin';
+
     return (
       currentUser &&
         <span className="Logout">
-          <Link to="/admin" className="link white">{currentUser.displayName}</Link>
+          <Link to={to} className="link white">{currentUser.displayName}</Link>
           <span className="divider">|</span>
           <button className="Logout-btn btn" onClick={this.handleLogout}>Logout <Icon name="sign-out" size="lg" /></button>
         </span>
@@ -40,7 +43,7 @@ class Logout extends React.Component {
 }
 
 
-const mapStateToProps = (state: { currentUser: User }): Props => ({
+const mapStateToProps = (state: { currentUser: User }): BaseProps => ({
   currentUser: R.prop('currentUser', state),
   event: R.path(['broadcast', 'event'], state),
 });
