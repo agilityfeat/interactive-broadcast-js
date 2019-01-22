@@ -14,23 +14,39 @@ type BaseProps = {
   user: CurrentUserState,
   events: null | BroadcastEventMap,
   eventId: null | EventId,
-  siteLogo: null | string
+  siteLogo: null | string,
+  domainId: string
 };
 type DispatchProps = {
-  loadEvents: (string, boolean) => void
+  loadEvents: (string) => void
 };
 type Props = InitialProps & BaseProps & DispatchProps;
+type UpdateEventState = { showImage: boolean };
 /* beautify preserve:end */
 
-class UpdateEvent extends Component {
-  props: Props;
+class UpdateEvent extends Component<Props, UpdateEventState> {
+  constructor(props: Props) {
+    super(props);
+
+    this.state = {
+      showImage: true,
+    };
+
+    this.imageToggle = this.imageToggle.bind(this);
+  }
 
   componentDidMount() {
     if (!this.props.events) {
-      const { user, domainId } = this.props;
-      this.props.loadEvents(domainId, user.superAdmin);
+      const { domainId } = this.props;
+      this.props.loadEvents(domainId);
     }
   }
+
+  imageToggle: Unit;
+  imageToggle() {
+    this.setState({ showImage: !this.state.showImage });
+  }
+
   render(): ReactComponent {
     const { eventId, events, siteLogo } = this.props;
     const event = events && R.prop(eventId, events);
@@ -48,7 +64,15 @@ class UpdateEvent extends Component {
             <div className="img-container">
               <img alt="preview video" src={poster} />
             </div>
-            <video src={event.archiveUrl} preload="metadata" poster="data:image/gif,AAAA" controls />
+            <video
+              onPlay={this.imageToggle}
+              onPause={this.imageToggle}
+              src={event.archiveUrl}
+              style={{ zIndex: this.state.showImage ? 'auto' : 1 }}
+              preload="metadata"
+              poster="data:image/gif,AAAA"
+              controls
+            />
           </div>
         </div>
       </div>
