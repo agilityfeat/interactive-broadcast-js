@@ -8,7 +8,6 @@ import shortid from 'shortid';
 import { connect } from 'react-redux';
 import { createViewer } from '../../../services/api';
 import { signInViewer } from '../../../actions/auth';
-import { initializeBroadcast } from '../../../actions/fan';
 import './RegisterViewerForm.css';
 
 /* beautify preserve:start */
@@ -17,11 +16,11 @@ type BaseProps = { auth: AuthState, currentUser: User };
 type InitialProps = {
   settings: Settings,
   error: boolean,
-  onSuccess: (options: AlertPartialOptions) => void
+  onSuccess: (options: AlertPartialOptions) => void,
+  eventMode: boolean
 };
 
 type DispatchProps = {
-  init: FanInitOptions => void,
   authenticateUser: (credentials: AuthCredentials) => void
  };
 
@@ -87,17 +86,7 @@ class RegisterViewerForm extends Component {
   }
 
   componentDidUpdate(prevProps: Props) {
-    const { settings, userUrl, currentUser, auth, eventMode } = this.props;
-
-    if (!prevProps.auth.authToken && auth.authToken) {
-      if (eventMode) {
-        this.props.init({
-          domainId: settings.id,
-          userType: 'fan',
-          userUrl,
-        });
-      }
-    }
+    const { currentUser, eventMode } = this.props;
 
     if (!prevProps.currentUser && currentUser && !eventMode) {
       browserHistory.replace('/events');
@@ -149,7 +138,6 @@ const mapStateToProps = (state: State): BaseProps => ({
 
 const mapDispatchToProps: MapDispatchToProps<DispatchProps> = (dispatch: Dispatch): DispatchProps =>
   ({
-    init: (options: FanInitOptions): void => dispatch(initializeBroadcast(options)),
     authenticateUser: (credentials: AuthCredentials) => {
       dispatch(signInViewer(credentials));
     },
