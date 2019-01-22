@@ -29,6 +29,7 @@ body {
   position: fixed;
   bottom: 0;
   right: 15px;
+  z-index: 1;
 }
 
 @media (min-width: 768px) {
