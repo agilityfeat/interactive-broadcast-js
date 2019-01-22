@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import { withRouter, Link } from 'react-router';
 import Icon from 'react-fontawesome';
 import { signOut } from '../../actions/auth';
+import { disconnectFromInstance } from '../../services/opentok';
 import { leaveTheLine } from '../../actions/fan';
 import './Logout.css';
 
@@ -23,6 +24,7 @@ class Logout extends React.Component<Props> {
 
   handleLogout: UnitPromise;
   async handleLogout(): AsyncVoid {
+    await disconnectFromInstance('stage');
     await this.props.leaveLine();
     await this.props.logOutUser();
   }
@@ -51,7 +53,7 @@ const mapStateToProps = (state: { currentUser: User }): BaseProps => ({
 const mapDispatchToProps: MapDispatchToProps<DispatchProps> = (dispatch: Dispatch): DispatchProps =>
   ({
     logOutUser: (): void => dispatch(signOut()),
-    leaveLine: (): void => dispatch(leaveTheLine),
+    leaveLine: (): void => dispatch(leaveTheLine()),
   });
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Logout));
