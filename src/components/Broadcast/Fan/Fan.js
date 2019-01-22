@@ -18,7 +18,11 @@ import { disconnect } from '../../../services/opentok';
 import './Fan.css';
 
 /* beautify preserve:start */
-type InitialProps = { params: { fanUrl: string, domainId: string } };
+type InitialProps = {
+  fitMode: boolean,
+  params: { fanUrl: string, domainId: string }
+};
+
 type BaseProps = {
   domainId: string,
   userType: 'host' | 'celeb',
@@ -37,8 +41,8 @@ type BaseProps = {
   authError: Error,
   isEmbed: boolean,
   publisherMinimized: boolean,
-  isAnonymous: boolean,
-  settings: Settings
+  settings: Settings,
+  user: User | null
 };
 type DispatchProps = {
   init: FanInitOptions => void,
@@ -51,7 +55,7 @@ type DispatchProps = {
 type Props = InitialProps & BaseProps & DispatchProps;
 /* beautify preserve:end */
 
-class Fan extends Component {
+class Fan extends Component<Props> {
 
   props: Props;
   init: Unit;
@@ -77,8 +81,19 @@ class Fan extends Component {
 
   componentWillReceiveProps(nextProps: Props) {
     // Need to check for change to event status here
+    const { settings, domainId, userType, user, userUrl, init, fitMode } = this.props;
     if (R.pathEq(['event', 'status'], 'closed', nextProps)) { disconnect(); }
+    if (!user && nextProps.user && nextProps.user.isViewer) {
+      const options = {
+        domainId: domainId === settings.id ? domainId : null,
+        userType,
+        userUrl,
+        fitMode,
+      };
+      init(options);
+    }
   }
+
 
   render(): ReactComponent {
     const { // $FlowFixMe
