@@ -22,12 +22,13 @@ type BaseProps = {
   user: User,
   event: BroadcastEvent,
   errors: null | { fields: {[field: string]: boolean}, message: string },
-  submitting: false
+  submitting: false,
+  domainId: string
 };
 type DispatchProps = {
   uploadImage: Unit,
   uploadImageSuccess: Unit,
-  uploadImageCancel: Unit
+  uploadCancel: Unit
 };
 type Props = BaseProps & DispatchProps;
 /* beautify preserve:end */
@@ -143,12 +144,12 @@ class EventForm extends Component<Props> {
       const ref = firebase.storage().ref().child(`eventImages/${imageId}`);
       try {
         const snapshot: * = await ref.put(file);
-        const imageData = { id: imageId, url: snapshot.downloadURL };
+        const imageData = { id: imageId, url: await snapshot.ref.getDownloadURL() };
         this.setState({ fields: R.assoc(field, imageData, this.state.fields) });
         this.props.uploadImageSuccess();
       } catch (error) {
         console.log('Error uploading image', error);
-        this.props.uploadImageCancel();
+        this.props.uploadCancel();
       }
     }
   }

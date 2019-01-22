@@ -33,7 +33,7 @@ class UpdateEvent extends Component {
   }
   render(): ReactComponent {
     const { eventId, events, siteLogo } = this.props;
-    const event = events && R.find(R.propEq('id', eventId))(events);
+    const event = events && R.prop(eventId, events);
     if (!event) return <Loading />;
 
     const poster = R.pathOr(siteLogo || defaultImg, ['startImage', 'url'], event);
