@@ -1,5 +1,4 @@
 // @flow
-import React from 'react';
 /* eslint no-undef: "off" */
 /* beautify preserve:start */
 
@@ -27,7 +26,8 @@ declare type State = {
   events: BroadcastEventMap,
   auth: AuthState,
   fan: FanState,
-  broadcast: BroadcastState
+  broadcast: BroadcastState,
+  settings: Settings
 };
 
 // What persists in local storage
@@ -53,11 +53,11 @@ declare type Thunk = (dispatch: Dispatch, getState: GetState) => any; // eslint-
 declare type ThunkActionCreator = (...*) => Thunk;
 
 // React Component
-declare type ReactComponent = React$Element<*> | React.CElement | null;
+declare type ReactComponent = React$Element<*> | null;
 
 declare type Route = {
   props: {
-    component?: ReactClass<*>,
+    component?: ReactComponent,
     render?: (router: Object) => React$Element<*>, // eslint-disable-line flowtype/no-weak-types
     children?: (router: Object) => React$Element<*>, // eslint-disable-line flowtype/no-weak-types
     path?: string,
@@ -70,6 +70,7 @@ declare type Route = {
 // Functions
 declare type Unit = () => void;
 declare type AsyncVoid = Promise<void>;
+declare type UnitPromise = () => AsyncVoid;
 
 // Forms
 declare type FormErrors = null | { fields: { [field: string]: string, message: string } };
@@ -96,10 +97,6 @@ declare class SyntheticEvent {
   timeStamp: number,
   type: string,
   persist(): void
-}
-declare class SyntheticInputEvent extends SyntheticEvent {
-  target: HTMLInputElement,
-  data: any // eslint-disable-line flowtype/no-weak-types
 }
 
 // Redux
