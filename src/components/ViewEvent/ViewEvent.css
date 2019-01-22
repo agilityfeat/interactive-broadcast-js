@@ -20,9 +20,7 @@
 }
 
 .ViewEvent .ViewEvent-video-flex {
-	margin-top: 30px;
-	margin-left: 10%;
-	margin-right: 10%;
+	margin: 30px 10%;
 }
 
 .ViewEvent .ViewEvent-video-flex {
@@ -44,6 +42,16 @@
 	height: 100%;
 	display: flex;
 	flex-direction: row;
+	align-content: center;
+	align-items: center;
+	width: 100%;
+    background-color: var(--main-header-bg);
+}
+
+.ViewEvent .img-center {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
 	align-content: center;
 	align-items: center;
 }

@@ -32,7 +32,7 @@ class UpdateEvent extends Component<Props, UpdateEventState> {
       showImage: true,
     };
 
-    this.imageToggle = this.imageToggle.bind(this);
+    this.imageSet = this.imageSet.bind(this);
   }
 
   componentDidMount() {
@@ -42,9 +42,11 @@ class UpdateEvent extends Component<Props, UpdateEventState> {
     }
   }
 
-  imageToggle: Unit;
-  imageToggle() {
-    this.setState({ showImage: !this.state.showImage });
+  imageSet: (showImage: boolean) => Unit;
+  imageSet(showImage: boolean): Unit {
+    return () => {
+      this.setState({ showImage });
+    };
   }
 
   render(): ReactComponent {
@@ -62,11 +64,13 @@ class UpdateEvent extends Component<Props, UpdateEventState> {
         <div className="ViewEvent-video-container">
           <div className="ViewEvent-video-flex">
             <div className="img-container">
-              <img alt="preview video" src={poster} />
+              <div className="img-center">
+                <img alt="preview video" src={poster} />
+              </div>
             </div>
             <video
-              onPlay={this.imageToggle}
-              onPause={this.imageToggle}
+              onPlay={this.imageSet(false)}
+              onEnded={this.imageSet(true)}
               src={event.archiveUrl}
               style={{ zIndex: this.state.showImage ? 'auto' : 1 }}
               preload="metadata"
