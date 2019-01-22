@@ -24,8 +24,10 @@ class Logout extends React.Component<Props> {
 
   handleLogout: UnitPromise;
   async handleLogout(): AsyncVoid {
+    const { currentUser } = this.props;
+
     await disconnectFromInstance('stage');
-    await this.props.leaveLine();
+    if (currentUser.isViewer) { await this.props.leaveLine(); }
     await this.props.logOutUser();
   }
 
