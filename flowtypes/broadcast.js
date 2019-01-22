@@ -128,7 +128,7 @@ declare type FanParticipantType = 'backstageFan' | 'fan';
 declare type FanType = 'activeFan' | FanParticipantType;
 declare type ParticipantType = FanParticipantType | 'host' | 'celebrity';
 
-declare type FanInitOptions = { adminId: UserId, userUrl: string };
+declare type FanInitOptions = { domainId: string, userUrl: string };
 declare type CelebHostInitOptions = FanInitOptions & { userType: 'celebrity' | 'host' };
 declare type ActiveFanOrderUpdate = { newIndex: number, oldIndex: number };
 
