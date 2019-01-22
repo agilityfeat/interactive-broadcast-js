@@ -31,6 +31,7 @@ body {
   position: fixed;
   bottom: 0;
   right: 15px;
+  z-index: 1;
 }
 
 /* Embed styles */

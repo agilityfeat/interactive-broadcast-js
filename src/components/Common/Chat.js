@@ -120,6 +120,7 @@ class Chat extends Component {
             </div>
             <form className="ChatForm" onSubmit={handleSubmit}>
               <input
+                autoComplete="off"
                 type="text"
                 name="newMessageText"
                 placeholder="Write a message . . ."
