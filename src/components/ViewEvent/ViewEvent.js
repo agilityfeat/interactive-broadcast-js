@@ -62,7 +62,9 @@ class UpdateEvent extends Component<Props, UpdateEventState> {
         <div className="ViewEvent-video-container">
           <div className="ViewEvent-video-flex">
             <div className="img-container">
-              <img alt="preview video" src={poster} />
+              <div className="img-center">
+                <img alt="preview video" src={poster} />
+              </div>
             </div>
             <video
               onPlay={this.imageToggle}
