@@ -23,7 +23,7 @@ declare type ManageDomainsAction =
 
 
 declare type DomainFormData = {
-  id: DomainId,
+  id: string,
   hls: boolean,
   httpSupport: boolean,
   audioOnlyEnabled: boolean,

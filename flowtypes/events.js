@@ -64,6 +64,7 @@ declare type EventsState = {
   active: null | EventId
 };
 declare type EventsAction =
+  { type: 'ADD_EVENT', event: BroadcastEvent } |
   { type: 'SET_EVENTS', events: BroadcastEventMap } |
   { type: 'SET_MOST_RECENT_EVENT', event: BroadcastEvent } |
   { type: 'UPDATE_EVENT', event: BroadcastEvent } |
