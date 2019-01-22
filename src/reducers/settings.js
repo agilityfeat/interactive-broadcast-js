@@ -7,12 +7,12 @@ const initialState: Settings = {
   screenSharingEnabled: false,
   siteColor: null,
   siteLogo: null,
-  siteFavIcon: null,
+  siteFavicon: null,
   otApiKey: null,
   otSecret: null,
 };
 
-const settings = (state: Settings = initialState, action: UserAction): SettingsState => {
+const settings = (state: Settings = initialState, action: SettingsAction): SettingsState => {
   switch (action.type) {
     case 'SET_SITE_SETTINGS':
       return { ...action.settings, loading: false };

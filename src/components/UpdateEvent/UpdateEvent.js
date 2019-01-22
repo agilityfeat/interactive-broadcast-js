@@ -13,7 +13,9 @@ type InitialProps = { params: { id?: EventId } };
 type BaseProps = {
   user: CurrentUserState,
   events: null | BroadcastEventMap,
-  eventId: null | EventId
+  eventId: null | EventId,
+  settings: Settings,
+  domainId: string
 };
 type DispatchProps = {
   loadEvents: (string, boolean) => void,
@@ -24,7 +26,7 @@ type DispatchProps = {
 type Props = InitialProps & BaseProps & DispatchProps;
 /* beautify preserve:end */
 
-class UpdateEvent extends Component {
+class UpdateEvent extends Component<Props> {
   props: Props;
   state: {
     errors: null | { fields: { [field: string]: boolean }, message: string },
@@ -47,7 +49,7 @@ class UpdateEvent extends Component {
   componentDidMount() {
     const { settings, domainId, user, events } = this.props;
 
-    if (!events) {
+    if (!events && user) {
       this.props.loadEvents(domainId, user.superAdmin);
     }
 
@@ -131,6 +133,7 @@ class UpdateEvent extends Component {
     const { eventId } = this.props;
     const { errors } = this.state;
     const event = R.pathOr(null, ['events', eventId], this.props);
+
     return (
       <div className="UpdateEvent">
         <div className="UpdateEvent-header admin-page-header">

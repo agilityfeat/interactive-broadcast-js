@@ -226,7 +226,7 @@ const getSampleWindowSize = (samples: Snapshot[]): number => {
 
 class BandwidthCalculator {
 
-  intervalId: number;
+  intervalId: IntervalID;
   pollingInterval: number;
   windowSize: number;
   subscriber: TestSubscriber;

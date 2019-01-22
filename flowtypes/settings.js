@@ -1,7 +1,9 @@
+// @flow
+
 declare type Settings = {
-  id?: string,
+  id?: string | null,
   loading: boolean,
-  siteColor: string,
+  siteColor: string | null,
   registrationEnabled?: boolean,
   screenSharingEnabled?: boolean,
   fileSharingEnabled?: boolean,
@@ -19,7 +21,7 @@ declare type Settings = {
 
 declare type SettingsAction =
     { type: 'LISTEN_SITE_SETTINGS' } |
-    { type: 'SET_SITE_SETTINGS', settings: SiteSettings } |
+    { type: 'SET_SITE_SETTINGS', settings: Settings } |
     { type: 'SITE_SETTINGS_ERR' };
 
 declare type SettingsState = Settings | null;
