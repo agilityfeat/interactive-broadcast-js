@@ -69,14 +69,14 @@ const eventFields = [
   'producerHost',
 ];
 
-class EventForm extends Component {
+class EventForm extends Component<Props> {
 
   props: Props;
   state: EventFormState;
   handleSubmit: Unit;
   handleChange: Unit;
-  uploadFile: Unit;
-  updateURLs: Unit;
+  uploadFile: UnitPromise;
+  updateURLs: UnitPromise;
   onCopy: string => void;
   onUpdate: string => void;
   onUploadFinish: Unit;
@@ -102,6 +102,7 @@ class EventForm extends Component {
       },
       submitting: false,
     };
+
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.uploadFile = this.uploadFile.bind(this);
@@ -120,7 +121,7 @@ class EventForm extends Component {
       this.setState({ submitting: false });
     }
     if (!R.isNil(nextProps.event)) {
-      this.setState({ fields: R.pick(eventFields, this.props.event) }, this.updateURLs);
+      this.setState({ fields: R.pick(eventFields, nextProps.event) }, this.updateURLs);
     }
   }
 
