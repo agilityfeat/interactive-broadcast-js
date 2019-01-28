@@ -10,7 +10,7 @@ import { leaveTheLine } from '../../actions/fan';
 import './Logout.css';
 
 /* beautify preserve:start */
-type BaseProps = { event: Event, currentUser: User };
+type BaseProps = { event: Event, currentUser: User, connected: boolean };
 type DispatchProps = { leaveLine: Unit, logOutUser: Unit };
 type Props = BaseProps & DispatchProps;
 /* beautify preserve:end */
@@ -24,10 +24,10 @@ class Logout extends React.Component<Props> {
 
   handleLogout: UnitPromise;
   async handleLogout(): AsyncVoid {
-    const { currentUser } = this.props;
+    const { connected, currentUser } = this.props;
 
     await disconnectFromInstance('stage');
-    if (currentUser.isViewer) { await this.props.leaveLine(); }
+    if (connected && currentUser.isViewer) { await this.props.leaveLine(); }
     await this.props.logOutUser();
   }
 
@@ -50,6 +50,7 @@ class Logout extends React.Component<Props> {
 const mapStateToProps = (state: { currentUser: User }): BaseProps => ({
   currentUser: R.prop('currentUser', state),
   event: R.path(['broadcast', 'event'], state),
+  connected: R.path(['broadcast', 'connected'], state),
 });
 
 const mapDispatchToProps: MapDispatchToProps<DispatchProps> = (dispatch: Dispatch): DispatchProps =>
