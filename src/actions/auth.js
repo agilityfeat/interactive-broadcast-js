@@ -81,7 +81,7 @@ const signOut: ThunkActionCreator = (): Thunk =>
     saveState({ currentUser: null });
 
     firebase.auth().signOut().then(() => {
-      if (!currentUser.isViewer) window.location.href = '/';
+      if (!currentUser.isViewer) window.location.href = '/admin';
     });
   };
 

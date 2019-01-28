@@ -169,7 +169,7 @@ const disconnectFromInstance = (instanceToDisconnect: SessionName) => {
     instances[instanceToDisconnect].off();
     instances[instanceToDisconnect].disconnect();
   } catch (error) {
-    console.log('disconnect error', error);
+    console.log('disconnect error', error.message);
   }
 };
 
