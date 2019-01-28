@@ -13,7 +13,7 @@ type DispatchProps = { loadEvents: UserId => void };
 type Props = BaseProps & DispatchProps;
 /* beautify preserve:end */
 
-class Dashboard extends Component {
+class Dashboard extends Component<Props> {
   props: Props;
 
   componentDidMount() {
