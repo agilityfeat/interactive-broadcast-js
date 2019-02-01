@@ -126,7 +126,7 @@ declare type FanState = {
 
 declare type FanParticipantType = 'backstageFan' | 'fan';
 declare type FanType = 'activeFan' | FanParticipantType;
-declare type ParticipantType = FanParticipantType | 'host' | 'celebrity';
+declare type ParticipantType = 'producer' | FanParticipantType | 'host' | 'celebrity';
 
 declare type FanInitOptions = { domainId: string, userUrl: string };
 declare type CelebHostInitOptions = FanInitOptions & { userType: 'celebrity' | 'host' };
@@ -136,20 +136,46 @@ declare type ActiveFanOrderUpdate = { newIndex: number, oldIndex: number };
  * Chat Types
  */
 
-declare type ChatUser = 'activeFan' | 'producer' | ParticipantType;
+declare type ChatUser = 'activeFan' | ParticipantType;
+declare type ChatFile = {
+  userId: string | null,
+  isFile: boolean,
+  from: ConnectionId,
+  to: ConnectionId,
+  isMe: boolean,
+  url: string,
+  type: string,
+  name: string,
+  timestamp: number
+};
+
 declare type ChatMessage = {
+  isFile: boolean | null,
   from: ConnectionId,
   to: ConnectionId,
   isMe: boolean,
   text: string,
   timestamp: number
 };
+
+declare type ChatFilePartial = {
+  isFile: true,
+  type: string,
+  url: string,
+  timestamp: number,
+  fromType: ChatUser,
+  fromId?: UserId
+};
+
 declare type ChatMessagePartial = {
   text: string,
   timestamp: number,
   fromType: ChatUser,
   fromId?: UserId
 };
+
+declare type ChatPartial = ChatMessagePartial | ChatFilePartial;
+
 declare type ChatState = {
   chatId: ParticipantType | UserId,
   session: SessionName,
