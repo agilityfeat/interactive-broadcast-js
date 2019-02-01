@@ -16,7 +16,8 @@ declare class Headers {
     values(): Iterator<string>
 }
 
-type HeadersInit = Headers | {[key: string]: string};
+declare type FileData = { id: string, url: string };
+declare type HeadersInit = Headers | {[key: string]: string};
 declare type HttpMethod = 'get' | 'GET' | 'post' | 'POST' | 'put' | 'PUT' | 'patch' | 'PATCH' | 'delete' | 'DELETE';
 
 // Redux state(s)
