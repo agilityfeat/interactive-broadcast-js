@@ -12,6 +12,20 @@
     height: 1px;
 }
 
+.ChatImage {
+	max-width: 100%;
+	max-height: auto;
+}
+
+.ChatFileUpload {
+	padding: 0px 5px;
+}
+
+.ChatVideo {
+	max-width: 100%;
+	max-height: auto;
+}
+
 .ChatHeader {
     display: flex;
     justify-content: space-between;
@@ -29,6 +43,11 @@
 
 .ChatHeader .btn.minimize:hover {
     text-decoration: underline;
+}
+
+.ChatActionsContainer {
+	display: flex;
+	justify-content: flex-start;
 }
 
 .ChatActions {
