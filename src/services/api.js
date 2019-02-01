@@ -115,6 +115,11 @@ const getEventWithCredentials = (data: { domainId: string, userType: UserRole },
 const getEmbedEventWithCredentials = (data: { domainId: string, userType: UserRole }, authToken: AuthToken): Promise<HostCelebEventData> =>
   post(`event/create-token/${data.domainId}/${data.userType}`, data, true, authToken);
 
+/** Files */
+const saveSharedFile = (data: ChatFile): Promise<SharedFile> => post('file', data);
+const getSharedFiles = (domainId: string): Promise<SharedFile> => get(`file/${domainId}`);
+const getUserSharedFiles = (domainId: string, userId: string): Promise<SharedFile> => get(`file/${domainId}/${userId}`);
+
 /** Domains */
 const getAllDomains = (): Promise<[Domain]> => get('domain');
 const getDomain = (id: string): Promise<Domain> => get(`domain/${id}`);
@@ -126,6 +131,7 @@ const deleteDomain = (id: string): Promise<*> => del(`domain/${id}`);
 module.exports = {
   createDomain,
   createEvent,
+  saveSharedFile,
   createUser,
   createViewer,
   deleteDomain,
@@ -145,10 +151,12 @@ module.exports = {
   getEventsByDomain,
   getEventWithCredentials,
   getMostRecentEvent,
+  getSharedFiles,
   getUser,
+  getUserSharedFiles,
   getViewer,
-  sendViewerResetEmail,
   resetViewerPassword,
+  sendViewerResetEmail,
   updateDomain,
   updateEvent,
   updateEventStatus,

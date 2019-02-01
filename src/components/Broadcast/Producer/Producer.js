@@ -59,6 +59,7 @@ class Producer extends Component {
     const { toggleSidePanel } = this;
     const { showingSidePanel } = this.state;
     const { broadcast } = this.props;
+
     return (
       <div className="Producer">
         <NetworkReconnect />

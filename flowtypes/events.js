@@ -39,6 +39,15 @@ declare type BroadcastEvent = {
   updatedAt: string
 }
 
+declare type EventFile = {
+  url: string,
+  id: string,
+  type: string,
+  name: string,
+  eventId: string,
+  userId: string
+}
+
 declare type ActiveBroadcast = {
   hlsUrl?: string,
   name?: string,

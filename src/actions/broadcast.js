@@ -1,7 +1,7 @@
 // @flow
 import R from 'ramda';
 import moment from 'moment';
-import { setInfo, resetAlert } from './alert';
+import { setInfo, setSuccess, resetAlert } from './alert';
 import opentok from '../services/opentok';
 import firebase from '../services/firebase';
 import { alterAllButScreen, isUserOnStage, alterCameraElement } from '../services/util';
@@ -125,6 +125,37 @@ const setParticipantAV: ThunkActionCreator = (property: ParticipantAVProperty, p
         break;
     }
   };
+
+
+const uploadFileStart: ThunkActionCreator = (title: string): Thunk =>
+  async (dispatch: Dispatch): null => {
+    const options: AlertPartialOptions = {
+      title,
+      text: 'This may take a few seconds . . .',
+      showConfirmButton: false,
+    };
+
+    dispatch(setInfo(options));
+  };
+
+
+const uploadFileCancel: ThunkActionCreator = (): Thunk =>
+  (dispatch: Dispatch) => {
+    dispatch(resetAlert());
+  };
+
+
+const uploadFileSuccess: ThunkActionCreator = (title: string): Thunk =>
+  (dispatch: Dispatch) => {
+    const options: AlertPartialOptions = {
+      title,
+      text: 'Your file has been uploaded.',
+      showConfirmButton: true,
+      onConfirm: (): void => dispatch(resetAlert()),
+    };
+    dispatch(setSuccess(options));
+  };
+
 
 /**
  * Toggle a participants audio, video, or volume
@@ -264,6 +295,7 @@ const monitorVolume: ThunkActionCreator = (): Thunk =>
     const event = R.prop('event', getState().broadcast);
     const { domainId, fanUrl } = event;
     const ref = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/volume`);
+
     ref.on('value', (snapshot: firebase.database.DataSnapshot) => {
       const volumeMap = snapshot.val();
       const participants = R.prop('participants', getState().broadcast);
@@ -277,6 +309,7 @@ const monitorVolume: ThunkActionCreator = (): Thunk =>
       }, volumeMap);
     });
   };
+
 
 const monitorScreen: ThunkActionCreator = (isProducer: boolean = false): Thunk =>
   (dispatch: Dispatch, getState: GetState) => {
@@ -353,7 +386,7 @@ const startCountdown: ThunkActionCreator = (): Thunk =>
     }, 1000);
   });
 
-const sendChatMessage: ThunkActionCreator = (chatId: ChatId, message: ChatMessagePartial): Thunk =>
+const sendChatMessage: ThunkActionCreator = (chatId: ChatId, message: ChatPartial): Thunk =>
   async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
     const chat: ChatState = R.path(['broadcast', 'chats', chatId], getState());
     const to = chatId === 'producer' ? opentok.getConnectionByUserType(chat.session, 'producer') : chat.to.connection;
@@ -419,6 +452,9 @@ module.exports = {
   setPrivateCall,
   startCountdown,
   endPrivateCall,
+  uploadFileStart,
+  uploadFileSuccess,
+  uploadFileCancel,
   toggleParticipantProperty,
   setBroadcastEventStatus,
   updateParticipants,
