@@ -135,16 +135,18 @@ const broadcast = (state: BroadcastState = initialState(), action: BroadcastActi
         const activeOrBackstageFan = R.either(R.propEq('toType', 'activeFan'), R.propEq('toType', 'backstageFan'));
         const minimizeActiveFanChat = (chat: ChatState): ChatState => activeOrBackstageFan(chat) ? R.assoc('minimized', true, chat) : chat;
         const minimizedChats = R.assoc('chats', R.map(minimizeActiveFanChat, state.chats), state);
-        const newChat = initialChatState('producer', undefined, action.toType, action.fan);
+
+        const newChat = initialChatState('producer', action.fromId, action.toType, action.fan);
         return R.assocPath(['chats', action.fan.id], newChat, minimizedChats);
       }
     case 'START_NEW_PARTICIPANT_CHAT':
       {
         const { participant, participantType } = action;
-        return R.assocPath(['chats', participantType], initialChatState('producer', undefined, participantType, participant), state);
+        return R.assocPath(['chats', participantType], initialChatState('producer', action.fromId, participantType, participant), state);
       }
-    case 'START_NEW_PRODUCER_CHAT':
+    case 'START_NEW_PRODUCER_CHAT': {
       return R.assocPath(['chats', 'producer'], initialChatState(action.fromType, action.fromId, 'producer', action.producer), state);
+    }
     case 'UPDATE_CHAT_PROPERTY':
       return R.assocPath(['chats', action.chatId, action.property], action.update, state);
     case 'DISPLAY_CHAT':
