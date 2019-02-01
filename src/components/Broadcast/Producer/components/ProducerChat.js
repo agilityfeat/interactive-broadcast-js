@@ -79,10 +79,10 @@ class ActiveFanChats extends Component {
       const { callAction, callText } = getPrivateCallAction();
 
       return (
-        <div className="ChatActions">
+        <span className="ChatActionsContainer">
           <button className="btn white" onClick={stageAction}>{stageText}</button>
           { !fan.isBackstage && !fan.isOnStage && <button className="btn white" onClick={callAction}>{callText}</button> }
-        </div>);
+        </span>);
     };
 
     return R.isEmpty(chats) ? null :
