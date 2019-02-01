@@ -1,0 +1,151 @@
+@media only screen and (min-width: 1500px) {
+	.SharedFile {
+		width: 16.6%;
+	}
+}
+
+@media only screen and (max-width: 1500px) {
+	.SharedFile {
+		width: 25%;
+	}
+}
+
+@media only screen and (max-width: 800px) {
+	.SharedFile {
+		width: 50%;
+	}
+}
+
+
+.SharedFile {
+	display: flex;
+	flex-direction: column;
+	padding: 5px;
+	cursor: pointer;
+}
+
+
+.SharedFile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 5px;
+    font-size: 13px;
+    color: #58666E;
+}
+
+.SharedFile-content {
+	overflow: hidden;
+	display: flex;
+	max-height: 230px;
+}
+
+.SharedFile-content img {
+	max-width: auto;
+	max-height: 140px;
+	padding: 10px;
+}
+
+.SharedFile-header .label {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+}
+
+.SharedFile-header .icon {
+    margin-right: 5px;
+}
+
+.SharedFile-video {
+    height: 200px;
+    background-color: #e6e6e6;
+}
+
+.SharedFile-video .countdown-overlay {
+  width: 100%;
+  height: 100%;
+  background-color: rgba(61, 61, 61, 0.51);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.SharedFile-video .countdown-overlay span {
+  font-size: 75px;
+  color: #FFFFFF;
+}
+
+.SharedFile .SharedFile-muted{
+  width: inherit;
+  display: block;
+  height: 20px;
+  background-color: red;
+  color: white;
+  font-size: 20px;
+  line-height: 20px;
+  text-align: center;
+  position: absolute;
+  z-index: 1000;
+}
+
+.SharedFile-img-container {
+	background-color: var(--main-header-bg);
+    max-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+}
+
+.SharedFile-info {
+	padding: 10px 5px 10px 5px;
+    background-color: white;
+    border: 1px solid #e5e5e5;
+	word-wrap: break-word;
+	min-height: 80px;
+}
+
+.SharedFile-namedate {
+	font-weight: 700;
+}
+
+.SharedFile-url,
+.SharedFile-move-fan,
+.SharedFile-feed-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 40px;
+    padding: 0 5px;
+    font-size: 12px;
+}
+
+.SharedFile-move-fan .move.btn {
+    font-size: 12px;
+    padding: 0;
+    transition: color .75s;
+}
+
+.SharedFile-move-fan .move.btn:hover{
+    background: transparent;
+    color: #23527c;
+}
+
+.SharedFile-url .url {
+    width: 75%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 12px;
+}
+
+.SharedFile-feed-controls .controls {
+    display: flex;
+    align-items: center;
+}
+
+.SharedFile-feed-controls .controls .control {
+    width: 28px;
+    height: 28px;
+    margin-left: 2px;
+}
