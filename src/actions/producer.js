@@ -20,6 +20,7 @@ import {
   logAction,
 } from '../services/logging';
 import opentok from '../services/opentok';
+import { createSharedFile } from './files';
 import {
   setBroadcastEventStatus,
   setBroadcastEventShowStarted,
@@ -62,10 +63,12 @@ const chatWithParticipant: ThunkActionCreator = (participantType: ParticipantTyp
     const existingChat = R.path(['chats', chatId], broadcast);
     const participant = R.path(['participants', participantType], broadcast);
     const connection = R.path(['stream', 'connection'], participant);
+    const fromId = R.pathOr(null, ['currentUser', 'id'], getState());
+
     if (existingChat) {
       dispatch({ type: 'DISPLAY_CHAT', chatId, display: true });
     } else {
-      dispatch({ type: 'START_NEW_PARTICIPANT_CHAT', participantType, participant: R.assoc('connection', connection, participant) });
+      dispatch({ type: 'START_NEW_PARTICIPANT_CHAT', participantType, fromId, participant: R.assoc('connection', connection, participant) });
     }
   };
 
@@ -89,6 +92,9 @@ const onSignal = (dispatch: Dispatch, getState: GetState): SignalListener =>
           { type: 'NEW_CHAT_MESSAGE', chatId, message: R.assoc('isMe', false, signalData) },
         ];
         R.forEach(dispatch, actions);
+        if (signalData.isFile) {
+          dispatch(createSharedFile(signalData));
+        }
         break;
       }
       case 'startScreenShare': {
@@ -313,6 +319,7 @@ const chatWithActiveFan: ThunkActionCreator = (fan: ActiveFan): Thunk =>
   (dispatch: Dispatch, getState: GetState) => {
     const chatId = fan.id;
     const existingChat = R.path(['broadcast', 'chats', chatId], getState());
+    const fromId = R.path(['currentUser', 'id'], getState());
     if (existingChat) {
       const actions = [
         { type: 'DISPLAY_CHAT', chatId, display: true },
@@ -322,7 +329,7 @@ const chatWithActiveFan: ThunkActionCreator = (fan: ActiveFan): Thunk =>
     } else {
       const toType = fanTypeForActiveFan(fan);
       const connection = opentok.getConnection('backstage', fan.streamId, 'backstageFan');
-      dispatch({ type: 'START_NEW_FAN_CHAT', fan: R.assoc('connection', connection, fan), toType });
+      dispatch({ type: 'START_NEW_FAN_CHAT', fromId, fan: R.assoc('connection', connection, fan), toType });
     }
   };
 

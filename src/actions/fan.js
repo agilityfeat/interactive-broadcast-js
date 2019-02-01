@@ -19,6 +19,7 @@ import {
   monitorVolume,
   monitorScreen,
 } from './broadcast';
+import { createSharedFile } from './files';
 import { setInfo, resetAlert, setCameraError } from './alert';
 import opentok from '../services/opentok';
 import {
@@ -161,17 +162,23 @@ const cancelNetworkTest: ThunkActionCreator = (): Thunk =>
  * Handle a new chat message from the producer
  */
 const receivedChatMessage: ThunkActionCreator = (connection: Connection, message: ChatMessage): Thunk =>
-  (dispatch: Dispatch, getState: GetState) => {
+  async (dispatch: Dispatch, getState: GetState) => {
     const chatId = 'producer';
     const state = getState();
+    const userId = R.pathOr(null, ['currentUser', 'id'], state);
+
     const existingChat = R.pathOr(null, ['broadcast', 'chats', chatId], state);
-    const fromId = fanUid();
+    const fromId = userId || fanUid();
     const actions = [
       ({ type: 'START_NEW_PRODUCER_CHAT', fromType: fanTypeByStatus(R.prop('status', state.fan)), fromId, producer: { connection } }),
       ({ type: 'NEW_CHAT_MESSAGE', chatId, message: R.assoc('isMe', false, message) }),
       onChatMessage(chatId),
     ];
     R.forEach(dispatch, existingChat ? R.tail(actions) : actions);
+
+    if (message.isFile) {
+      createSharedFile(message);
+    }
   };
 
 /**

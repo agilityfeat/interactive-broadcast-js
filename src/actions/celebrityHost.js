@@ -20,7 +20,8 @@ import {
   startHeartBeat,
   heartBeatTime,
 } from './broadcast';
-import { getEventWithCredentials, getEmbedEventWithCredentials, getEventByKey } from '../services/api';
+import { createSharedFile } from './files';
+import { getEventWithCredentials, getEmbedEventWithCredentials } from '../services/api';
 import { isUserOnStage, tagSubscriberElements } from '../services/util';
 import { setInfo, setCameraError, setExtensionError } from './alert';
 import firebase from '../services/firebase';
@@ -108,6 +109,9 @@ const onSignal = (dispatch: Dispatch, userType: HostCeleb, getState: GetState): 
         break;
       case 'chatMessage':
         dispatch(receivedChatMessage(from, signalData, userType));
+        if (signalData.isFile) {
+          dispatch(createSharedFile(signalData));
+        }
         break;
       case 'openChat': // @TODO
       case 'newBackstageFan':
