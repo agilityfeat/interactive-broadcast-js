@@ -10,6 +10,7 @@ import currentUser from './currentUser';
 import domains from './domains';
 import events from './events';
 import fan from './fan';
+import files from './files';
 import settings from './settings';
 import users from './users';
 
@@ -22,6 +23,7 @@ const interactiveBroadcastApp = combineReducers({
   domains,
   events,
   fan,
+  files,
   settings,
   toastr,
   users,
