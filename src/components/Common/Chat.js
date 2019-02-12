@@ -4,7 +4,7 @@ import R from 'ramda';
 import { connect } from 'react-redux';
 import classNames from 'classnames';
 import Icon from 'react-fontawesome';
-import { properCase } from '../../services/util';
+import { properCase, translateRole } from '../../services/util';
 import { shareFile } from '../../actions/files';
 import {
   sendChatMessage,
@@ -145,7 +145,7 @@ class Chat extends Component<Props> {
       R.cond([
         [R.equals('backstageFan'), R.always(`Backstage Fan - ${name}`)],
         [R.equals('fan'), R.always(`Fan - ${name}`)],
-        [R.T, R.always(properCase(toType))],
+        [R.T, R.always(properCase(translateRole(toType)))],
       ])(toType);
     const inPrivateCall = R.and(chattingWithActiveFan, R.prop('inPrivateCall', this.props.chat));
 
