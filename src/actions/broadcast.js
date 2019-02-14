@@ -429,6 +429,16 @@ const startAllChats: ThunkActionCreator = (): Thunk =>
       }
     }, activeFans);
   };
+
+const broadcastChatMessage: ThunkActionCreator = (message: ChatPartial): Thunk =>
+  async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
+    dispatch(startAllChats());
+    R.forEachObjIndexed(
+      (v: ChatState, chatId: ChatId): void => dispatch(sendChatMessage(chatId, message)),
+      R.path(['broadcast', 'chats'], getState()),
+    );
+  };
+
 let timer;
 const startElapsedTimeInterval: ThunkActionCreator = (): Thunk =>
   (dispatch: Dispatch, getState: GetState) => {
