@@ -12,6 +12,11 @@ declare type SharedFile = {
   userId: string
 };
 
+declare type FileShareOptions = {
+  chatId?: ChatId,
+  broadcastFile?: boolean
+};
+
 declare type FilesState = {
   sharedByMe: { [id]: SharedFile } | null,
   sharedWithMe: { [id]: SharedFile } | null,
