@@ -478,6 +478,17 @@ const displayChat: ActionCreator = (chatId: ChatId, display?: boolean = true): B
   display,
 });
 
+const displayGlobalChat: ThunkActionCreator = (display: boolean = true): BroadcastAction => ({
+  type: 'DISPLAY_GLOBAL_CHAT',
+  display,
+});
+
+const minimizeGlobalChat: ThunkActionCreator = (minimized: boolean): BroadcastAction => ({
+  type: 'MINIMIZE_GLOBAL_CHAT',
+  minimized,
+});
+
+
 const onChatMessage: ThunkActionCreator = (chatId: ChatId): Thunk =>
   (dispatch: Dispatch) => {
     R.forEach(dispatch, [minimizeChat(chatId, false), displayChat(chatId, true)]);
@@ -504,11 +515,13 @@ module.exports = {
   monitorVolume,
   monitorScreen,
   displayChat,
+  broadcastChatMessage,
   onChatMessage,
   updateStageCountdown,
   setBroadcastEventShowStarted,
   stopElapsedTime,
   startElapsedTime,
+  startAllChats,
   forceFanToDisconnect,
   startFanTransition,
   screenShareAction,
@@ -517,5 +530,6 @@ module.exports = {
   stopHeartBeat,
   heartBeatTime,
   avPropertyChanged,
+  displayGlobalChat,
+  minimizeGlobalChat,
 };
-
