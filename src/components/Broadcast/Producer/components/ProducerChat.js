@@ -4,6 +4,7 @@ import R from 'ramda';
 import { connect } from 'react-redux';
 import Icon from 'react-fontawesome';
 import Chat from '../../../Common/Chat';
+import BroadcastChat from '../../../Common/BroadcastChat';
 import { minimizeChat, displayChat } from '../../../../actions/broadcast';
 import { sendToBackstage, sendToStage, connectPrivateCall, kickFanFromFeed } from '../../../../actions/producer';
 import { fanTypeForActiveFan } from '../../../../services/util';
@@ -127,6 +128,7 @@ const ProducerChat = ({ chats, activeFans, actions, toggleActiveChat }: Props): 
 
   return (
     <div className="ProducerChat">
+      <BroadcastChat />
       { R.map(renderChat, R.values(participantChats))}
       <ActiveFanChats chats={activeFanChats} activeFans={activeFans} actions={actions} toggleActiveChat={toggleActiveChat} />
     </div>

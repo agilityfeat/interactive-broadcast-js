@@ -10,6 +10,7 @@ import ProducerPrimary from './components/ProducerPrimary';
 import NetworkReconnect from '../../Common/NetworkReconnect';
 import ProducerChat from './components/ProducerChat';
 import { initializeBroadcast, resetBroadcastEvent } from '../../../actions/producer';
+import { displayGlobalChat } from '../../../actions/broadcast';
 import './Producer.css';
 
 /* beautify preserve:start */
@@ -58,7 +59,7 @@ class Producer extends Component {
   render(): ReactComponent {
     const { toggleSidePanel } = this;
     const { showingSidePanel } = this.state;
-    const { broadcast } = this.props;
+    const { broadcast, showGlobalChat } = this.props;
 
     return (
       <div className="Producer">
@@ -67,7 +68,7 @@ class Producer extends Component {
           <ProducerHeader showingSidePanel={showingSidePanel} toggleSidePanel={toggleSidePanel} />
           <ProducerPrimary />
         </div>
-        <ProducerSidePanel hidden={!showingSidePanel} broadcast={broadcast} />
+        <ProducerSidePanel showGlobalChat={showGlobalChat} hidden={!showingSidePanel} broadcast={broadcast} />
         <ProducerChat chats={broadcast.chats} />
       </div>
     );
@@ -82,6 +83,7 @@ const mapStateToProps = (state: State, ownProps: InitialProps): BaseProps => ({
 
 const mapDispatchToProps: MapDispatchToProps<DispatchProps> = (dispatch: Dispatch): DispatchProps =>
   ({
+    showGlobalChat: (): void => dispatch(displayGlobalChat(true)),
     setEvent: (eventId: EventId) => {
       dispatch(initializeBroadcast(eventId, 'producer'));
     },

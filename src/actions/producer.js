@@ -53,6 +53,7 @@ const notStarted = R.propEq('status', 'notStarted');
 const isLive = R.propEq('status', 'live');
 const setStatus = { status: (s: EventStatus): EventStatus => s === 'notStarted' ? 'preshow' : s };
 
+
 /**
  * Start (or resume) a chat session with an on-stage participant
  */
@@ -68,7 +69,13 @@ const chatWithParticipant: ThunkActionCreator = (participantType: ParticipantTyp
     if (existingChat) {
       dispatch({ type: 'DISPLAY_CHAT', chatId, display: true });
     } else {
-      dispatch({ type: 'START_NEW_PARTICIPANT_CHAT', participantType, fromId, participant: R.assoc('connection', connection, participant) });
+      dispatch({
+        type: 'START_NEW_PARTICIPANT_CHAT',
+        participantType,
+        fromId,
+        displayed: true,
+        participant: R.assoc('connection', connection, participant),
+      });
     }
   };
 
@@ -329,7 +336,7 @@ const chatWithActiveFan: ThunkActionCreator = (fan: ActiveFan): Thunk =>
     } else {
       const toType = fanTypeForActiveFan(fan);
       const connection = opentok.getConnection('backstage', fan.streamId, 'backstageFan');
-      dispatch({ type: 'START_NEW_FAN_CHAT', fromId, fan: R.assoc('connection', connection, fan), toType });
+      dispatch({ type: 'START_NEW_FAN_CHAT', fromId, fan: R.assoc('connection', connection, fan), toType, display: true });
     }
   };
 

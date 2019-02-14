@@ -97,6 +97,7 @@ declare type BroadcastState = {
   subscribers?: {
     camera: null | { [subscriberId: string]: Subscriber}
   },
+  globalChat: { displayed: boolean, minimized: boolean },
   meta: null | CoreMeta,
   participants: BroadcastParticipants,
   activeFans: ActiveFans,
@@ -214,8 +215,8 @@ declare type BroadcastAction =
   { type: 'UPDATE_ACTIVE_FANS', update: ActiveFanMap } |
   { type: 'UPDATE_ACTIVE_FAN_RECORD', fanType: 'backstageFan' | 'fan', record: ActiveFan } |
   { type: 'REORDER_BROADCAST_ACTIVE_FANS', update: ActiveFanOrderUpdate } |
-  { type: 'START_NEW_FAN_CHAT', fan: ActiveFanWithConnection, toType: FanType, privateCall?: boolean } |
-  { type: 'START_NEW_PARTICIPANT_CHAT', participantType: ParticipantType, participant: ParticipantWithConnection } |
+  { type: 'START_NEW_FAN_CHAT', fan: ActiveFanWithConnection, toType: FanType, privateCall?: boolean, displayed: boolean } |
+  { type: 'START_NEW_PARTICIPANT_CHAT', participantType: ParticipantType, participant: ParticipantWithConnection, displayed: boolean } |
   { type: 'START_NEW_PRODUCER_CHAT', fromType: ChatUser, fromId?: UserId, producer: ProducerWithConnection } |
   { type: 'UPDATE_CHAT_PROPERTY', chatId: ChatId, property: $Keys<ChatState>, update: * } |
   { type: 'REMOVE_CHAT', chatId: ChatId } |

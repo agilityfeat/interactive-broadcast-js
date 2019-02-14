@@ -4,12 +4,11 @@ import R from 'ramda';
 import { connect } from 'react-redux';
 import classNames from 'classnames';
 import Icon from 'react-fontawesome';
-import { properCase, translateRole } from '../../services/util';
-import { shareFile } from '../../actions/files';
+import { broadcastFile } from '../../actions/files';
 import {
-  sendChatMessage,
-  minimizeChat,
-  displayChat,
+  displayGlobalChat,
+  minimizeGlobalChat,
+  broadcastChatMessage,
   uploadFileStart,
   uploadFileCancel,
   uploadFileSuccess,
@@ -32,11 +31,10 @@ const File = (file: ChatFile): ReactComponent => {
 };
 
 const Message = (message: ChatFile | ChatMessage): ReactComponent => {
-  const { isMe, isFile } = message;
-  const messageClass = classNames('Message', { isMe });
+  const { isFile } = message;
 
   return (
-    <div className={messageClass} key={message.timestamp}>
+    <div className="Message isMe" key={message.timestamp}>
       <div className="MessageText">
         {isFile ?
           File(message) : message.text }
@@ -55,7 +53,9 @@ type InitialProp = {
 
 type DispatchProps ={
   sendSharedFile: (File) => void,
+  broadcastSharedFile: (File) => void,
   sendMessage: (ChatMessagePartial) => void,
+  broadcastChatMessage: (ChatMessagePartial) => void,
   boundUploadFileStart: (string) => void,
   boundUploadFileSuccess: (string) => void,
   boundUploadFileCancel: Unit,
@@ -65,7 +65,7 @@ type DispatchProps ={
 
 type Props = BaseProps & InitialProps & DispatchProps;
 
-class Chat extends Component<Props> {
+class BroadcastChat extends Component<Props> {
 
   props: Props;
   state: { newMessageText: string };
@@ -73,18 +73,26 @@ class Chat extends Component<Props> {
   updateScrollPosition: Unit;
   handleChange: SyntheticInputEvent => void;
   handleSubmit: SyntheticInputEvent => void;
+  toggleMinimize: () => void;
 
   constructor(props: Props) {
     super(props);
-    this.state = { newMessageText: '' };
+
+    this.state = {
+      newMessageText: '',
+      messages: [],
+    };
+
     this.updateScrollPosition = this.updateScrollPosition.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.toggleMinimize = this.toggleMinimize.bind(this);
   }
 
-  componentWillReceiveProps(nextProps: Props) {
-    const newMessages = nextProps.chat.messages;
-    const { messages } = this.props.chat;
+  componentDidUpdate(nextProps: Props, prevState: State) {
+    const newMessages = this.state.messages;
+    const { messages } = prevState;
+
     if (newMessages.length > messages.length) {
       this.updateScrollPosition();
     }
@@ -104,12 +112,12 @@ class Chat extends Component<Props> {
 
   uploadFile(): (e: SyntheticInputEvent) => AsyncVoid {
     return async (e: SyntheticInputEvent): AsyncVoid => {
-      const { sendSharedFile } = this.props;
+      const { broadcastSharedFile } = this.props;
       const file = R.head(e.target.files);
 
       if (file) {
-        await sendSharedFile(file);
-        this.updateScrollPosition();
+        const fileData = await broadcastSharedFile(file);
+        this.setState({ messages: [...this.state.messages, fileData ] }, this.updateScrollPosition);
       }
     };
   }
@@ -119,41 +127,39 @@ class Chat extends Component<Props> {
     const { newMessageText } = this.state;
     if (R.isEmpty(newMessageText)) { return; }
 
-    const { sendMessage, chat } = this.props;
+    const { broadcastMessage } = this.props;
+    const fromId = R.path(['currentUser', 'id'], this.props);
 
     const message = {
       text: newMessageText,
       timestamp: Date.now(),
-      fromType: chat.fromType,
-      fromId: chat.fromId,
+      fromType: 'producer',
+      fromId,
     };
-    sendMessage(message);
-    this.setState({ newMessageText: '' }, this.updateScrollPosition);
+    // sendMessage(message);
+    broadcastMessage(message);
+    this.setState({ newMessageText: '', messages: [...this.state.messages, message] }, this.updateScrollPosition);
+  }
+
+  toggleMinimize() {
+    const { minimized } = this.props.chat;
+    const { minimize } = this.props;
+
+    minimize(!minimized);
   }
 
   render(): ReactComponent {
-    const { displayed, minimized, messages, toType, to } = this.props.chat;
-    const name = R.prop('name', to);
-    const { minimize, hide, fileSharingEnabled } = this.props;
-    const { newMessageText } = this.state;
-    const { handleSubmit, handleChange } = this;
-
+    const { hide, fileSharingEnabled } = this.props;
+    const { displayed, minimized } = this.props.chat;
+    const { newMessageText, messages } = this.state;
+    const { toggleMinimize, handleSubmit, handleChange } = this;
     const ChatActions = R.propOr(null, 'actions', this.props);
 
-    const chattingWithActiveFan = R.equals(toType, 'activeFan');
-    const chattingWith = chattingWithActiveFan ?
-      properCase(name) :
-      R.cond([
-        [R.equals('backstageFan'), R.always(`Backstage Fan - ${name}`)],
-        [R.equals('fan'), R.always(`Fan - ${name}`)],
-        [R.T, R.always(properCase(translateRole(toType)))],
-      ])(toType);
-    const inPrivateCall = R.and(chattingWithActiveFan, R.prop('inPrivateCall', this.props.chat));
 
     return (
-      <div className={classNames('Chat', toType, { hidden: !displayed })}>
+      <div className={classNames('Chat', 'everyone', { hidden: !displayed })}>
         <div className="ChatHeader">
-          <button className="btn minimize" onClick={minimize}>Chat with { chattingWith }</button>
+          <button className="btn minimize" onClick={toggleMinimize}>Chat with everyone</button>
           <button className="btn" onClick={hide}><Icon className="icon" name="close" /></button>
         </div>
         {!minimized && fileSharingEnabled &&
@@ -165,12 +171,15 @@ class Chat extends Component<Props> {
             </label>
           </div>
         }
-        {!minimized && !fileSharingEnabled && ChatActions}
-        <div id={`videoActiveFan${R.prop('id', to)}`} className={classNames('ChatPrivateCall', { inPrivateCall })} />
+        {!minimized && !fileSharingEnabled &&
+          <div className="ChatActions">
+            { ChatActions }
+          </div>
+        }
         { !minimized &&
           <div className="ChatMain">
             <div className="ChatMessages" ref={(el: HTMLDivElement) => { this.messageContainer = el; }} >
-              { R.map(Message, messages) }
+              {R.map(Message, messages)}
             </div>
             <form className="ChatForm" onSubmit={handleSubmit}>
               <input
@@ -192,16 +201,18 @@ class Chat extends Component<Props> {
 
 const mapStateToProps: MapStateToProps<InitialProp> = (state: State): InitialProp => ({
   fileSharingEnabled: R.path(['settings', 'fileSharingEnabled'], state),
+  currentUser: R.prop(['currentUser'], state),
+  chat: R.path(['broadcast', 'globalChat'], state),
 });
 
-const mapDispatchToProps: MapDispatchWithOwn<DispatchProps, BaseProps> = (dispatch: Dispatch, ownProps: BaseProps): DispatchProps => ({
-  sendSharedFile: (file: File): void => dispatch(shareFile(file, ownProps.chat.chatId)),
-  sendMessage: (message: ChatMessagePartial): void => dispatch(sendChatMessage(ownProps.chat.chatId, message)),
-  minimize: (): void => dispatch(minimizeChat(ownProps.chat.chatId, !ownProps.chat.minimized)),
-  hide: (): void => dispatch(displayChat(ownProps.chat.chatId, false)),
+const mapDispatchToProps: MapDispatchWithOwn<DispatchProps> = (dispatch: Dispatch): DispatchProps => ({
+  hide: (): void => dispatch(displayGlobalChat(false)),
+  minimize: (minimized: boolean): void => dispatch(minimizeGlobalChat(minimized)),
+  broadcastSharedFile: (file: File): void => dispatch(broadcastFile(file)),
+  broadcastMessage: (message: ChatMessagePartial): void => dispatch(broadcastChatMessage(message)),
   boundUploadFileStart: (title: string): void => dispatch(uploadFileStart(title)),
   boundUploadFileSuccess: (title: string): void => dispatch(uploadFileSuccess(title)),
   boundUploadFileCancel: (): void => dispatch(uploadFileCancel()),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(Chat);
+export default connect(mapStateToProps, mapDispatchToProps)(BroadcastChat);
