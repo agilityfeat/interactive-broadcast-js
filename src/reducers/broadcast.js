@@ -11,7 +11,7 @@ const participantState = (stream?: Stream | null = null): ParticipantState => ({
   volume: 100,
 });
 
-const initialChatState = (fromType: ChatUser, fromId?: UserId, toType: ChatUser, to: UserWithConnection): ChatState => {
+const initialChatState = (fromType: ChatUser, fromId?: UserId, toType: ChatUser, to: UserWithConnection, displayed: boolean = true): ChatState => {
   const chatIncludesFan = !!R.find(isFan, [fromType, toType]);
   const session: SessionName = chatIncludesFan ? 'backstage' : 'stage';
   const chatId = isFan(toType) ? R.prop('id', to) : toType;
@@ -22,7 +22,7 @@ const initialChatState = (fromType: ChatUser, fromId?: UserId, toType: ChatUser,
     fromId,
     toType,
     to,
-    displayed: true,
+    displayed,
     minimized: false,
     messages: [],
     inPrivateCall: R.defaultTo(false)(R.prop('inPrivateCall', to)),
@@ -46,6 +46,10 @@ const initialState = (): BroadcastState => ({
   activeFans: {
     map: {},
     order: [],
+  },
+  globalChat: {
+    displayed: false,
+    minimized: false,
   },
   chats: {},
   stageCountdown: -1,
@@ -136,17 +140,21 @@ const broadcast = (state: BroadcastState = initialState(), action: BroadcastActi
         const minimizeActiveFanChat = (chat: ChatState): ChatState => activeOrBackstageFan(chat) ? R.assoc('minimized', true, chat) : chat;
         const minimizedChats = R.assoc('chats', R.map(minimizeActiveFanChat, state.chats), state);
 
-        const newChat = initialChatState('producer', action.fromId, action.toType, action.fan);
+        const newChat = initialChatState('producer', action.fromId, action.toType, action.fan, action.display);
         return R.assocPath(['chats', action.fan.id], newChat, minimizedChats);
       }
     case 'START_NEW_PARTICIPANT_CHAT':
       {
-        const { participant, participantType } = action;
-        return R.assocPath(['chats', participantType], initialChatState('producer', action.fromId, participantType, participant), state);
+        const { participant, participantType, displayed } = action;
+        return R.assocPath(['chats', participantType], initialChatState('producer', action.fromId, participantType, participant, displayed), state);
       }
     case 'START_NEW_PRODUCER_CHAT': {
       return R.assocPath(['chats', 'producer'], initialChatState(action.fromType, action.fromId, 'producer', action.producer), state);
     }
+    case 'DISPLAY_GLOBAL_CHAT':
+      return R.assocPath(['globalChat', 'displayed'], action.display, state);
+    case 'MINIMIZE_GLOBAL_CHAT':
+      return R.assocPath(['globalChat', 'minimized'], action.minimized, state);
     case 'UPDATE_CHAT_PROPERTY':
       return R.assocPath(['chats', action.chatId, action.property], action.update, state);
     case 'DISPLAY_CHAT':
