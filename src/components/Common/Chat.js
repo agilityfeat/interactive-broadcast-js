@@ -102,13 +102,14 @@ class Chat extends Component<Props> {
     }, 0);
   }
 
-  uploadFile(title: string): (e: SyntheticInputEvent) => AsyncVoid {
+  uploadFile(): (e: SyntheticInputEvent) => AsyncVoid {
     return async (e: SyntheticInputEvent): AsyncVoid => {
       const { sendSharedFile } = this.props;
       const file = R.head(e.target.files);
 
       if (file) {
         await sendSharedFile(file);
+        this.updateScrollPosition();
       }
     };
   }
@@ -190,11 +191,11 @@ class Chat extends Component<Props> {
 }
 
 const mapStateToProps: MapStateToProps<InitialProp> = (state: State): InitialProp => ({
-  fileSharingEnabled: R.path(['settings', 'fileSharingEnabled'], state)
+  fileSharingEnabled: R.path(['settings', 'fileSharingEnabled'], state),
 });
 
 const mapDispatchToProps: MapDispatchWithOwn<DispatchProps, BaseProps> = (dispatch: Dispatch, ownProps: BaseProps): DispatchProps => ({
-  sendSharedFile: (file: File): void => dispatch(shareFile(file, ownProps.chat)),
+  sendSharedFile: (file: File): void => dispatch(shareFile(file, ownProps.chat.chatId)),
   sendMessage: (message: ChatMessagePartial): void => dispatch(sendChatMessage(ownProps.chat.chatId, message)),
   minimize: (): void => dispatch(minimizeChat(ownProps.chat.chatId, !ownProps.chat.minimized)),
   hide: (): void => dispatch(displayChat(ownProps.chat.chatId, false)),
