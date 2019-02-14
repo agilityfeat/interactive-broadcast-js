@@ -4,7 +4,7 @@ import moment from 'moment';
 import { setInfo, setSuccess, resetAlert } from './alert';
 import opentok from '../services/opentok';
 import firebase from '../services/firebase';
-import { alterAllButScreen, isUserOnStage, alterCameraElement } from '../services/util';
+import { alterAllButScreen, isUserOnStage, alterCameraElement, fanTypeForActiveFan } from '../services/util';
 
 // Presence heartbeat time in seconds.
 const heartBeatTime = 10;
@@ -399,6 +399,36 @@ const sendChatMessage: ThunkActionCreator = (chatId: ChatId, message: ChatPartia
     dispatch({ type: 'NEW_CHAT_MESSAGE', chatId, message: R.assoc('isMe', true, message) });
   };
 
+const startAllChats: ThunkActionCreator = (): Thunk =>
+  async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
+    const participants = R.path(['broadcast', 'participants'], getState());
+    const activeFans = R.path(['broadcast', 'activeFans', 'map'], getState());
+    const fromId = R.path(['currentUser', 'id'], getState());
+
+    R.forEachObjIndexed((participant: ParticipantState, participantType: ParticipantType) => {
+      const existingChat = R.path(['broadcast', 'chats', participantType], getState());
+      const connection = R.path(['stream', 'connection'], participant);
+
+      if (!existingChat && participant.connected && participantType !== 'producer') {
+        dispatch({
+          type: 'START_NEW_PARTICIPANT_CHAT',
+          participantType,
+          fromId,
+          participant: R.assoc('connection', connection, participant),
+          displayed: false,
+        });
+      }
+    }, participants);
+
+    R.forEachObjIndexed((activeFan: ActiveFan, fanId: string) => {
+      const existingChat = R.path(['broadcast', 'chats', fanId], getState());
+      if (!existingChat) {
+        const toType = fanTypeForActiveFan(activeFan);
+        const connection = opentok.getConnection('backstage', activeFan.streamId, 'backstageFan');
+        dispatch({ type: 'START_NEW_FAN_CHAT', fromId, fan: R.assoc('connection', connection, activeFan), toType, display: false });
+      }
+    }, activeFans);
+  };
 let timer;
 const startElapsedTimeInterval: ThunkActionCreator = (): Thunk =>
   (dispatch: Dispatch, getState: GetState) => {
