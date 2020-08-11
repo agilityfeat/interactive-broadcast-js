@@ -17,7 +17,7 @@ const EventActions = ({ event, deleteEvent, closeEvent }: Props): ReactComponent
 
   const start = (): ReactComponent =>
     <Link to={`events/${id}`} key={`action-start-${id}`} >
-      <button className={style('green')}><Icon name="check" /> Start Event</button>
+      <button className={style('green')}><Icon name="check" /> Start Class</button>
     </Link>;
 
   const edit = (): ReactComponent =>
@@ -32,17 +32,17 @@ const EventActions = ({ event, deleteEvent, closeEvent }: Props): ReactComponent
 
   const view = (): ReactComponent =>
     <Link to={`events/${id}`} key={`action-view-${id}`} >
-      <button className={style(`${status === 'live' ? 'blue' : 'green'}`)}><Icon name="eye" /> View Event</button>
+      <button className={style(`${status === 'live' ? 'blue' : 'green'}`)}><Icon name="eye" /> Join Class</button>
     </Link>;
 
   const end = (): ReactComponent =>
     <button className={style('grey')} key={`action-end-${id}`} onClick={R.partial(closeEvent, [id])} >
-      <Icon name="times" /> End Event
+      <Icon name="times" /> End Class
     </button>;
 
   const close = (): ReactComponent =>
     <button className={style('grey')} key={`action-close-${id}`} onClick={R.partial(closeEvent, [id])} >
-      <Icon name="times" /> Close Event
+      <Icon name="times" /> Close Class
     </button>;
 
   const download = (): ReactComponent =>

@@ -19,6 +19,7 @@ import {
   monitorVolume,
   monitorScreen,
 } from './broadcast';
+import { connectToUniversalChat, connectToPrivateChat } from './universalChat';
 import { createSharedFile } from './files';
 import { setInfo, resetAlert, setCameraError } from './alert';
 import opentok from '../services/opentok';
@@ -185,11 +186,15 @@ const receivedChatMessage: ThunkActionCreator = (connection: Connection, message
  * Remove the fan's record from firebase
  */
 const removeActiveFanRecord: ThunkActionCreator = (event: BroadcastEvent, remove: boolean=false): Thunk =>
-  async (): AsyncVoid => {
+  async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
+    const state = getState();
     const fanId = fanUid();
     const { fanUrl, domainId } = event;
     const record = {
       id: fanId,
+      name: R.path(['currentUser', 'displayName'], state),
+      connected: false,
+      fanId: R.path(['currentUser', 'id'], state),
     };
     const ref = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/activeFans/${fanId}`);
     try {
@@ -564,10 +569,14 @@ const connectToInteractive: ThunkActionCreator = (userCredentials: UserCredentia
  * Create an active fan record in firebase
  */
 const createActiveFanRecord: ThunkActionCreator = (uid: UserId, domainId: string, fanUrl: string): Thunk =>
-  async (): AsyncVoid => {
+  async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
     /* Create a record in firebase */
+    const state = getState();
     const record = {
       id: uid,
+      name: R.path(['currentUser', 'displayName'], state),
+      connected: false,
+      fanId: R.path(['currentUser', 'id'], state),
     };
     const fanRef = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/activeFans/${uid}`);
     try {
@@ -598,6 +607,7 @@ const updateActiveFanRecord: ThunkActionCreator = (name: string, event: Broadcas
       streamId: publisher ? publisher.stream.streamId : null,
       isBackstage: false,
       inPrivateCall: false,
+      connected: true,
     };
     const fanRef = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/activeFans/${fanId}`);
     try {
@@ -675,6 +685,7 @@ const connectToPresence: ThunkActionCreator = (domainId: string, fanUrl: string)
     }
   };
 
+
 const initializeBroadcast: ThunkActionCreator = ({ userUrl, fitMode }: FanInitOptions): Thunk =>
   async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
     try {
@@ -709,6 +720,8 @@ const initializeBroadcast: ThunkActionCreator = ({ userUrl, fitMode }: FanInitOp
         } else {
           await firebase.auth().signInAnonymously();
         }
+        dispatch(connectToUniversalChat());
+        dispatch(connectToPrivateChat());
       });
     } catch (error) {
       console.log('error', error);

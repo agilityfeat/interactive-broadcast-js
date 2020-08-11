@@ -155,9 +155,9 @@ class Participant extends React.Component {
                 disabled={!me.connected}
               />
             }
-            { R.contains('fan', R.toLower(type)) ?
+            { R.contains('fan', R.toLower(type)) ? // @CARLOS_TODO: cambiar el disabled por !me.connected
               <ControlIcon name="ban" className={controlIconClass} onClick={kickFan} disabled={!me.connected} /> :
-              type !== 'producer' && <ControlIcon name="comment" onClick={chat} className={controlIconClass} disabled={!me.connected} />
+              type !== 'producer' && <ControlIcon name="comment" onClick={chat} className={controlIconClass} disabled={false} />
             }
             { !R.contains('fan', R.toLower(type)) &&
               screenSharingEnabled &&

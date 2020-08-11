@@ -7,5 +7,9 @@ import firebaseConfig from '../config/firebase';
 
 firebase.initializeApp(firebaseConfig);
 
+export const getRef = (path: string): firebase.database.ref => {
+  firebase.database().ref(path);
+};
+
 export default firebase;
 

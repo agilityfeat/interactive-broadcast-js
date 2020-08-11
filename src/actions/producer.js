@@ -44,6 +44,7 @@ import {
   stopHeartBeat,
   heartBeatTime,
 } from './broadcast';
+import { connectToUniversalChat, connectToFanChats } from './universalChat';
 
 let analytics;
 let activeBroadcastRef;
@@ -269,7 +270,6 @@ const opentokConfig = (dispatch: Dispatch, getState: GetState, userCredentials: 
   return [stage(), backstage()];
 };
 
-
 /**
  * Connect to OpenTok sessions
  */
@@ -324,7 +324,7 @@ const setBroadcastEventWithCredentials: ThunkActionCreator = (domainId: string, 
  */
 const chatWithActiveFan: ThunkActionCreator = (fan: ActiveFan): Thunk =>
   (dispatch: Dispatch, getState: GetState) => {
-    const chatId = fan.id;
+    const chatId = fan.fanId;
     const existingChat = R.path(['broadcast', 'chats', chatId], getState());
     const fromId = R.path(['currentUser', 'id'], getState());
     if (existingChat) {
@@ -335,8 +335,8 @@ const chatWithActiveFan: ThunkActionCreator = (fan: ActiveFan): Thunk =>
       R.forEach(dispatch, actions);
     } else {
       const toType = fanTypeForActiveFan(fan);
-      const connection = opentok.getConnection('backstage', fan.streamId, 'backstageFan');
-      dispatch({ type: 'START_NEW_FAN_CHAT', fromId, fan: R.assoc('connection', connection, fan), toType, display: true });
+      // const connection = opentok.getConnection('backstage', fan.streamId, 'backstageFan');
+      dispatch({ type: 'START_NEW_FAN_CHAT', fromId, fan, toType, display: true });
     }
   };
 
@@ -521,11 +521,14 @@ const updateActiveFans: ThunkActionCreator = (): Thunk =>
         await dispatch(endPrivateCall());
       }
 
-      dispatch({ type: 'UPDATE_ACTIVE_FANS', update: fansInLine });
+      dispatch({ type: 'UPDATE_ACTIVE_FANS', update: viewers });
       dispatch({ type: 'UPDATE_VIEWERS', viewers: R.length(R.keys(viewers)) });
       dispatch({ type: 'SET_INTERACTIVE_LIMIT', interactiveLimit });
       dispatch({ type: 'SET_ARCHIVING', archiving });
 
+      // We connect to each fan chat
+      for (const fan in viewers) dispatch(connectToFanChats(viewers[fan]));
+      // R.forEach((fan: ActiveFan): void => dispatch(connectToFanChats(fan)), viewers);
     });
   };
 
@@ -632,6 +635,7 @@ const initializeBroadcast: ThunkActionCreator = (eventId: EventId): Thunk =>
       ];
       R.forEach(dispatch, notStarted(event) ? actions : R.tail(actions));
       isLive(event) && dispatch(startElapsedTime());
+      dispatch(connectToUniversalChat());
     } catch (error) {
       browserHistory.replace('/admin');
       dispatch(setInfo({ title: 'Event Not Found', text: `Could not find event with the ID ${eventId}` }));

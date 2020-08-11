@@ -113,6 +113,11 @@
     background-color: lightblue;
 }
 
+.ChatMessages .Message .From {
+    font-size: 12px;
+    color: var(--main-btn-bg);
+}
+
 .ChatForm {
     height: 40px;
     display: flex;

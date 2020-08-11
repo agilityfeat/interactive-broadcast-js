@@ -73,6 +73,10 @@
   text-transform: uppercase;
 }
 
+.FanHeader-main .actions{
+  display: flex;
+}
+
 .FanHeader-main .btn {
   height: 36px;
   width: 110px;

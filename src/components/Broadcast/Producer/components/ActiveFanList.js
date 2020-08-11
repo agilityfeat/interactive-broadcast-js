@@ -44,7 +44,7 @@ const snapshot = 'https://assets.tokbox.com/solutions/images/tokbox.png';
 type FanProps = { fan: ActiveFan, sortable: boolean, actions: ActiveFanActions, backstageFan: FanParticipantState, fanTransition: boolean };
 const Fan = SortableElement(({ fan, sortable, actions, fanTransition }: FanProps): ReactComponent => {
   const { chat, sendFanToBackstage, sendFanToStage, kickFan, connectCall, forceDisconnect } = actions;
-  const { inPrivateCall, isOnStage, isBackstage } = fan;
+  const { inPrivateCall, isOnStage, isBackstage, connected } = fan;
   const privateCall = R.partial(connectCall, [fanTypeForActiveFan(fan), fan.id]);
   const removeFan = (): void => isBackstage || isOnStage ? kickFan(isBackstage ? 'backstageFan' : 'fan') : forceDisconnect(fan);
   const fanIcon = R.toLower(fan.browser || fan.os || '');
@@ -59,14 +59,27 @@ const Fan = SortableElement(({ fan, sortable, actions, fanTransition }: FanProps
             <Icon name={fanIcon} style={{ marginRight: '3px' }} />
             <span className="name">{fan.name}</span>
           </div>
-          { networkQuality(fan.networkQuality)}
+          { connected && networkQuality(fan.networkQuality) }
         </div>
         <div className="actions">
-          {!isBackstage && !isOnStage && <button disabled={fanTransition} className={classNames('btn white', { disabled: fanTransition })} onClick={R.partial(sendFanToBackstage, [fan])}>Send to backstage</button>}
-          {isBackstage && <button className="btn white" onClick={R.partial(sendFanToStage, [fan])}>Send to stage</button>}
-          {!isOnStage && <button className="btn white" onClick={R.partial(privateCall, [fan])}>{ inPrivateCall ? 'Hang Up' : 'Call'}</button>}
+          {connected && !isBackstage && !isOnStage &&
+            <button
+              disabled={fanTransition}
+              className={classNames('btn white', { disabled: fanTransition })}
+              onClick={R.partial(sendFanToBackstage, [fan])}
+            >
+              Send to backstage
+            </button>
+          }
+          {connected && isBackstage &&
+            <button className="btn white" onClick={R.partial(sendFanToStage, [fan])}>Send to stage</button>}
+          {connected && !isOnStage &&
+            <button className="btn white" onClick={R.partial(privateCall, [fan])}>
+              { inPrivateCall ? 'Hang Up' : 'Call'}
+            </button>
+          }
           <button className="btn white" onClick={R.partial(chat, [fan])}>Chat</button>
-          <button className="btn white" onClick={removeFan}>Kick</button>
+          {connected && <button className="btn white" onClick={removeFan}>Kick</button>}
         </div>
       </div>
     </li>
@@ -122,6 +135,7 @@ class ActiveFanList extends Component {
   }
 }
 
+// #region Redux maps
 const mapStateToProps = (state: State): BaseProps => ({
   activeFans: state.broadcast.activeFans,
   backstageFan: state.broadcast.participants.backstageFan,
@@ -139,5 +153,6 @@ const mapDispatchToProps: MapDispatchToProps<DispatchProps> = (dispatch: Dispatc
     forceDisconnect: (fan: ActiveFan): void => dispatch(forceFanToDisconnect(fan)),
   },
 });
+// #endregion
 
 export default connect(mapStateToProps, mapDispatchToProps)(ActiveFanList);

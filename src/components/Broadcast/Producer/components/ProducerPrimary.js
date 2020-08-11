@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import classNames from 'classnames';
 import Icon from 'react-fontawesome';
-import Particpant from './Participant';
+import Participant from './Participant';
 import { properCase } from '../../../../services/util';
 import './ProducerPrimary.css';
 
@@ -37,7 +37,7 @@ const ProducerPrimary = (props: Props): ReactComponent => {
     <div className="ProducerPrimary admin-page-content">
       <div className="ProducerPrimary-info">
         <div className="viewers">
-          <Icon name="user" /> {interactiveLimit ? `Viewers ${viewers} / ${interactiveLimit}` : 'Retrieving viewers . . .'}
+          <Icon name="user" /> {interactiveLimit ? `Viewers ${viewers} / ${interactiveLimit}` : 'Retrieving participants . . .'}
         </div>
         <div className="time"><Icon name="clock-o" /> Elapsed time {elapsedTime}</div>
         <div className={classNames('private-call', { active: !!privateCall })}>
@@ -48,11 +48,10 @@ const ProducerPrimary = (props: Props): ReactComponent => {
         </div>
       </div>
       <div className="ProducerPrimary-participants">
-        <Particpant type="backstageFan" />
-        <Particpant type="fan" />
-        {producerHost && <Particpant type="producer" />}
-        {!producerHost && <Particpant type="host" />}
-        <Particpant type="celebrity" />
+        <Participant type="backstageFan" />
+        <Participant type="fan" />
+        <Participant type={producerHost ? 'producer' : 'host'} />
+        <Participant type="celebrity" />
         <div id="videoproducer" className="producerContainer" />
       </div>
     </div>

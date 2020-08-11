@@ -15,11 +15,12 @@ import CelebrityHostBody from './components/CelebrityHostBody';
 import Loading from '../../../components/Common/Loading';
 import NoEvents from '../../../components/Common/NoEvents';
 import Chat from '../../../components/Common/Chat';
+import UniversalChat from '../../Common/UniversalChat';
 import NetworkReconnect from '../../Common/NetworkReconnect';
 import { disconnect } from '../../../services/opentok';
 import './CelebrityHost.css';
 
-/* beautify preserve:start */
+// #region beautify preserve:start
 
 type InitialProps = { params: { hostUrl: string, celebrityUrl: string } };
 type BaseProps = {
@@ -35,7 +36,7 @@ type DispatchProps = {
   changeEventStatus: (event: EventStatus) => void
 };
 type Props = InitialProps & BaseProps & DispatchProps;
-/* beautify preserve:end */
+// #endregion beautify preserve:end */
 
 const newBackstageFan = (): void => toastr.info('A new FAN has been moved to backstage', { showCloseButton: false });
 
@@ -87,6 +88,7 @@ class CelebrityHost extends Component {
           />
           <div className="HostCelebChat" >
             { producerChat && <Chat chat={producerChat} /> }
+            <UniversalChat />
           </div>
         </div>
       </div>

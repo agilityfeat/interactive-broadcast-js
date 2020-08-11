@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import Icon from 'react-fontawesome';
 import Chat from '../../../Common/Chat';
 import BroadcastChat from '../../../Common/BroadcastChat';
+import UniversalChat from '../../../Common/UniversalChat';
 import { minimizeChat, displayChat } from '../../../../actions/broadcast';
 import { sendToBackstage, sendToStage, connectPrivateCall, kickFanFromFeed } from '../../../../actions/producer';
 import { fanTypeForActiveFan } from '../../../../services/util';
@@ -12,7 +13,7 @@ import './ProducerChat.css';
 
 const renderChat = (chat: ChatState): ReactComponent => <Chat key={chat.chatId} chat={chat} />;
 const renderChatWithActions = (chat: ChatState, actions: ReactComponent): ReactComponent =>
-  <Chat key={chat.chatId} chat={chat} actions={actions} />;
+  <Chat key={chat.chatId} chat={chat} />;
 
 class ActiveFanChats extends Component {
   props: Props;
@@ -129,6 +130,7 @@ const ProducerChat = ({ chats, activeFans, actions, toggleActiveChat }: Props): 
   return (
     <div className="ProducerChat">
       <BroadcastChat />
+      <UniversalChat />
       { R.map(renderChat, R.values(participantChats))}
       <ActiveFanChats chats={activeFanChats} activeFans={activeFans} actions={actions} toggleActiveChat={toggleActiveChat} />
     </div>

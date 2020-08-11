@@ -388,10 +388,20 @@ const startCountdown: ThunkActionCreator = (): Thunk =>
 
 const sendChatMessage: ThunkActionCreator = (chatId: ChatId, message: ChatPartial): Thunk =>
   async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
-    const chat: ChatState = R.path(['broadcast', 'chats', chatId], getState());
-    const to = chatId === 'producer' ? opentok.getConnectionByUserType(chat.session, 'producer') : chat.to.connection;
+    const state = getState();
+    const event = R.prop('event', state.broadcast);
+    const { domainId, fanUrl } = event;
+    const fromName = R.path(['currentUser', 'displayName'], state) || 'Anonymous';
+    const messageContent = {
+      text: message.text,
+      fromId: message.fromId || 'Anonymous',
+      fromName,
+      timestamp: message.timestamp,
+    };
     try {
-      to && await opentok.signal(chat.session, { type: 'chatMessage', to, data: message });
+      // to && await opentok.signal(chat.session, { type: 'chatMessage', to, data: message });
+      const ref = firebase.database().ref(`activeBroadcasts/${domainId}/${fanUrl}/chats/${chatId}/messages`);
+      ref.push(messageContent);
     } catch (error) {
       // @TODO Error handling
       console.log('Failed to send chat message', error);
@@ -399,7 +409,7 @@ const sendChatMessage: ThunkActionCreator = (chatId: ChatId, message: ChatPartia
     dispatch({ type: 'NEW_CHAT_MESSAGE', chatId, message: R.assoc('isMe', true, message) });
   };
 
-const startAllChats: ThunkActionCreator = (): Thunk =>
+const startAllChats: ThunkActionCreator = (): Thunk => // @DEPRECATED
   async (dispatch: Dispatch, getState: GetState): AsyncVoid => {
     const participants = R.path(['broadcast', 'participants'], getState());
     const activeFans = R.path(['broadcast', 'activeFans', 'map'], getState());
@@ -488,6 +498,23 @@ const minimizeGlobalChat: ThunkActionCreator = (minimized: boolean): BroadcastAc
   minimized,
 });
 
+const displayUniversalChat: ThunkActionCreator = (display: boolean = true): BroadcastAction => ({
+  type: 'DISPLAY_UNIVERSAL_CHAT',
+  display,
+});
+
+const displayPrivateChat: ThunkActionCreator = (display: boolean = true): Thunk =>
+  (dispatch: Dispatch, getState: GetState) => {
+    const state = getState();
+    const chatId = R.path(['currentUser', 'id'], state);
+    dispatch({ type: 'UPDATE_CHAT_PROPERTY', chatId, property: 'displayed', update: display });
+  };
+
+const minimizeUniversalChat: ThunkActionCreator = (minimized: boolean): BroadcastAction => ({
+  type: 'MINIMIZE_UNIVERSAL_CHAT',
+  minimized,
+});
+
 
 const onChatMessage: ThunkActionCreator = (chatId: ChatId): Thunk =>
   (dispatch: Dispatch) => {
@@ -532,4 +559,7 @@ module.exports = {
   avPropertyChanged,
   displayGlobalChat,
   minimizeGlobalChat,
+  displayUniversalChat,
+  displayPrivateChat,
+  minimizeUniversalChat,
 };

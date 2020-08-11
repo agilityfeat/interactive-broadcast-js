@@ -1,9 +1,18 @@
 /*Main*/
+.RegisterViewerWrapper{
+  width: 1000px;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  margin: auto;
+}
+
 .RegisterViewer {
   width: 360px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   margin: 40px auto 20px;
   padding-bottom: 10px;
@@ -13,10 +22,10 @@
 }
 
 .Register-header {
-    height: 60px;
-    display: flex;
-    justify-content: flex-start;
-    color: white;
+  height: 60px;
+  display: flex;
+  justify-content: flex-start;
+  color: white;
 	background-color: var(--main-header-bg);
 }
 
@@ -40,10 +49,18 @@
   background-color: var(--main-header-bg);
 }
 
+.RegisterViewer-header h4 {
+  color: white;
+}
+
 .RegisterViewer-body {
   display: flex;
   flex-direction: column;
   width: 100%;
+}
+
+.RegisterViewer-body p {
+  padding: 5px;
 }
 
 .RegisterViewer-header img {

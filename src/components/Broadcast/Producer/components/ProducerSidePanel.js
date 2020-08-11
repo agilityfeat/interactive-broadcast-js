@@ -5,16 +5,22 @@ import ActiveFanList from './ActiveFanList';
 import './ProducerSidePanel.css';
 import { translateRole, properCase } from '../../../../services/util';
 
-type Props = { hidden: boolean, broadcast: BroadcastState, showGlobalChat: Unit };
+// #region Type Definitions
+type Props = {
+  hidden: boolean,
+  broadcast: BroadcastState,
+  showUniversalChat: Unit
+};
+// #endregion
 
-const ProducerSidePanel = ({ hidden, broadcast, showGlobalChat }: Props): ReactComponent =>
+const ProducerSidePanel = ({ hidden, broadcast, showUniversalChat }: Props): ReactComponent =>
   <div className={classNames('ProducerSidePanel', { hidden })} >
     <div className="ProducerSidePanel-header">
       Active {`${properCase(translateRole('fan'))}s`}&nbsp;
       ({ broadcast.activeFans.order.length })
     </div>
     <div className="PanelActions">
-      <button onClick={showGlobalChat} className="PanelActions btn white">Message everyone</button>
+      <button onClick={showUniversalChat} className="PanelActions btn white">Message Everyone</button>
     </div>
     <ActiveFanList activeFans={broadcast.activeFans} />
   </div>;

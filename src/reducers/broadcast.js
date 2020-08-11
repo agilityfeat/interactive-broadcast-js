@@ -14,7 +14,7 @@ const participantState = (stream?: Stream | null = null): ParticipantState => ({
 const initialChatState = (fromType: ChatUser, fromId?: UserId, toType: ChatUser, to: UserWithConnection, displayed: boolean = true): ChatState => {
   const chatIncludesFan = !!R.find(isFan, [fromType, toType]);
   const session: SessionName = chatIncludesFan ? 'backstage' : 'stage';
-  const chatId = isFan(toType) ? R.prop('id', to) : toType;
+  const chatId = isFan(toType) ? R.prop('fanId', to) : toType;
   return {
     chatId,
     session,
@@ -25,7 +25,7 @@ const initialChatState = (fromType: ChatUser, fromId?: UserId, toType: ChatUser,
     displayed,
     minimized: false,
     messages: [],
-    inPrivateCall: R.defaultTo(false)(R.prop('inPrivateCall', to)),
+    inPrivateCall: R.defaultTo(false)(R.propOr(null, 'inPrivateCall', to)),
   };
 };
 
@@ -43,14 +43,9 @@ const initialState = (): BroadcastState => ({
     host: participantState(),
     backstageFan: participantState(),
   },
-  activeFans: {
-    map: {},
-    order: [],
-  },
-  globalChat: {
-    displayed: false,
-    minimized: false,
-  },
+  activeFans: { map: {}, order: [] },
+  globalChat: { displayed: false, minimized: false },
+  universalChat: { displayed: false, minimized: false, messages: [] },
   chats: {},
   stageCountdown: -1,
   viewers: 0,
@@ -136,12 +131,16 @@ const broadcast = (state: BroadcastState = initialState(), action: BroadcastActi
       return R.assocPath(['activeFans', 'order'], updateFanOrder(state.activeFans, action.update), state);
     case 'START_NEW_FAN_CHAT':
       {
-        const activeOrBackstageFan = R.either(R.propEq('toType', 'activeFan'), R.propEq('toType', 'backstageFan'));
+        // Minimize the chats for the active and backstage fans
+        const activeOrBackstageFan = R.either(
+          R.propEq('toType', 'activeFan'),
+          R.propEq('toType', 'backstageFan'),
+        );
         const minimizeActiveFanChat = (chat: ChatState): ChatState => activeOrBackstageFan(chat) ? R.assoc('minimized', true, chat) : chat;
         const minimizedChats = R.assoc('chats', R.map(minimizeActiveFanChat, state.chats), state);
 
         const newChat = initialChatState('producer', action.fromId, action.toType, action.fan, action.display);
-        return R.assocPath(['chats', action.fan.id], newChat, minimizedChats);
+        return R.assocPath(['chats', action.fan.fanId], newChat, minimizedChats);
       }
     case 'START_NEW_PARTICIPANT_CHAT':
       {
@@ -149,12 +148,16 @@ const broadcast = (state: BroadcastState = initialState(), action: BroadcastActi
         return R.assocPath(['chats', participantType], initialChatState('producer', action.fromId, participantType, participant, displayed), state);
       }
     case 'START_NEW_PRODUCER_CHAT': {
-      return R.assocPath(['chats', 'producer'], initialChatState(action.fromType, action.fromId, 'producer', action.producer), state);
+      return R.assocPath(['chats', action.fromId], initialChatState(action.fromType, action.fromId, action.fromId, action.producer), state);
     }
     case 'DISPLAY_GLOBAL_CHAT':
       return R.assocPath(['globalChat', 'displayed'], action.display, state);
     case 'MINIMIZE_GLOBAL_CHAT':
       return R.assocPath(['globalChat', 'minimized'], action.minimized, state);
+    case 'DISPLAY_UNIVERSAL_CHAT':
+      return R.assocPath(['universalChat', 'displayed'], action.display, state);
+    case 'MINIMIZE_UNIVERSAL_CHAT':
+      return R.assocPath(['universalChat', 'minimized'], action.minimized, state);
     case 'UPDATE_CHAT_PROPERTY':
       return R.assocPath(['chats', action.chatId, action.property], action.update, state);
     case 'DISPLAY_CHAT':
@@ -163,6 +166,14 @@ const broadcast = (state: BroadcastState = initialState(), action: BroadcastActi
       return R.dissocPath(['chats', action.chatId], state);
     case 'NEW_CHAT_MESSAGE':
       return R.assocPath(['chats', action.chatId, 'messages'], R.append(action.message, R.path(['chats', action.chatId, 'messages'], state)), state);
+    case 'NEW_UNIVERSAL_CHAT_MESSAGE':
+      return R.assocPath(['universalChat', 'messages'], R.append(action.message, R.path(['universalChat', 'messages'], state)), state);
+    case 'UPDATE_UNIVERSAL_CHAT_MESSAGES':
+      return R.assocPath(['universalChat', 'messages'], action.messages, state);
+    case 'UPDATE_PRIVATE_CHAT':
+      return R.assocPath(['chats', action.chatId], action.data, state);
+    case 'UPDATE_PRIVATE_CHAT_MESSAGES':
+      return R.assocPath(['chats', action.chatId, 'messages'], action.messages, state);
     case 'MINIMIZE_CHAT':
       {
         let modifiedState;

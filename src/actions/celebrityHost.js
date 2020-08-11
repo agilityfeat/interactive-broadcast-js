@@ -20,6 +20,7 @@ import {
   startHeartBeat,
   heartBeatTime,
 } from './broadcast';
+import { connectToUniversalChat } from './universalChat';
 import { createSharedFile } from './files';
 import { getEventWithCredentials, getEmbedEventWithCredentials } from '../services/api';
 import { isUserOnStage, tagSubscriberElements } from '../services/util';
@@ -419,6 +420,7 @@ const initializeBroadcast: ThunkActionCreator = ({ userType, userUrl }: CelebHos
         } else {
           await firebase.auth().signInAnonymously();
         }
+        dispatch(connectToUniversalChat());
       });
     } catch (error) {
       // @TODO Error handling

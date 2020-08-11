@@ -4,7 +4,7 @@ import R from 'ramda';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import classNames from 'classnames';
-import { setBroadcastEventStatus } from '../../../actions/broadcast';
+import { setBroadcastEventStatus, displayUniversalChat, displayPrivateChat } from '../../../actions/broadcast';
 import { initializeBroadcast, getInLine, leaveTheLine, setPublisherMinimized } from '../../../actions/fan';
 import FanHeader from './components/FanHeader';
 import FanBody from './components/FanBody';
@@ -13,11 +13,12 @@ import Loading from '../../../components/Common/Loading';
 import NoEvents from '../../Common/NoEvents';
 import RegisterViewer from '../../../components/RegisterViewer/RegisterViewer';
 import Chat from '../../../components/Common/Chat';
+import UniversalChat from '../../Common/UniversalChat';
 import NetworkReconnect from '../../Common/NetworkReconnect';
 import { disconnect } from '../../../services/opentok';
 import './Fan.css';
 
-/* beautify preserve:start */
+// #region beautify preserve
 type InitialProps = {
   fitMode: boolean,
   params: { fanUrl: string, domainId: string }
@@ -53,7 +54,7 @@ type DispatchProps = {
   restorePublisher: Unit
 };
 type Props = InitialProps & BaseProps & DispatchProps;
-/* beautify preserve:end */
+// #endregion
 
 class Fan extends Component<Props> {
 
@@ -119,6 +120,8 @@ class Fan extends Component<Props> {
       minimizePublisher,
       restorePublisher,
       settings,
+      showUniversalChat,
+      showPrivateChat,
       settings: { registrationEnabled },
     } = this.props;
 
@@ -143,6 +146,7 @@ class Fan extends Component<Props> {
     const isClosed = R.equals(status, 'closed');
     const isLive = R.equals(status, 'live');
     const mainClassNames = classNames('Fan', { FanEmbed: isEmbed });
+
     return (
       <div className={mainClassNames}>
         <NetworkReconnect />
@@ -161,6 +165,8 @@ class Fan extends Component<Props> {
             inPrivateCall={inPrivateCall}
             privateCall={broadcast.privateCall}
             disconnected={disconnected}
+            showUniversalChat={showUniversalChat}
+            showPrivateChat={showPrivateChat}
           />
           { !isClosed && <FanStatusBar fanStatus={fanStatus} /> }
           <FanBody
@@ -181,7 +187,8 @@ class Fan extends Component<Props> {
             postProduction={postProduction}
           />
           <div className="FanChat" >
-            { producerChat && <Chat chat={producerChat} /> }
+            { producerChat && <Chat chat={producerChat} displayed /> }
+            <UniversalChat />
           </div>
         </div>
       </div>
@@ -189,6 +196,7 @@ class Fan extends Component<Props> {
   }
 }
 
+// #region Redux mappings
 const mapStateToProps = (state: State, ownProps: InitialProps): BaseProps => {
   const { fanUrl } = ownProps.params;
   return {
@@ -207,7 +215,7 @@ const mapStateToProps = (state: State, ownProps: InitialProps): BaseProps => {
     ableToJoin: R.path(['fan', 'ableToJoin'], state),
     fanStatus: R.path(['fan', 'status'], state),
     backstageConnected: R.path(['broadcast', 'backstageConnected'], state),
-    producerChat: R.path(['broadcast', 'chats', 'producer'], state),
+    producerChat: R.path(['broadcast', 'chats', state.currentUser.id], state),
     disconnected: R.path(['broadcast', 'disconnected'], state),
     authError: R.path(['auth', 'error'], state),
     settings: R.path(['settings'], state),
@@ -219,10 +227,13 @@ const mapDispatchToProps: MapDispatchToProps<DispatchProps> = (dispatch: Dispatc
 ({
   init: (options: FanInitOptions): void => dispatch(initializeBroadcast(options)),
   changeEventStatus: (status: EventStatus): void => dispatch(setBroadcastEventStatus(status)),
+  showUniversalChat: (): void => dispatch(displayUniversalChat(true)),
+  showPrivateChat: (): void => dispatch(displayPrivateChat(true)), // @CARLOS cambiar esta linea
   joinLine: (): void => dispatch(getInLine()),
   leaveLine: (): void => dispatch(leaveTheLine()),
   minimizePublisher: (): void => dispatch(setPublisherMinimized(true)),
   restorePublisher: (): void => dispatch(setPublisherMinimized(false)),
 });
+// #endregion
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Fan));

@@ -16,7 +16,9 @@ type Props = {
   leaveLine: Unit,
   backstageConnected: boolean,
   disconnected: boolean,
-  postProduction: boolean
+  postProduction: boolean,
+  showUniversalChat: Unit,
+  showPrivateChat: Unit
 };
 
 const FanHeader = (props: Props): ReactComponent => {
@@ -32,6 +34,8 @@ const FanHeader = (props: Props): ReactComponent => {
     fanStatus,
     disconnected,
     postProduction,
+    showUniversalChat,
+    showPrivateChat,
   } = props;
   const isConnecting = fanStatus === 'connecting';
   const isDisconnecting = fanStatus === 'disconnecting';
@@ -43,7 +47,7 @@ const FanHeader = (props: Props): ReactComponent => {
   const onStageUserInPrivateCall = !inPrivateCall && isOnStage && inPrivateCallWith && isUserOnStage(inPrivateCallWith);
   const getInLineButton = (): ReactComponent =>
     !backstageConnected ?
-      !isConnecting && <button className="btn green getInLine" onClick={getInLine}>GET IN LINE</button> :
+      !isConnecting && <button className="btn green getInLine" onClick={getInLine}>ASK QUESTION</button> :
       <button className="btn red getInLine" onClick={leaveLine}>LEAVE LINE</button>;
 
   return (
@@ -51,7 +55,9 @@ const FanHeader = (props: Props): ReactComponent => {
       <div className="FanHeader-main">
         <h4>{name}<sup>{status === 'notStarted' ? 'NOT STARTED' : status}</sup></h4>
         { displayGetInLineButton &&
-          <div>
+          <div className="actions">
+            <button className="btn green getInLine" onClick={showPrivateChat}>CHAT WITH INSTRUCTOR</button>
+            <button className="btn green getInLine" onClick={showUniversalChat}>CHAT</button>
             { getInLineButton() }
           </div>
         }

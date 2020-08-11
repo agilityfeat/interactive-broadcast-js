@@ -34,14 +34,15 @@ const isUserOnStage = (user: ParticipantType | 'activeFan'): boolean => R.contai
 
 const translateRole = (type: ParticipantType): string => {
   const translation = {
-    fan: 'viewer',
-    host: 'host',
+    fan: 'participant',
+    host: 'instructor',
     celebrity: 'guest',
-    backstageFan: 'backstage viewer',
-    producer: 'producer',
+    backstageFan: 'backstage participant',
+    producer: 'instructor',
+    instructor: 'instructor',
   };
 
-  return translation[type];
+  return translation[type] || 'instructor';
 };
 
 

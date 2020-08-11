@@ -10,23 +10,25 @@ import ProducerPrimary from './components/ProducerPrimary';
 import NetworkReconnect from '../../Common/NetworkReconnect';
 import ProducerChat from './components/ProducerChat';
 import { initializeBroadcast, resetBroadcastEvent } from '../../../actions/producer';
-import { displayGlobalChat } from '../../../actions/broadcast';
+import { displayGlobalChat, displayUniversalChat } from '../../../actions/broadcast';
 import './Producer.css';
 
-/* beautify preserve:start */
+// #region beautify preserve:start
 type InitialProps = { params: { id?: string } };
+
 type BaseProps = {
   user: User,
   eventId: EventId,
   broadcast: BroadcastState
 };
+
 type DispatchProps = {
   setEvent: EventId => void,
   resetEvent: Unit
 };
 
 type Props = InitialProps & BaseProps & DispatchProps;
-/* beautify preserve:end */
+// #endregion beautify preserve:end
 
 class Producer extends Component {
   props: Props;
@@ -59,22 +61,31 @@ class Producer extends Component {
   render(): ReactComponent {
     const { toggleSidePanel } = this;
     const { showingSidePanel } = this.state;
-    const { broadcast, showGlobalChat } = this.props;
+    const { broadcast, showGlobalChat, showUniversalChat } = this.props;
 
     return (
       <div className="Producer">
         <NetworkReconnect />
         <div className={classNames('Producer-main', { full: !showingSidePanel })} >
-          <ProducerHeader showingSidePanel={showingSidePanel} toggleSidePanel={toggleSidePanel} />
+          <ProducerHeader
+            showingSidePanel={showingSidePanel}
+            toggleSidePanel={toggleSidePanel}
+          />
           <ProducerPrimary />
         </div>
-        <ProducerSidePanel showGlobalChat={showGlobalChat} hidden={!showingSidePanel} broadcast={broadcast} />
+        <ProducerSidePanel
+          showGlobalChat={showGlobalChat}
+          showUniversalChat={showUniversalChat}
+          hidden={!showingSidePanel}
+          broadcast={broadcast}
+        />
         <ProducerChat chats={broadcast.chats} />
       </div>
     );
   }
 }
 
+// #region Redux maps
 const mapStateToProps = (state: State, ownProps: InitialProps): BaseProps => ({
   eventId: R.pathOr('', ['params', 'id'], ownProps),
   broadcast: R.prop('broadcast', state),
@@ -84,6 +95,7 @@ const mapStateToProps = (state: State, ownProps: InitialProps): BaseProps => ({
 const mapDispatchToProps: MapDispatchToProps<DispatchProps> = (dispatch: Dispatch): DispatchProps =>
   ({
     showGlobalChat: (): void => dispatch(displayGlobalChat(true)),
+    showUniversalChat: (): void => dispatch(displayUniversalChat(true)),
     setEvent: (eventId: EventId) => {
       dispatch(initializeBroadcast(eventId, 'producer'));
     },
@@ -91,5 +103,6 @@ const mapDispatchToProps: MapDispatchToProps<DispatchProps> = (dispatch: Dispatc
       dispatch(resetBroadcastEvent());
     },
   });
+// #endregion
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Producer));

@@ -15,7 +15,7 @@ const EventActions = ({ event }: Props): ReactComponent => {
 
   const view = (): ReactComponent =>
     <Link to={fanRoute} key={`action-view-${id}`} >
-      <button className={style(`${status === 'live' ? 'blue' : 'green'}`)}><Icon name="eye" /> View Event</button>
+      <button className={style(`${status === 'live' ? 'blue' : 'green'}`)}><Icon name="eye" /> Join Class</button>
     </Link>;
 
   const actionButtons = (): ReactComponent[] => {

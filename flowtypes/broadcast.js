@@ -98,9 +98,11 @@ declare type BroadcastState = {
     camera: null | { [subscriberId: string]: Subscriber}
   },
   globalChat: { displayed: boolean, minimized: boolean },
+  universalChat: { displayed: boolean, minimized: boolean, messages: UniversalMessage[]},
   meta: null | CoreMeta,
   participants: BroadcastParticipants,
   activeFans: ActiveFans,
+  activeChatFans: ActiveFans,
   chats: ProducerChats,
   stageCountdown: number,
   viewers: number,
@@ -157,6 +159,13 @@ declare type ChatMessage = {
   isMe: boolean,
   text: string,
   timestamp: number
+};
+
+declare type UniversalMessage = {
+  text: string,
+  timestamp: number,
+  fromId: UserId,
+  fromName: string
 };
 
 declare type ChatFilePartial = {
@@ -223,6 +232,8 @@ declare type BroadcastAction =
   { type: 'DISPLAY_CHAT', chatId: ChatId, display: boolean } |
   { type: 'MINIMIZE_CHAT', chatId: ChatId, minimize: boolean } |
   { type: 'NEW_CHAT_MESSAGE', chatId: ChatId, message: ChatMessage } |
+  { type: 'NEW_UNIVERSAL_CHAT_MESSAGE', chatId: ChatId, message: UniversalMessage } |
+  { type: 'UPDATE_UNIVERSAL_CHAT_MESSAGES', chatId: ChatId, messages: UniversalMessage[] } |
   { type: 'UPDATE_STAGE_COUNTDOWN', stageCountdown: number } |
   { type: 'UPDATE_VIEWERS', viewers: number } |
   { type: 'SET_INTERACTIVE_LIMIT', interactiveLimit: number } |

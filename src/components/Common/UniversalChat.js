@@ -4,18 +4,18 @@ import R from 'ramda';
 import { connect } from 'react-redux';
 import classNames from 'classnames';
 import Icon from 'react-fontawesome';
-import { properCase, translateRole } from '../../services/util';
-import { shareFile } from '../../actions/files';
+import { broadcastFile } from '../../actions/files';
 import {
-  sendChatMessage,
-  minimizeChat,
-  displayChat,
+  displayUniversalChat,
+  minimizeUniversalChat,
   uploadFileStart,
   uploadFileCancel,
   uploadFileSuccess,
 } from '../../actions/broadcast';
+import { universalChatMessage } from '../../actions/universalChat';
 import './Chat.css';
 
+// #region Helpers
 const File = (file: ChatFile): ReactComponent => {
   switch (file.type.split('/')[0]) {
     case 'image':
@@ -31,32 +31,31 @@ const File = (file: ChatFile): ReactComponent => {
   }
 };
 
-const Message = (message: ChatFile | ChatMessage): ReactComponent => {
+const Message = (message: ChatFile | UniversalMessage): ReactComponent => {
+  if (!message) return;
   const { isFile } = message;
-  const isMe = message.fromId === 'Anonymous';
-  const messageClass = classNames('Message', { isMe });
-
+  const isMe = message.userId === message.fromId;
   return (
-    <div className={messageClass} key={message.timestamp}>
+    <div className={classNames('Message', { isMe })} key={message.timestamp}>
       <div className="MessageText">
+        <div className="From">{isMe ? 'Me' : message.fromName}:</div>
         {isFile ?
           File(message) : message.text }
       </div>
     </div>
   );
 };
+// #endregion
 
-type BaseProps = {
-  actions?: ReactComponent
-};
+// #region Type Definitions
+type BaseProps = { actions?: ReactComponent };
 
-type InitialProp = {
-  fileSharingEnabled: boolean
-};
+type InitialProp = { fileSharingEnabled: boolean };
 
 type DispatchProps ={
   sendSharedFile: (File) => void,
-  sendMessage: (ChatMessagePartial) => void,
+  broadcastSharedFile: (File) => void,
+  universalChatMessage: (ChatMessagePartial) => void,
   boundUploadFileStart: (string) => void,
   boundUploadFileSuccess: (string) => void,
   boundUploadFileCancel: Unit,
@@ -65,8 +64,9 @@ type DispatchProps ={
 };
 
 type Props = BaseProps & InitialProps & DispatchProps;
+// #endregion
 
-class Chat extends Component<Props> {
+class UniversalChat extends Component<Props> {
 
   props: Props;
   state: { newMessageText: string };
@@ -74,21 +74,20 @@ class Chat extends Component<Props> {
   updateScrollPosition: Unit;
   handleChange: SyntheticInputEvent => void;
   handleSubmit: SyntheticInputEvent => void;
+  toggleMinimize: () => void;
 
   constructor(props: Props) {
     super(props);
-    this.state = { newMessageText: '' };
+
+    this.state = {
+      newMessageText: '',
+      messages: [],
+    };
+
     this.updateScrollPosition = this.updateScrollPosition.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-  }
-
-  componentWillReceiveProps(nextProps: Props) {
-    const newMessages = nextProps.chat.messages;
-    const { messages } = this.props.chat;
-    if (newMessages.length > messages.length) {
-      this.updateScrollPosition();
-    }
+    this.toggleMinimize = this.toggleMinimize.bind(this);
   }
 
   componentDidUpdate() {
@@ -109,12 +108,12 @@ class Chat extends Component<Props> {
 
   uploadFile(): (e: SyntheticInputEvent) => AsyncVoid {
     return async (e: SyntheticInputEvent): AsyncVoid => {
-      const { sendSharedFile } = this.props;
+      const { broadcastSharedFile } = this.props;
       const file = R.head(e.target.files);
 
       if (file) {
-        await sendSharedFile(file);
-        this.updateScrollPosition();
+        const fileData = await broadcastSharedFile(file);
+        this.setState({ messages: [...this.state.messages, fileData ] }, this.updateScrollPosition);
       }
     };
   }
@@ -124,58 +123,63 @@ class Chat extends Component<Props> {
     const { newMessageText } = this.state;
     if (R.isEmpty(newMessageText)) { return; }
 
-    const { sendMessage, chat } = this.props;
+    const { sendMessage } = this.props;
+    const fromId = R.path(['currentUser', 'id'], this.props);
 
     const message = {
       text: newMessageText,
       timestamp: Date.now(),
-      fromType: chat.fromType,
-      fromId: chat.fromId,
+      fromType: 'producer',
+      fromId,
     };
     sendMessage(message);
     this.setState({ newMessageText: '' }, this.updateScrollPosition);
   }
 
-  render(): ReactComponent {
-    const { displayed, minimized, messages, toType, to } = this.props.chat;
-    const name = R.propOr('instructor', 'name', to);
-    const { minimize, hide, fileSharingEnabled } = this.props;
-    const { newMessageText } = this.state;
-    const { handleSubmit, handleChange } = this;
+  toggleMinimize() {
+    const { minimized } = this.props.chat;
+    const { minimize } = this.props;
 
+    minimize(!minimized);
+  }
+
+  render(): ReactComponent {
+    const { hide, fileSharingEnabled, chat } = this.props;
+    const { displayed, minimized } = this.props.chat;
+    const { newMessageText } = this.state;
+    const { toggleMinimize, handleSubmit, handleChange } = this;
     const ChatActions = R.propOr(null, 'actions', this.props);
-    const defaultType = toType || 'instructor';
-    const chattingWithActiveFan = R.equals(defaultType, 'activeFan');
-    const chattingWith = chattingWithActiveFan ?
-      properCase(name) :
-      R.cond([
-        [R.equals('backstageFan'), R.always(`Backstage Fan - ${name}`)],
-        [R.equals('fan'), R.always(`Fan - ${name}`)],
-        [R.T, R.always(properCase(translateRole(defaultType)))],
-      ])(defaultType);
-    const inPrivateCall = R.and(chattingWithActiveFan, R.prop('inPrivateCall', this.props.chat));
+    const userId = R.path(['currentUser', 'id'], this.props);
+    const addUserId = R.map((message: UniversalMessage): UniversalMessage => {
+      const newMessage = message;
+      newMessage.userId = userId;
+      return newMessage;
+    });
 
     return (
-      <div className={classNames('Chat', defaultType, { hidden: !displayed })}>
+      <div className={classNames('Chat', 'everyone', { hidden: !displayed })}>
         <div className="ChatHeader">
-          <button className="btn minimize" onClick={minimize}>Chat with { chattingWith }</button>
+          <button className="btn minimize" onClick={toggleMinimize}>Chat with everyone</button>
           <button className="btn" onClick={hide}><Icon className="icon" name="close" /></button>
         </div>
         {!minimized && fileSharingEnabled &&
           <div className="ChatActions">
             { ChatActions }
-            <label className="btn white ChatFileUpload">
+            <label className="btn white ChatFileUpload" htmlFor="fileInput">
               Share file
-              <input style={{ display: 'none' }} type="file" onChange={this.uploadFile('File share upload')} />
+              <input id="fileInput" style={{ display: 'none' }} type="file" onChange={this.uploadFile('File share upload')} />
             </label>
           </div>
         }
-        {!minimized && !fileSharingEnabled && ChatActions}
-        <div id={`videoActiveFan${R.propOr('producer', 'id', to)}`} className={classNames('ChatPrivateCall', { inPrivateCall })} />
+        {!minimized && !fileSharingEnabled &&
+          <div className="ChatActions">
+            { ChatActions }
+          </div>
+        }
         { !minimized &&
           <div className="ChatMain">
             <div className="ChatMessages" ref={(el: HTMLDivElement) => { this.messageContainer = el; }} >
-              { R.map(Message, messages) }
+              {R.map(Message, addUserId(chat.messages))}
             </div>
             <form className="ChatForm" onSubmit={handleSubmit}>
               <input
@@ -195,18 +199,22 @@ class Chat extends Component<Props> {
   }
 }
 
+// #region Redux Maps
 const mapStateToProps: MapStateToProps<InitialProp> = (state: State): InitialProp => ({
   fileSharingEnabled: R.path(['settings', 'fileSharingEnabled'], state),
+  currentUser: R.prop(['currentUser'], state),
+  chat: R.path(['broadcast', 'universalChat'], state),
 });
 
-const mapDispatchToProps: MapDispatchWithOwn<DispatchProps, BaseProps> = (dispatch: Dispatch, ownProps: BaseProps): DispatchProps => ({
-  sendSharedFile: (file: File): void => dispatch(shareFile(file, ownProps.chat.chatId)),
-  sendMessage: (message: ChatMessagePartial): void => dispatch(sendChatMessage(ownProps.chat.chatId, message)),
-  minimize: (): void => dispatch(minimizeChat(ownProps.chat.chatId, !ownProps.chat.minimized)),
-  hide: (): void => dispatch(displayChat(ownProps.chat.chatId, false)),
+const mapDispatchToProps: MapDispatchWithOwn<DispatchProps> = (dispatch: Dispatch): DispatchProps => ({
+  hide: (): void => dispatch(displayUniversalChat(false)),
+  minimize: (minimized: boolean): void => dispatch(minimizeUniversalChat(minimized)),
+  broadcastSharedFile: (file: File): void => dispatch(broadcastFile(file)),
+  sendMessage: (message: ChatMessagePartial): void => dispatch(universalChatMessage(message)),
   boundUploadFileStart: (title: string): void => dispatch(uploadFileStart(title)),
   boundUploadFileSuccess: (title: string): void => dispatch(uploadFileSuccess(title)),
   boundUploadFileCancel: (): void => dispatch(uploadFileCancel()),
 });
+// #endregion
 
-export default connect(mapStateToProps, mapDispatchToProps)(Chat);
+export default connect(mapStateToProps, mapDispatchToProps)(UniversalChat);

@@ -89,7 +89,19 @@ class RegisterViewer extends React.Component {
     }
 
     return (
-      <div>
+      <div className="RegisterViewerWrapper">
+        <div className="RegisterViewer">
+          <div className="RegisterViewer-header" >
+            <h4>Welcome</h4>
+          </div>
+          <div className="RegisterViewer-body">
+            <p>
+              Welcome to PreventionLink of Southern Maryland’s Telehealth National Diabetes Prevention Program (NDPP). The NDPP is sponsored by the Centers for Disease Control and Prevention (CDC), and consists of 26 online or real-time classes led by trained lifestyle coaches. The lifestyle coaches will provide information and resources to help you eat healthy, add physical activity to your routine, manage stress, stay motivated and solve problems to reach your goals. A trained lifestyle coach will lead the classes and include activities that will make it fun. Research shows the program prevents or delays type 2 diabetes and lowers your risk of heart attack or stroke. Your primary care provider and your lifestyle coach will work with you to start and finish all of the sessions.
+
+              Welcome, and all the best!
+            </p>
+          </div>
+        </div>
         <div className="RegisterViewer">
           <div className="RegisterViewer-header" >
             <img src={startImage || (settings.siteLogo && settings.siteLogo.url) || logo} alt="logo" />
