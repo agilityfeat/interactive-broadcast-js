@@ -1,18 +1,19 @@
 /*Main*/
 .RegisterViewerWrapper{
-  width: 1000px;
   display: -ms-flexbox;
   display: flex;
   -ms-flex-direction: row;
   flex-direction: row;
   margin: auto;
+  flex-wrap: wrap-reverse;
+  justify-content: space-around;
+  max-width: 1000px;
 }
 
 .RegisterViewer {
-  width: 360px;
+  width: 400px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   align-items: center;
   margin: 40px auto 20px;
   padding-bottom: 10px;
@@ -56,11 +57,15 @@
 .RegisterViewer-body {
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: 95%;
 }
 
 .RegisterViewer-body p {
   padding: 5px;
+  text-align: justify;
+  color: darkblue;
+  font-size: 12px;
+  letter-spacing: 0.3px;
 }
 
 .RegisterViewer-header img {
