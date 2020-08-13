@@ -27,7 +27,7 @@ const File = (file: ChatFile): ReactComponent => {
     case 'video':
       return <video controls className="ChatImage" src={file.url} />;
     default:
-      return <a href={file.url}>{file.name}</a>;
+      return <a href={file.url} rel="noopener noreferrer" target="_blank" >{file.name}</a>;
   }
 };
 

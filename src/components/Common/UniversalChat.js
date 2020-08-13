@@ -27,7 +27,7 @@ const File = (file: ChatFile): ReactComponent => {
     case 'video':
       return <video controls className="ChatImage" src={file.url} />;
     default:
-      return <a href={file.url}>{file.name}</a>;
+      return <a href={file.url} rel="noopener noreferrer" target="_blank" >{file.name}</a>;
   }
 };
 
@@ -113,7 +113,7 @@ class UniversalChat extends Component<Props> {
 
       if (file) {
         const fileData = await broadcastSharedFile(file);
-        this.setState({ messages: [...this.state.messages, fileData ] }, this.updateScrollPosition);
+        this.setState({ messages: [...this.state.messages, fileData] }, this.updateScrollPosition);
       }
     };
   }
